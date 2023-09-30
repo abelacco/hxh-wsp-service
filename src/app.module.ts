@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { EnvConfiguration } from './config/app.config';
 import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -13,8 +14,9 @@ import { WspModule } from './wsp/wsp.module';
       load: [EnvConfiguration],
       validationSchema: JoiValidationSchema
     }),
-    // MongooseModule.forRoot(process.env.MONGODB),
+    MongooseModule.forRoot(process.env.MONGODB),
     WspModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,7 +7,7 @@ import { WspQueriesDto } from './dto/queries-webhook';
 @Injectable()
 export class WspService {
   addMessage(messageWSP: any) {
-    console.log(messageWSP);
+    console.log(JSON.stringify(messageWSP));
     return 'This action adds a new wsp';
   }
 
