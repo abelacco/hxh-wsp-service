@@ -13,7 +13,7 @@ import { WspModule } from './wsp/wsp.module';
       load: [EnvConfiguration],
       validationSchema: JoiValidationSchema
     }),
-    MongooseModule.forRoot(process.env.MONGODB),
+    // MongooseModule.forRoot(process.env.MONGODB),
     WspModule,
   ],
   controllers: [AppController],
