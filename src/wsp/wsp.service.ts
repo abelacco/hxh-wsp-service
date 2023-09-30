@@ -6,7 +6,8 @@ import { WspQueriesDto } from './dto/queries-webhook';
 
 @Injectable()
 export class WspService {
-  create(createWspDto: CreateWspDto) {
+  addMessage(messageWSP: any) {
+    console.log(messageWSP);
     return 'This action adds a new wsp';
   }
 
@@ -17,7 +18,7 @@ export class WspService {
     const challenge = wspQueries['hub.challenge'];
     const verifyToken = wspQueries['hub.verify_token'];
     console.log(myVerifyToken);
-    
+
     if (hubMode === 'subscribe' && verifyToken === myVerifyToken) {
       return challenge;
     } else {

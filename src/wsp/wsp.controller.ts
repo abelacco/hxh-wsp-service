@@ -7,9 +7,9 @@ import { WspQueriesDto } from './dto/queries-webhook';
 export class WspController {
   constructor(private readonly wspService: WspService) {}
 
-  @Post()
-  create(@Body() createWspDto: CreateWspDto) {
-    return this.wspService.create(createWspDto);
+  @Post('/webHook')
+  create(@Body() messageWSP: any) {
+    return this.wspService.addMessage(messageWSP);
   }
 
   @Get('/webHook')
