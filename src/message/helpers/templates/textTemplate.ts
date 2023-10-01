@@ -1,12 +1,12 @@
 export class Templates {
 
-     static generateTextTemplate(message: string , phone: string) {
+     static generateTextResponseStep1(message: string , phone: string) {
         return {
             messaging_product: "whatsapp",
             to: phone,
             type: "text",
             text: {
-                body: message
+                body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: 01-10-23 10:00 am',
             }
         }
     }

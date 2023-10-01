@@ -16,8 +16,7 @@ export class MessageService {
   {}
 
   async proccessMessage(messageFromWSP: any) {
-    // console.log(JSON.stringify(messageFromWSP));
-    // console.log(messageFromWSP);  
+
     // validar si es un mensaje valido
     const validMessage = this.validateMessage(messageFromWSP);
     console.log("aqui",validMessage)
@@ -28,42 +27,64 @@ export class MessageService {
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
     const messageExist = await this.findOne(messageParsed.phone);
-    console.log("aqui",messageExist)
+    // console.log("aqui",messageExist)
     try{
-      if(messageExist && messageExist.step !== STEPS.INIT){
-        
+      if(!messageExist){
+         // Si el mensaje no existe en la base de datos, lo creas con el paso STEPS.INIT
+         const newMessage = await this.create(messageParsed);
+         console.log("Mensaje creado:");
+         return newMessage;
+      } else {
         switch(messageExist.step){
-          // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
           case STEPS.INIT:
-            messageParsed.step = STEPS.SELECT_SPECIALTY;
-            const updateMessage = this.updateMessage(messageParsed);
-            console.log("aqui updateMessage",updateMessage)
-            return messageParsed;
-          case STEPS.INSERT_DATE:
-            break;
-          case STEPS.SELECT_DOCTOR:
-            break;
-          case STEPS.SELECT_PAYMENT:
-            break;
-          case STEPS.SUBMIT_VOUCHER:
-            break;
-          case STEPS.SEND_CONFIRMATION:
-            break;
-          default:
-            return messageParsed;
-        }
+            if (validMessage.type === 'interactive') {
+              messageParsed.step = STEPS.SELECT_SPECIALTY;
+              const updatedMessage = await this.updateMessage(messageParsed);
+              console.log("Mensaje actualizado:", updatedMessage);
+              return {
+                message: updatedMessage,
+                responseClient: validMessage.response
+              }
+            } else {
+              return messageExist;
+            }
+          case STEPS.SELECT_SPECIALTY:
+          }
       }
-      else{
-        if(messageExist){
-          return messageExist;
-        }
-        const newMessage = await this.create(messageParsed);
-        // responder con el mensaje de bienvenida
-        console.log("aquiiiiiiiiiiii",newMessage)
-        return newMessage;
+      // if(messageExist && messageExist.step !== STEPS.INIT){
+      //   console.log("iniciando para los otros pasos")
+      //   switch(messageExist.step){
+      //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
+      //     case STEPS.INIT:
+      //       messageParsed.step = STEPS.SELECT_SPECIALTY;
+      //       const updateMessage = this.updateMessage(messageParsed);
+      //       console.log("aqui updateMessage",updateMessage)
+      //       return messageParsed;
+      //     case STEPS.INSERT_DATE:
+      //       break;
+      //     case STEPS.SELECT_DOCTOR:
+      //       break;
+      //     case STEPS.SELECT_PAYMENT:
+      //       break;
+      //     case STEPS.SUBMIT_VOUCHER:
+      //       break;
+      //     case STEPS.SEND_CONFIRMATION:
+      //       break;
+      //     default:
+      //       return messageParsed;
+      //   }
+      // }
+      // else{
+      //   if(messageExist){
+      //     return messageExist;
+      //   }
+      //   const newMessage = await this.create(messageParsed);
+      //   // responder con el mensaje de bienvenida
+      //   console.log("aquiiiiiiiiiiii",newMessage)
+      //   return newMessage;
 
-      }
-      return messageParsed;
+      // }
+      // return messageParsed;
     }
     catch(error){
       this.handleExceptions(error);
@@ -117,9 +138,6 @@ export class MessageService {
   }
 
   validateMessage(message: any){
-    // console.log("aqui entry",message.entry[0]);
-    // console.log("aqui changes",message.entry[0].changes[0].value.messages[0]);
-    // console.log("aqui contacnts",message.entry[0].changes[0].value.contacts[0]);
     const messageInfo = message?.entry[0]?.changes[0]?.value?.messages[0];
     // console.log("messageInfo"), messageInfo;
     if(messageInfo && messageInfo.from === 'me')
@@ -131,7 +149,9 @@ export class MessageService {
     }
     return {
       messageInfo: messageInfo,
-      valid: true
+      valid: true,
+      type: messageInfo.type,
+      response: messageInfo.type === 'interactive' ? messageInfo.interactive : ''
     };;
   }
 

@@ -42,8 +42,8 @@ export class WspService {
     }
   }
 
-  async sendMessages(botResponse: any) {
-    const buildMessage = this.botResponse.buildMessage(botResponse);
+  async sendMessages(messageClient: any) {
+    const buildMessage = this.botResponse.buildMessage(messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     console.log(buildMessage);
     try {
