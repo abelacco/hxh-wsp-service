@@ -7,7 +7,7 @@ export class BotResponseService {
      buildMessage(messageClient: any) {
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE", messageClient)
         const phone = messageClient.message.phone;
-        const type = messageClient.responseClient.type;
+        const type = messageClient.responseClient?.type;
 
         if(type.type === 'list_reply') {
             const buildMessage = Templates.generateTextResponseStep1(type.options, phone);
