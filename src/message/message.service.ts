@@ -54,6 +54,9 @@ export class MessageService {
         }
       }
       else{
+        if(messageExist){
+          return messageExist;
+        }
         const newMessage = await this.create(messageParsed);
         // responder con el mensaje de bienvenida
         console.log("aquiiiiiiiiiiii",newMessage)
