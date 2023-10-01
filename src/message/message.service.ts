@@ -31,12 +31,16 @@ export class MessageService {
     try{
       if(!messageExist){
          // Si el mensaje no existe en la base de datos, lo creas con el paso STEPS.INIT
+         console.log("Mensaje no existe")
          const newMessage = await this.create(messageParsed);
          console.log("Mensaje creado:");
          return newMessage;
       } else {
         switch(messageExist.step){
+
           case STEPS.INIT:
+            console.log("Entre al switch INIT")
+
             if (validMessage.type === 'interactive') {
               messageParsed.step = STEPS.SELECT_SPECIALTY;
               const updatedMessage = await this.updateMessage(messageParsed);
@@ -46,7 +50,10 @@ export class MessageService {
                 responseClient: validMessage.response
               }
             } else {
-              return messageExist;
+              return {
+                message: messageExist,
+                responseClient: validMessage.response
+              };
             }
           case STEPS.SELECT_SPECIALTY:
           }
