@@ -5,7 +5,7 @@ import { Templates } from '../helpers/templates/textTemplate';
 export class BotResponseService {
 
      buildMessage(botResponse: any) {
-        const buildMessage = Templates.generateInfoDoctor(botResponse.message, botResponse.phone);
+        const buildMessage = Templates.generateSpecialitiesList(botResponse.message, botResponse.phone);
         return buildMessage;
     }
 }

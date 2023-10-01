@@ -49,9 +49,9 @@ export class MessageService {
         }
       }
       else{
-        console.log("aqui",messageParsed)
-        const newMessage = this.create(messageParsed);
+        const newMessage = await this.create(messageParsed);
         // responder con el mensaje de bienvenida
+        console.log("aquiiiiiiiiiiii",newMessage)
         return newMessage;
 
       }
