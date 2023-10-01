@@ -11,11 +11,11 @@ export class WspService {
     private msgService: MessageService
 
   ) {}
-  proccessMessage(messageWSP: any) {
+  async proccessMessage(messageWSP: any) {
     // preguntar si es un mensaje ´valido
     console.log(JSON.stringify(messageWSP));
-    const response = this.msgService.proccessMessage(messageWSP);
-    this.sendMessages(response);
+    const response = await this.msgService.proccessMessage(messageWSP);
+    await this.sendMessages(response);
     return 'This action adds a new wsp';
   }
 
