@@ -9,7 +9,7 @@ export class BotResponseService {
         const phone = messageClient.message.phone;
         const type = messageClient.responseClient?.type;
 
-        if(type.type === 'list_reply') {
+        if(type && type?.type === 'list_reply') {
             const buildMessage = Templates.generateTextResponseStep1(type.options, phone);
             return buildMessage;
         }
