@@ -110,8 +110,8 @@ export class MessageService {
   validateMessage(message: any){
     console.log("aqui entry",message.entry[0]);
     console.log("aqui changes",message.entry[0].changes);
-    const messageInfo = message?.entry[0]?.messages[0];
-    console.log(messageInfo);
+    const messageInfo = message?.entry[0]?.changes[0].messages[0];
+    console.log("messageInfo"), messageInfo;
     if(messageInfo && messageInfo.from === 'me')
     {
       return {
