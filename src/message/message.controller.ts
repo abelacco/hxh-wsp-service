@@ -22,10 +22,10 @@ export class MessageController {
   //   return this.messageService.findOne(+id);
   // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(+id, updateMessageDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
+  //   return this.messageService.update(+id, updateMessageDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

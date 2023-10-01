@@ -28,17 +28,17 @@ export class MessageService {
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
     const messageExist = await this.findOne(messageParsed.phone);
-  console.log("aqui",messageExist)
+    console.log("aqui",messageExist)
     try{
       if(messageExist && messageExist.step !== STEPS.INIT){
         
         switch(messageExist.step){
           
-          case STEPS.INIT:
-            return messageExist;
-            // break;
           case STEPS.SELECT_SPECIALTY:
-            break;
+            messageParsed.step = STEPS.SELECT_SPECIALTY;
+            const updateMessage = this.updateMessage(messageParsed);
+            console.log("aqui updateMessage",updateMessage)
+            return messageParsed;
           case STEPS.INSERT_DATE:
             break;
           case STEPS.SELECT_DOCTOR:
@@ -100,8 +100,9 @@ export class MessageService {
     return message;
   }
 
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async updateMessage(messageParsed: any) {
+    const updatedMessage = await this.messageModel.findOneAndUpdate({phone: messageParsed.phone}, messageParsed ,{ new: true });
+    return updatedMessage;
   }
 
   remove(id: number) {
