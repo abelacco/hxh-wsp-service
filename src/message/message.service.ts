@@ -111,7 +111,7 @@ export class MessageService {
     // console.log("aqui entry",message.entry[0]);
     // console.log("aqui changes",message.entry[0].changes[0].value.messages[0]);
     // console.log("aqui contacnts",message.entry[0].changes[0].value.contacts[0]);
-    const messageInfo = message.entry[0].changes[0].value.messages[0];
+    const messageInfo = message?.entry[0]?.changes[0]?.value?.messages[0];
     // console.log("messageInfo"), messageInfo;
     if(messageInfo && messageInfo.from === 'me')
     {
