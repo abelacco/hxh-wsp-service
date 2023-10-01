@@ -5,6 +5,7 @@ import { Templates } from '../helpers/templates/textTemplate';
 export class BotResponseService {
 
      buildMessage(messageClient: any) {
+        console.log("BOT RESPONSE SERVICE BUILD MESSAGE", messageClient)
         const phone = messageClient.message.phone;
         const type = messageClient.responseClient.type;
 
