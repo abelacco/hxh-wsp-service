@@ -12,10 +12,15 @@ export class WspService {
 
   ) {}
   async proccessMessage(messageWSP: any) {
+    console.log(" WSPSERVICE PROCCESSMESSAGE INIT2")
+
     // preguntar si es un mensaje ´valido
-    console.log(JSON.stringify(messageWSP));
+    // console.log(JSON.stringify(messageWSP));
     const response = await this.msgService.proccessMessage(messageWSP);
+    console.log(" WSPSERVICE PROCCESSMESSAGE AFET RESPONSE3")
     await this.sendMessages(response);
+    console.log(" WSPSERVICE PROCCESSMESSAGE AFTER SEBDMESSAGE4")
+
     return 'This action adds a new wsp';
   }
 

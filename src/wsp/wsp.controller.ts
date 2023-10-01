@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ConsoleLogger } from '@nestjs/common';
 import { WspService } from './wsp.service';
 import { CreateWspDto } from './dto/create-wsp.dto';
 import { WspQueriesDto } from './dto/queries-webhook';
@@ -9,6 +9,7 @@ export class WspController {
 
   @Post('/webHook')
   proccess(@Body() messageWSP: any) {
+    console.log(" CONTROLLER - Iniciando proceso de mensaje")
     return this.wspService.proccessMessage(messageWSP);
   }
 
