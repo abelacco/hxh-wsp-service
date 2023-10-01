@@ -20,13 +20,15 @@ export class MessageService {
     // console.log(messageFromWSP);  
     // validar si es un mensaje valido
     const validMessage = this.validateMessage(messageFromWSP);
+    console.log("aqui",validMessage)
     if(!validMessage.valid){
+      console.log("no es valido");
       return false;
     }
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
     const messageExist = await this.findOne(messageParsed.phone);
-
+  console.log("aqui",messageExist)
     try{
       if(messageExist && messageExist.step !== STEPS.INIT){
         
