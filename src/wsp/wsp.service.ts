@@ -15,9 +15,12 @@ export class WspService {
     console.log(" WSPSERVICE PROCCESSMESSAGE INIT2")
 
     // preguntar si es un mensaje ´valido
-    // console.log(JSON.stringify(messageWSP));
+    console.log(JSON.stringify(messageWSP));
     const response = await this.msgService.proccessMessage(messageWSP);
     console.log(" WSPSERVICE PROCCESSMESSAGE AFET RESPONSE3")
+    if(!response){
+      return false;
+    }
     await this.sendMessages(response);
     console.log(" WSPSERVICE PROCCESSMESSAGE AFTER SEBDMESSAGE4")
 

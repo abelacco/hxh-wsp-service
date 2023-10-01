@@ -21,17 +21,20 @@ export class MessageService {
     // validar si es un mensaje valido
     const validMessage = this.validateMessage(messageFromWSP);
     if(!validMessage.valid){
-      return;
+      return false;
     }
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
-   
+
+    const messageExist = await this.findOne(messageParsed.phone);
+
     try{
-      if(messageParsed && messageParsed.step !== STEPS.INIT){
+      if(messageExist && messageExist.step !== STEPS.INIT){
         
-        switch(messageParsed.step){
+        switch(messageExist.step){
           
           case STEPS.INIT:
-            break;
+            return messageExist;
+            // break;
           case STEPS.SELECT_SPECIALTY:
             break;
           case STEPS.INSERT_DATE:
@@ -88,8 +91,8 @@ export class MessageService {
   }
 
   async findOne(phone: string) {
-    const phoneNumber = await this.messageModel.findOne({phone: phone});
-    return phoneNumber;
+    const message = await this.messageModel.findOne({phone: phone});
+    return message;
   }
 
   update(id: number, updateMessageDto: UpdateMessageDto) {
