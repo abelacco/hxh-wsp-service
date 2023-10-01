@@ -8,8 +8,8 @@ export class BotResponseService {
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE", messageClient)
         const phone = messageClient.message.phone;
         const type = messageClient.responseClient?.type;
-
-        if(type && type?.type === 'list_reply') {
+        console.log("BOT RESPONSE SERVICE BUILD MESSAGE TYPE", type)
+        if(type && type === 'list_reply') {
             const buildMessage = Templates.generateTextResponseStep1(type, phone);
             return buildMessage;
         }
