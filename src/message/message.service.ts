@@ -63,15 +63,15 @@ export class MessageService {
   }
 
   
-  // async create(createMessageDto: CreateMessageDto) {
-  //   try{
-  //     const message = await this.messageModel.create(createMessageDto);
-  //     return message;
-  //   }
-  //   catch(error){
-  //     this.handleExceptions(error);
-  //   }
-  // }
+  async createDirect(createMessageDto: CreateMessageDto) {
+    try{
+      const message = await this.messageModel.create(createMessageDto);
+      return message;
+    }
+    catch(error){
+      this.handleExceptions(error);
+    }
+  }
 
     async create(createMessageDto: any) {
     try{
