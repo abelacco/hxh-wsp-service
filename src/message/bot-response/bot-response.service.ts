@@ -10,10 +10,10 @@ export class BotResponseService {
         const type = messageClient.responseClient?.type;
 
         if(type && type?.type === 'list_reply') {
-            const buildMessage = Templates.generateTextResponseStep1(type.options, phone);
+            const buildMessage = Templates.generateTextResponseStep1(type, phone);
             return buildMessage;
         }
-        const buildMessage = Templates.generateSpecialitiesList(null, messageClient.phone);
+        const buildMessage = Templates.generateSpecialitiesList(null, phone);
         return buildMessage;
     }
 }
