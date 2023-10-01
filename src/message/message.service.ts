@@ -5,7 +5,6 @@ import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { STEPS } from '../config/constants';
-import { WspService } from 'src/wsp/wsp.service';
 @Injectable()
 export class MessageService {
 
@@ -109,6 +108,8 @@ export class MessageService {
   }
 
   validateMessage(message: any){
+    console.log(message.entry[0]);
+    console.log(message.entry[0].messages);
     const messageInfo = message.entry[0].messages[0];
     console.log(messageInfo);
     if(messageInfo && messageInfo.from === 'me')
