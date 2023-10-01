@@ -17,7 +17,7 @@ export class WspService {
     // preguntar si es un mensaje ´valido
     console.log(JSON.stringify(messageWSP));
     const response = await this.msgService.proccessMessage(messageWSP);
-    console.log(" WSPSERVICE PROCCESSMESSAGE AFET RESPONSE3")
+    console.log(" WSPSERVICE PROCCESSMESSAGE AFET RESPONSE3", response)
     if(!response){
       return false;
     }
