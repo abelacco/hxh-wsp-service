@@ -16,8 +16,8 @@ export class MessageService {
   {}
 
   async proccessMessage(messageFromWSP: any) {
-    console.log(JSON.stringify(messageFromWSP));
-    console.log(messageFromWSP);  
+    // console.log(JSON.stringify(messageFromWSP));
+    // console.log(messageFromWSP);  
     // validar si es un mensaje valido
     const validMessage = this.validateMessage(messageFromWSP);
     if(!validMessage.valid){
@@ -49,7 +49,7 @@ export class MessageService {
         }
       }
       else{
-
+        console.log("aqui",messageParsed)
         const newMessage = this.create(messageParsed);
         // responder con el mensaje de bienvenida
         return newMessage;
@@ -108,11 +108,11 @@ export class MessageService {
   }
 
   validateMessage(message: any){
-    console.log("aqui entry",message.entry[0]);
-    console.log("aqui changes",message.entry[0].changes[0].value.messages[0]);
-    console.log("aqui contacnts",message.entry[0].changes[0].value.contacts[0]);
+    // console.log("aqui entry",message.entry[0]);
+    // console.log("aqui changes",message.entry[0].changes[0].value.messages[0]);
+    // console.log("aqui contacnts",message.entry[0].changes[0].value.contacts[0]);
     const messageInfo = message.entry[0].changes[0].value.messages[0];
-    console.log("messageInfo"), messageInfo;
+    // console.log("messageInfo"), messageInfo;
     if(messageInfo && messageInfo.from === 'me')
     {
       return {
@@ -129,7 +129,7 @@ export class MessageService {
   parseMesssageFromWSP(message: any){
     const messageParsed = {
       phone: message.from,
-      message: message,
+      // message: message,
       step: STEPS.INIT,
       status: 'PENDING'
     }
