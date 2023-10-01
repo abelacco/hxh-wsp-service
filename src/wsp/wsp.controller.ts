@@ -8,13 +8,18 @@ export class WspController {
   constructor(private readonly wspService: WspService) {}
 
   @Post('/webHook')
-  create(@Body() messageWSP: any) {
-    return this.wspService.addMessage(messageWSP);
+  proccess(@Body() messageWSP: any) {
+    return this.wspService.proccessMessage(messageWSP);
   }
 
   @Get('/webHook')
   find(@Query() wspQueries: WspQueriesDto) {
     return this.wspService.validateWebHook(wspQueries);
+  }
+
+  @Post('/sendMessage')
+  sendMessage(@Body() botResponse: any) {
+    return this.wspService.sendMessages(botResponse);
   }
 
 

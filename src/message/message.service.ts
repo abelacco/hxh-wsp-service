@@ -4,16 +4,77 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-
+import { STEPS } from '../config/constants';
+import { WspService } from 'src/wsp/wsp.service';
 @Injectable()
 export class MessageService {
 
   constructor(
     @InjectModel(Message.name) 
-    private readonly messageModel: Model<Message>) 
+    private readonly messageModel: Model<Message>,
+    
+    ) 
   {}
+
+  async proccessMessage(messageFromWSP: any) {
+    console.log(JSON.stringify(messageFromWSP));
+    console.log(messageFromWSP);  
+    // validar si es un mensaje valido
+    const validMessage = this.validateMessage(messageFromWSP);
+    if(!validMessage.valid){
+      return;
+    }
+    const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
+   
+    try{
+      if(messageParsed && messageParsed.step !== STEPS.INIT){
+        
+        switch(messageParsed.step){
+          
+          case STEPS.INIT:
+            break;
+          case STEPS.SELECT_SPECIALTY:
+            break;
+          case STEPS.INSERT_DATE:
+            break;
+          case STEPS.SELECT_DOCTOR:
+            break;
+          case STEPS.SELECT_PAYMENT:
+            break;
+          case STEPS.SUBMIT_VOUCHER:
+            break;
+          case STEPS.SEND_CONFIRMATION:
+            break;
+          default:
+            return messageParsed;
+        }
+      }
+      else{
+
+        const newMessage = this.create(messageParsed);
+        // responder con el mensaje de bienvenida
+        return newMessage;
+
+      }
+      return messageParsed;
+    }
+    catch(error){
+      this.handleExceptions(error);
+    }
+  }
+
   
-  async create(createMessageDto: CreateMessageDto) {
+  // async create(createMessageDto: CreateMessageDto) {
+  //   try{
+  //     const message = await this.messageModel.create(createMessageDto);
+  //     return message;
+  //   }
+  //   catch(error){
+  //     this.handleExceptions(error);
+  //   }
+  // }
+
+    async create(createMessageDto: any) {
     try{
       const message = await this.messageModel.create(createMessageDto);
       return message;
@@ -27,8 +88,9 @@ export class MessageService {
     return `This action returns all message`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findOne(phone: string) {
+    const phoneNumber = await this.messageModel.findOne({phone: phone});
+    return phoneNumber;
   }
 
   update(id: number, updateMessageDto: UpdateMessageDto) {
@@ -44,5 +106,31 @@ export class MessageService {
       throw new BadRequestException('Doctor ya existe' + JSON.stringify(error.keyValue));
     }
     throw new InternalServerErrorException('Error creando doctor' + JSON.stringify(error));
+  }
+
+  validateMessage(message: any){
+    const messageInfo = message.entry[0].messages[0];
+    console.log(messageInfo);
+    if(messageInfo && messageInfo.from === 'me')
+    {
+      return {
+        messageInfo: messageInfo,
+        valid: false
+      };
+    }
+    return {
+      messageInfo: messageInfo,
+      valid: true
+    };;
+  }
+
+  parseMesssageFromWSP(message: any){
+    const messageParsed = {
+      phone: message.from,
+      message: message,
+      step: STEPS.INIT,
+      status: 'PENDING'
+    }
+    return messageParsed;
   }
 }
