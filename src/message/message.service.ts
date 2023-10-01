@@ -33,8 +33,8 @@ export class MessageService {
       if(messageExist && messageExist.step !== STEPS.INIT){
         
         switch(messageExist.step){
-          
-          case STEPS.SELECT_SPECIALTY:
+          // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
+          case STEPS.INIT:
             messageParsed.step = STEPS.SELECT_SPECIALTY;
             const updateMessage = this.updateMessage(messageParsed);
             console.log("aqui updateMessage",updateMessage)
