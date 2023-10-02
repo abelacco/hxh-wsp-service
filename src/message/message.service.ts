@@ -27,7 +27,7 @@ export class MessageService {
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
     const messageExist = await this.findOne(messageParsed.phone);
-    // console.log("aqui",messageExist)
+    console.log("aqui messageExist",messageExist)
     try{
       if(!messageExist){
          // Si el mensaje no existe en la base de datos, lo creas con el paso STEPS.INIT
