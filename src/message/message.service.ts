@@ -34,7 +34,10 @@ export class MessageService {
          console.log("Mensaje no existe")
          const newMessage = await this.create(messageParsed);
          console.log("Mensaje creado:");
-         return newMessage;
+         return {
+          message: newMessage,
+          responseClient: validMessage.response
+        }
       } else {
         switch(messageExist.step){
 
