@@ -39,8 +39,9 @@ export class MessageService {
           responseClient: validMessage.response
         }
       } else {
+        let updatedMessage:any;
         switch(messageExist.step){
-
+          // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
           case STEPS.INIT:
             console.log("Entre al switch INIT")
 
@@ -60,13 +61,48 @@ export class MessageService {
             }
           case STEPS.SELECT_SPECIALTY:
             messageParsed.step = STEPS.INSERT_DATE;
-            const updatedMessage = await this.updateMessage(messageParsed);
+            updatedMessage = await this.updateMessage(messageParsed);
             return {
               message: updatedMessage,
               responseClient: validMessage.response
             };
-          }
-      }
+            case STEPS.INSERT_DATE:
+              messageParsed.step = STEPS.SELECT_DOCTOR;
+              updatedMessage = await this.updateMessage(messageParsed);
+              return {
+                message: updatedMessage,
+                responseClient: validMessage.response
+              };
+            case STEPS.SELECT_DOCTOR:
+              messageParsed.step = STEPS.SELECT_PAYMENT;
+              updatedMessage = await this.updateMessage(messageParsed);
+              return {
+                message: updatedMessage,
+                responseClient: validMessage.response
+              };
+            case STEPS.SELECT_PAYMENT:
+              messageParsed.step = STEPS.SUBMIT_VOUCHER;
+              updatedMessage = await this.updateMessage(messageParsed);
+              return {
+                message: updatedMessage,
+                responseClient: validMessage.response
+              };
+            case STEPS.SUBMIT_VOUCHER:
+              messageParsed.step = STEPS.SEND_CONFIRMATION;
+              updatedMessage = await this.updateMessage(messageParsed);
+              return {
+                message: updatedMessage,
+                responseClient: validMessage.response
+              };               
+            default:
+              return {
+                message: messageExist,
+                responseClient: validMessage.response
+              };
+  
+          
+          
+        }
       // if(messageExist && messageExist.step !== STEPS.INIT){
       //   console.log("iniciando para los otros pasos")
       //   switch(messageExist.step){
@@ -101,10 +137,12 @@ export class MessageService {
 
       // }
       // return messageParsed;
+      }
     }
     catch(error){
       this.handleExceptions(error);
     }
+  
   }
 
   

@@ -11,7 +11,7 @@ export class BotResponseService {
         const phone = messageClient.message.phone;
         const type = messageClient.responseClient?.type;
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE TYPE", type)
-        if(type && type === 'list_reply') {
+        if(step && step === STEPS.SELECT_SPECIALTY)  {
             const buildMessage = Templates.generateTextResponseStep1(type, phone);
             return buildMessage;
         }
@@ -19,10 +19,18 @@ export class BotResponseService {
             const buildMessage = Templates.generateInfoDoctor(type, phone);
             return buildMessage;
         }
+        else if(step && step === STEPS.SELECT_DOCTOR) {
+            const buildMessage = Templates.generatePaymentOptions(type, phone);
+            return buildMessage;
+        }
         else if(step && step === STEPS.SELECT_PAYMENT) {
-             const buildMessage = Templates.generatePaymentOptions(type, phone);
+             const buildMessage = Templates.generateTextAccount(type, phone);
              return buildMessage;
    
+        }
+        else if(step && step === STEPS.SUBMIT_VOUCHER) {
+            const buildMessage = Templates.confirmationPayment(type, phone);
+            return buildMessage;
         }
         const buildMessage = Templates.generateSpecialitiesList(null, phone);
         return buildMessage;

@@ -11,6 +11,29 @@ export class Templates {
         }
     }
 
+    static generateTextAccount(message: string , phone: string) {
+      return {
+          messaging_product: "whatsapp",
+          to: phone,
+          type: "text",
+          text: {
+              body: 'Puede realizar el yape al 947308823 a nombre de DoctorQali SRL, por favor enviar el voucher de pago.',
+          }
+      }
+  }
+
+  static confirmationPayment(message: string , phone: string) {
+    return {
+        messaging_product: "whatsapp",
+        to: phone,
+        type: "text",
+        text: {
+            body: "¡Gracias por reservar con Dr(a) Leandro! A continuación los datos de tu cita"
+            
+        }
+    }
+}
+
     static generateSpecialitiesList(message: string ,phone:string) {
         return {
             messaging_product: "whatsapp",
