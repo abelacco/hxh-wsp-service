@@ -83,7 +83,7 @@ export class Templates {
         }
     }
 
-    static generateTwoOptions(message: string ,phone:string) {
+    static generatePaymentOptions(message: string ,phone:string) {
         return {
             messaging_product: "whatsapp",
             to: phone,

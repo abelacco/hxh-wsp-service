@@ -1,17 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { Templates } from '../helpers/templates/textTemplate';
+import { STEPS } from 'src/config/constants';
 
 @Injectable()
 export class BotResponseService {
 
      buildMessage(messageClient: any) {
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE", messageClient)
+        const step = messageClient.message.step;
         const phone = messageClient.message.phone;
         const type = messageClient.responseClient?.type;
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE TYPE", type)
         if(type && type === 'list_reply') {
             const buildMessage = Templates.generateTextResponseStep1(type, phone);
             return buildMessage;
+        }
+        else if(step && step === STEPS.INSERT_DATE) {
+            const buildMessage = Templates.generateInfoDoctor(type, phone);
+            return buildMessage;
+        }
+        else if(step && step === STEPS.SELECT_PAYMENT) {
+             const buildMessage = Templates.generatePaymentOptions(type, phone);
+             return buildMessage;
+   
         }
         const buildMessage = Templates.generateSpecialitiesList(null, phone);
         return buildMessage;

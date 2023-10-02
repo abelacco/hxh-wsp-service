@@ -56,6 +56,12 @@ export class MessageService {
               };
             }
           case STEPS.SELECT_SPECIALTY:
+            messageParsed.step = STEPS.INSERT_DATE;
+            const updatedMessage = await this.updateMessage(messageParsed);
+            return {
+              message: updatedMessage,
+              responseClient: validMessage.response
+            };
           }
       }
       // if(messageExist && messageExist.step !== STEPS.INIT){
