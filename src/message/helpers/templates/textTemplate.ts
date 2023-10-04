@@ -198,7 +198,7 @@ export class Templates {
                 header: {
                         type: "image",
                         image: {
-                            link: "https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427003/doctorPresentacion_czadtk.jpg"
+                            link: "https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427010/doctorPresentacion2_b9o0vw.jpg"
                         }
                 },
                 body: {
