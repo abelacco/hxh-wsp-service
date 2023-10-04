@@ -198,7 +198,7 @@ export class Templates {
                 header: {
                         type: "image",
                         image: {
-                            link: "https://scontent.fpiu3-1.fna.fbcdn.net/v/t1.6435-9/132003021_2674258026219396_2179362943986791906_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=a26aad&_nc_eui2=AeEh6oUQn2bf58BOrDFmmWL9ERX4MymkddsRFfgzKaR125lUMQSO-QQOIqrVGdLUyRM&_nc_ohc=DOAALdCDLNoAX8WlRxx&_nc_ht=scontent.fpiu3-1.fna&oh=00_AfB-uM4k78Me0SXWsCVm8TJgak0wAuLo0ck8ADKK2NrKoQ&oe=653FDDC5"
+                            link: "https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427003/doctorPresentacion_czadtk.jpg"
                         }
                 },
                 body: {
