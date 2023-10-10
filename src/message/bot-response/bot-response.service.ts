@@ -31,9 +31,11 @@ export class BotResponseService {
         else if(step && step === STEPS.SUBMIT_VOUCHER) {
             const buildMessage = Templates.confirmationPayment(type, phone);
             return buildMessage;
+        } else {
+            const buildMessage = Templates.generateSpecialitiesList(null, phone);
+            return buildMessage;
         }
-        const buildMessage = Templates.generateSpecialitiesList(null, phone);
         // const buildMessage = Templates.generateInfoDoctor(null, messageClient.phone);
-        return buildMessage;
+        // return buildMessage;
     }
 }
