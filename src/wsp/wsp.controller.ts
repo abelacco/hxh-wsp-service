@@ -20,6 +20,7 @@ export class WspController {
 
   @Post('/sendMessage')
   sendMessage(@Body() botResponse: any) {
+    console.log("CONTROLLER - Iniciando proceso de mensaje", botResponse)
     return this.wspService.sendMessages(botResponse);
   }
 
