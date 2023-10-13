@@ -27,7 +27,7 @@ export class MessageService {
 
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
-    if(validMessage.messageInfo.type === 'text' && validMessage.messageInfo.text === 'Reset' ){
+    if(validMessage.messageInfo.type === 'text' && (validMessage.messageInfo.text.body).toUpperCase() === 'RESET' ){
       messageParsed.step = STEPS.SELECT_SPECIALTY;
       const updatedMessage = await this.updateMessage(messageParsed);
     }
@@ -109,7 +109,6 @@ export class MessageService {
           
           
         }
-      // if(messageExist && messageExist.step !== STEPS.INIT){
       //   console.log("iniciando para los otros pasos")
       //   switch(messageExist.step){
       //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
