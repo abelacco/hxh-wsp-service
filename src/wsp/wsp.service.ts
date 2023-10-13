@@ -12,17 +12,12 @@ export class WspService {
 
   ) {}
   async proccessMessage(messageWSP: any) {
-    console.log(" WSPSERVICE PROCCESSMESSAGE INIT2")
-
-    // preguntar si es un mensaje ´valido
-    console.log(JSON.stringify(messageWSP));
+    
     const response = await this.msgService.proccessMessage(messageWSP);
-    console.log(" WSPSERVICE PROCCESSMESSAGE AFET RESPONSE3", response)
     if(!response){
       return false;
     }
     await this.sendMessages(response);
-    console.log(" WSPSERVICE PROCCESSMESSAGE AFTER SEBDMESSAGE4")
 
     return 'This action adds a new wsp';
   }
@@ -33,7 +28,6 @@ export class WspService {
     const hubMode = wspQueries['hub.mode'];
     const challenge = wspQueries['hub.challenge'];
     const verifyToken = wspQueries['hub.verify_token'];
-    console.log(myVerifyToken);
 
     if (hubMode === 'subscribe' && verifyToken === myVerifyToken) {
       return challenge;

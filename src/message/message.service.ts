@@ -21,10 +21,16 @@ export class MessageService {
     const validMessage = this.validateMessage(messageFromWSP);
     console.log("aqui",validMessage)
     if(!validMessage.valid){
-      console.log("no es valido");
       return false;
-    }
+    } 
+    
+
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
+
+    if(validMessage.messageInfo.type === 'text' && validMessage.messageInfo.text === 'Reset' ){
+      messageParsed.step = STEPS.SELECT_SPECIALTY;
+      const updatedMessage = await this.updateMessage(messageParsed);
+    }
 
     const messageExist = await this.findOne(messageParsed.phone);
     console.log("aqui messageExist",messageExist)
