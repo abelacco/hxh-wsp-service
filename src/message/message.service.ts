@@ -28,7 +28,7 @@ export class MessageService {
     const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
     if(validMessage.messageInfo.type === 'text' && (validMessage.messageInfo.text.body).toUpperCase() === 'RESET' ){
-      messageParsed.step = STEPS.SELECT_SPECIALTY;
+      messageParsed.step = STEPS.INIT;
       const updatedMessage = await this.updateMessage(messageParsed);
     }
 
