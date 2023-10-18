@@ -6,6 +6,8 @@ import { STEPS } from 'src/config/constants';
 export class BotResponseService {
 
      buildMessage(messageClient: any) {
+        // necesito recibir el mensaje(la info para llenar los template)
+        // switch para busacr el template que le correponde
         console.log("BOT RESPONSE SERVICE BUILD MESSAGE", messageClient)
         const step = messageClient.message.step;
         const phone = messageClient.message.phone;
