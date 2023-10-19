@@ -3,6 +3,7 @@ import { WspService } from './wsp.service';
 import { CreateWspDto } from './dto/create-wsp.dto';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { Response } from 'express';
+import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
 
 @Controller('wsp')
 export class WspController {
@@ -10,14 +11,14 @@ export class WspController {
 
   @Post('/webHook')
   @HttpCode(200)
-  async proccess(@Body() messageWSP: any) {
+  async proccess(@Body() messageWSP: WspReceivedMessageDto) {
     try {
       await this.wspService.proccessMessage(messageWSP);
     } catch (error) {
       throw new Error(error);
     }
 
-    return 'OK'
+    return 'OK';
   }
 
   @Get('/webHook')
@@ -27,9 +28,7 @@ export class WspController {
 
   @Post('/sendMessage')
   sendMessage(@Body() botResponse: any) {
-    console.log("CONTROLLER - Iniciando proceso de mensaje", botResponse)
+    console.log('CONTROLLER - Iniciando proceso de mensaje', botResponse);
     return this.wspService.sendMessages(botResponse);
   }
-
-
 }

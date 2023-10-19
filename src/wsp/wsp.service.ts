@@ -2,28 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { BotResponseService } from 'src/message/bot-response/bot-response.service';
 import { MessageService } from 'src/message/message.service';
+import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
+import { Message } from 'src/message/entities/message.entity';
 
 @Injectable()
 export class WspService {
-
   constructor(
     private botResponse: BotResponseService,
-    private msgService: MessageService
-
+    private msgService: MessageService,
   ) {}
-  async proccessMessage(messageWSP: any) {
-    
+  async proccessMessage(messageWSP: WspReceivedMessageDto) {
+    console.log('procesando mensaje');
     const response = await this.msgService.proccessMessage(messageWSP);
-    if(!response){
+    if (!response) {
       return false;
     }
-    await this.sendMessages(response);
+    console.log('ultimo step', response)
+    response.forEach((message) => this.sendMessages(message));
 
     return 'This action adds a new wsp';
   }
 
   validateWebHook(wspQueries: WspQueriesDto) {
-
     const myVerifyToken = process.env.MY_VERIFY_TOKEN;
     const hubMode = wspQueries['hub.mode'];
     const challenge = wspQueries['hub.challenge'];
@@ -32,30 +32,31 @@ export class WspService {
     if (hubMode === 'subscribe' && verifyToken === myVerifyToken) {
       return challenge;
     } else {
-      throw new Error('Failed validation. Make sure the validation tokens match.');
+      throw new Error(
+        'Failed validation. Make sure the validation tokens match.',
+      );
     }
   }
 
   async sendMessages(messageClient: any) {
-    const buildMessage = this.botResponse.buildMessage(messageClient);
+    // const buildMessage = this.botResponse.buildMessage(messageClient);
+    console.log('enviando mensaje, body: ', messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
-    console.log(buildMessage);
     try {
-        const response = await fetch(`https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`, {
-          method: "POST",
+      const response = await fetch(
+        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
+        {
+          method: 'POST',
           headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
           },
-          body: JSON.stringify(buildMessage),
-      });
-      console.log(response);
-      return response
-        
-      } catch (error) {
-        throw new Error(error);
-      }
+          body: JSON.stringify(messageClient),
+        },
+      );
+      return response;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
-
-
 }

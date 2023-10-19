@@ -1,20 +1,42 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { STEPS } from '../config/constants';
-import { info } from 'console';
+import { messageDestructurer } from './helpers/messageDestructurer';
+import { IParsedMessage } from './entities/parsedMessage';
+import { UpdateMessageDto } from './dto/update-message.dto';
+import { BotResponseService } from './bot-response/bot-response.service';
+import { WspReceivedMessageDto } from './dto/wspReceivedMessage.dto';
+import { receivedMessageValidator } from './helpers/receivedMessageValidator';
 @Injectable()
 export class MessageService {
-
+  doctors = [
+    {
+      name: 'Dr Experto',
+      phone: '598234813601',
+      speciality: 'Psicología',
+    },
+    {
+      name: 'Dr Bueno',
+      phone: '59894453201',
+      speciality: 'Psicología',
+    },
+    {
+      name: 'Dr Bueno',
+      phone: '59895631601',
+      speciality: 'Nutricionista',
+    },
+  ];
   constructor(
-    @InjectModel(Message.name) 
+    @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
-    
-    ) 
-  {}
+    private readonly messageBuilder: BotResponseService,
+  ) {}
 
   // async proccessMessage(messageFromWSP: any) {
 
@@ -23,8 +45,7 @@ export class MessageService {
   //   console.log("aqui",validMessage)
   //   if(!validMessage.valid){
   //     return false;
-  //   } 
-    
+  //   }
 
   //   const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
 
@@ -100,15 +121,13 @@ export class MessageService {
   //             return {
   //               message: updatedMessage,
   //               responseClient: validMessage.response
-  //             };               
+  //             };
   //           default:
   //             return {
   //               message: messageExist,
   //               responseClient: validMessage.response
   //             };
-  
-          
-          
+
   //       }
   //     //   console.log("iniciando para los otros pasos")
   //     //   switch(messageExist.step){
@@ -148,102 +167,164 @@ export class MessageService {
   //   catch(error){
   //     this.handleExceptions(error);
   //   }
-  
+
   // }
-    async proccessMessage(messageFromWSP: any) {
-
-    // validar si existe algun mensaje en la db 
-    const infoMessage = this.extracInfo(messageFromWSP);
-    const findMessage = this.findOrCreateMessage(infoMessage);
-  
-    // validar en que paso estamod 
-    switch(findMessage.step){
-          // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
-          case STEPS.INIT:
-            const validateStep = this.validateStepInfo(infoMessage);
-            // si es true 
-            // actualizar el paso 
-            // llamar servicio para crear mensaje
-           
-            default:
-              return {
-                // message: messageExist,
-                // responseClient: validMessage.response
-              };
-  
-          
-          
-        }
-      //   console.log("iniciando para los otros pasos")
-      //   switch(messageExist.step){
-      //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
-      //     case STEPS.INIT:
-      //       messageParsed.step = STEPS.SELECT_SPECIALTY;
-      //       const updateMessage = this.updateMessage(messageParsed);
-      //       console.log("aqui updateMessage",updateMessage)
-      //       return messageParsed;
-      //     case STEPS.INSERT_DATE:
-      //       break;
-      //     case STEPS.SELECT_DOCTOR:
-      //       break;
-      //     case STEPS.SELECT_PAYMENT:
-      //       break;
-      //     case STEPS.SUBMIT_VOUCHER:
-      //       break;
-      //     case STEPS.SEND_CONFIRMATION:
-      //       break;
-      //     default:
-      //       return messageParsed;
-      //   }
-      // }
-      // else{
-      //   if(messageExist){
-      //     return messageExist;
-      //   }
-      //   const newMessage = await this.create(messageParsed);
-      //   // responder con el mensaje de bienvenida
-      //   console.log("aquiiiiiiiiiiii",newMessage)
-      //   return newMessage;
-
-      // }
-      // return messageParsed;
-      
+  async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
+    // validar si existe algun mensaje en la db
+    const infoMessage = messageDestructurer(messageFromWSP);
+    const findMessage = await this.findOrCreateMessage(infoMessage);
+    console.log('pati', findMessage);
+    if (infoMessage.clientPhone !== findMessage.doctor) {
+      return await this.patientPath(infoMessage, findMessage);
+    } else {
+      console.log('doc');
+      return await this.doctorResponse(infoMessage, findMessage);
     }
-    catch(error){
-      // this.handleExceptions(error);
-    }
-  
   }
 
-  // validateStepInfo(infoMessage: any){
-  //       if(infoMessage.step === '0') {
-  //         infoMessage.type === 'text
-  //         infoMessage.response === 'Hola' || 'necesito ayuda'
-  //         return true
-  //       }
-  //       else if(infoMessage.step === '1') {
-  //         infoMessage.type === 'interactive
-  //         infoMessage.response === validarEnUN array de especialidades si existe la que escogieron
+  async patientPath(infoMessage: IParsedMessage, findMessage: Message) {
+    const validateStep = receivedMessageValidator(
+      findMessage.step,
+      infoMessage,
+    );
+    if (!validateStep) return false;
+    const messageId = findMessage.id;
+    // validar en que paso estamod
+    const buildedMessages = [];
+    switch (findMessage.step) {
+      // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
+      case STEPS.INIT:
+        findMessage.step = '1';
+        buildedMessages.push(
+          await this.updateAndBuildPatientMessage(findMessage),
+        );
+        break;
+      case STEPS.SELECT_SPECIALTY:
+        findMessage.step = '2';
+        findMessage.speciality = infoMessage.content.title;
+        buildedMessages.push(
+          await this.updateAndBuildPatientMessage(findMessage),
+        );
+        break;
+      case STEPS.INSERT_DATE:
+        findMessage.step = '3';
+        findMessage.date = infoMessage.content;
+        const doctors = await this.notifyDoctor(findMessage);
+        doctors.forEach((doc) => buildedMessages.push(doc));
+        await this.updateMessage(findMessage.id, findMessage);
+        break;
+      case STEPS.SELECT_DOCTOR:
+        findMessage.step = '4';
+        buildedMessages.push(
+          await this.updateAndBuildPatientMessage(findMessage),
+        );
+        break;
+      case STEPS.SELECT_PAYMENT:
+        findMessage.step = '5';
+        buildedMessages.push(
+          await this.updateAndBuildPatientMessage(findMessage),
+        );
+        break;
+      case STEPS.SUBMIT_VOUCHER:
+        findMessage.step = '6';
+        buildedMessages.push(
+          await this.updateAndBuildPatientMessage(findMessage),
+        );
+        break;
+      case STEPS.SEND_CONFIRMATION:
+        break;
+      default:
+        return false;
+    }
+    return buildedMessages;
+  }
+
+  async doctorResponse(infoMessage: IParsedMessage, message: Message) {
+    if (
+      message.step === STEPS.SELECT_PAYMENT &&
+      infoMessage.type === 'interactive' &&
+      infoMessage.content.title === 'Aceptar'
+    ) {
+      return [this.messageBuilder.buildMessage(message)];
+    }
+  }
+
+  async updateAndBuildPatientMessage(message: Message) {
+    await this.updateMessage(message.id, message);
+    return this.messageBuilder.buildMessage(message);
+  }
+
+  async notifyDoctor(message: Message) {
+    const doctors = [];
+    const doctor = this.doctors.filter(
+      (doc) => doc.speciality === message.speciality,
+    );
+    console.log('doctors', doctor, 'especialidad', message.speciality);
+    doctor.forEach((doc) => {
+      doctors.push(
+        this.messageBuilder.buildDoctorNotification(
+          doc.phone,
+          message.id,
+          message.clientName,
+        ),
+      );
+    });
+
+    return doctors;
+  }
+  //   console.log("iniciando para los otros pasos")
+  //   switch(messageExist.step){
+  //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
+  //     case STEPS.INIT:
+  //       messageParsed.step = STEPS.SELECT_SPECIALTY;
+  //       const updateMessage = this.updateMessage(messageParsed);
+  //       console.log("aqui updateMessage",updateMessage)
+  //       return messageParsed;
+  //     case STEPS.INSERT_DATE:
+  //       break;
+  //     case STEPS.SELECT_DOCTOR:
+  //       break;
+  //     case STEPS.SELECT_PAYMENT:
+  //       break;
+  //     case STEPS.SUBMIT_VOUCHER:
+  //       break;
+  //     case STEPS.SEND_CONFIRMATION:
+  //       break;
+  //     default:
+  //       return messageParsed;
+  //   }
+  // }
+  // else{
+  //   if(messageExist){
+  //     return messageExist;
+  //   }
+  //   const newMessage = await this.create(messageParsed);
+  //   // responder con el mensaje de bienvenida
+  //   console.log("aquiiiiiiiiiiii",newMessage)
+  //   return newMessage;
+
+  // }
+  // return messageParsed;
+
+  // }
+  // catch(error){
+  //   this.handleExceptions(error);
+  // }
+
   // }
 
   // extractInfo(message: any){
-  //     // nameCient   
+  //     // nameCient
   //     // phoneClient
   //     // type
   //     // contenido de mensaje(considerar id y textos)
   //     // return  {
-  //             // nameCient   
+  //             // nameCient
   //     // phoneClient
   //     // type
   //     // }
   // }
 
-  // findOrCreateMessage(phone: string){
-  //   // find
-  //   // create(conditional)
-  //   // return message
-  // }
-  
   // async createDirect(createMessageDto: CreateMessageDto) {
   //   try{
   //     const message = await this.messageModel.create(createMessageDto);
@@ -252,15 +333,38 @@ export class MessageService {
   //   catch(error){
   //     this.handleExceptions(error);
   //   }
-  // }
 
+  async findOrCreateMessage(receivedMessage: IParsedMessage): Promise<Message> {
+    // find
+    // create(conditional)
+    // return message
+    const getDoctor = this.doctors.filter(
+      (doc) => doc.phone === receivedMessage.clientPhone,
+    );
+    const message = await this.messageModel.findOne({
+      $or: [
+        { phone: receivedMessage.clientPhone },
+        { doctor: receivedMessage.clientPhone },
+      ],
+    });
+    if (!getDoctor.length && !message) {
+      const createMessage = new this.messageModel({
+        phone: receivedMessage.clientPhone,
+        clientName: receivedMessage.clientName,
+        doctor: '',
+      });
+      await createMessage.save();
+      return createMessage;
+    }
 
-    async create(createMessageDto: any) {
-    try{
+    return message;
+  }
+
+  async create(createMessageDto: any) {
+    try {
       const message = await this.messageModel.create(createMessageDto);
       return message;
-    }
-    catch(error){
+    } catch (error) {
       this.handleExceptions(error);
     }
   }
@@ -270,12 +374,16 @@ export class MessageService {
   }
 
   async findOne(phone: string) {
-    const message = await this.messageModel.findOne({phone: phone});
+    const message = await this.messageModel.findOne({ phone: phone });
     return message;
   }
 
-  async updateMessage(messageParsed: any) {
-    const updatedMessage = await this.messageModel.findOneAndUpdate({phone: messageParsed.phone}, messageParsed ,{ new: true });
+  async updateMessage(id: string, updateMessageDto: UpdateMessageDto) {
+    const updatedMessage = await this.messageModel.findByIdAndUpdate(
+      id,
+      updateMessageDto,
+      { new: true },
+    );
     return updatedMessage;
   }
 
@@ -283,38 +391,14 @@ export class MessageService {
     return `This action removes a #${id} message`;
   }
 
-  private handleExceptions(error: any){
-    if(error.code === 11000){
-      throw new BadRequestException('Doctor ya existe' + JSON.stringify(error.keyValue));
+  private handleExceptions(error: any) {
+    if (error.code === 11000) {
+      throw new BadRequestException(
+        'Doctor ya existe' + JSON.stringify(error.keyValue),
+      );
     }
-    throw new InternalServerErrorException('Error creando doctor' + JSON.stringify(error));
-  }
-
-  validateMessage(message: any){
-    const messageInfo = message?.entry[0]?.changes[0]?.value?.messages[0];
-    // console.log("messageInfo"), messageInfo;
-    if(messageInfo && messageInfo.from === 'me')
-    {
-      return {
-        messageInfo: messageInfo,
-        valid: false
-      };
-    }
-    return {
-      messageInfo: messageInfo,
-      valid: true,
-      type: messageInfo.type,
-      response: messageInfo.type === 'interactive' ? messageInfo.interactive : ''
-    };;
-  }
-
-  parseMesssageFromWSP(message: any){
-    const messageParsed = {
-      phone: message.from,
-      // message: message,
-      step: STEPS.INIT,
-      status: 'PENDING'
-    }
-    return messageParsed;
+    throw new InternalServerErrorException(
+      'Error creando doctor' + JSON.stringify(error),
+    );
   }
 }
