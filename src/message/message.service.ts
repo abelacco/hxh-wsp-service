@@ -18,12 +18,12 @@ export class MessageService {
   doctors = [
     {
       name: 'Dr Experto',
-      phone: '598234813601',
+      phone: '59895278124',
       speciality: 'Psicología',
     },
     {
       name: 'Dr Bueno',
-      phone: '59894453201',
+      phone: '59891813601',
       speciality: 'Psicología',
     },
     {
@@ -172,13 +172,18 @@ export class MessageService {
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
     // validar si existe algun mensaje en la db
     const infoMessage = messageDestructurer(messageFromWSP);
-    const findMessage = await this.findOrCreateMessage(infoMessage);
-    console.log('pati', findMessage);
-    if (infoMessage.clientPhone !== findMessage.doctor) {
+    if (
+      !(
+        infoMessage.content.title === 'Aceptar' &&
+        infoMessage.content.id?.split('-')[0] === 'accptcta'
+      )
+    ) {
+      const findMessage = await this.findOrCreateMessage(infoMessage);
       return await this.patientPath(infoMessage, findMessage);
     } else {
-      console.log('doc');
-      return await this.doctorResponse(infoMessage, findMessage);
+      const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
+      const res = await this.doctorResponse(infoMessage, getMessageResponded);
+      return res;
     }
   }
 
@@ -215,6 +220,7 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = '4';
+        findMessage.doctor = infoMessage.content.id
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
@@ -239,14 +245,16 @@ export class MessageService {
     return buildedMessages;
   }
 
-  async doctorResponse(infoMessage: IParsedMessage, message: Message) {
+  doctorResponse(infoMessage: IParsedMessage, message: Message) {
     if (
-      message.step === STEPS.SELECT_PAYMENT &&
+      message.step === STEPS.SELECT_DOCTOR &&
       infoMessage.type === 'interactive' &&
       infoMessage.content.title === 'Aceptar'
     ) {
+      message.doctor = infoMessage.clientPhone;
       return [this.messageBuilder.buildMessage(message)];
     }
+    return false;
   }
 
   async updateAndBuildPatientMessage(message: Message) {
@@ -259,7 +267,6 @@ export class MessageService {
     const doctor = this.doctors.filter(
       (doc) => doc.speciality === message.speciality,
     );
-    console.log('doctors', doctor, 'especialidad', message.speciality);
     doctor.forEach((doc) => {
       doctors.push(
         this.messageBuilder.buildDoctorNotification(
@@ -334,6 +341,11 @@ export class MessageService {
   //     this.handleExceptions(error);
   //   }
 
+  async findById(id: string): Promise<Message> {
+    const message = await this.messageModel.findById(id);
+    return message;
+  }
+
   async findOrCreateMessage(receivedMessage: IParsedMessage): Promise<Message> {
     // find
     // create(conditional)
@@ -342,12 +354,9 @@ export class MessageService {
       (doc) => doc.phone === receivedMessage.clientPhone,
     );
     const message = await this.messageModel.findOne({
-      $or: [
-        { phone: receivedMessage.clientPhone },
-        { doctor: receivedMessage.clientPhone },
-      ],
+      phone: receivedMessage.clientPhone,
     });
-    if (!getDoctor.length && !message) {
+    if (!message) {
       const createMessage = new this.messageModel({
         phone: receivedMessage.clientPhone,
         clientName: receivedMessage.clientName,

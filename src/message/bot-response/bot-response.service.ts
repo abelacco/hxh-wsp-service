@@ -17,7 +17,7 @@ export class BotResponseService {
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
       case STEPS.SELECT_DOCTOR:
-        return Templates.generateInfoDoctor(phone);
+        return Templates.generateInfoDoctor(phone, messageClient.doctor);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:

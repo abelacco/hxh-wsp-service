@@ -40,7 +40,7 @@ export class Templates {
             {
               type: 'reply',
               reply: {
-                id: messageId,
+                id: `accptcta-${messageId}`,
                 title: 'Aceptar',
               },
             },
@@ -220,7 +220,7 @@ export class Templates {
     };
   }
 
-  static generateInfoDoctor(phone: string) {
+  static generateInfoDoctor(phone: string, docNumber: string) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -241,7 +241,7 @@ export class Templates {
             {
               type: 'reply',
               reply: {
-                id: 'UNIQUE_BUTTON_ID_1',
+                id: docNumber,
                 title: 'Reservar cita',
               },
             },
