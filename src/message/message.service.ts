@@ -159,7 +159,7 @@ export class MessageService {
     const infoMessage = messageDestructurer(messageFromWSP);
     if (!DoctorMessageValidator(infoMessage)) {
       const findMessage = await this.findOrCreateMessage(infoMessage);
-      return await this.patientPath(infoMes;sage, findMessage)
+      return await this.patientPath(infoMessage, findMessage);
     } else {
       const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
       return this.doctorResponse(infoMessage, getMessageResponded);
