@@ -5,13 +5,14 @@ import { BotResponseService } from 'src/message/bot-response/bot-response.servic
 import { MessageService } from 'src/message/message.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from 'src/message/entities/message.entity';
+import { DoctorService } from 'src/doctor/doctor.service';
 
 @Module({
   controllers: [WspController],
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }])
   ],
-  providers: [WspService, BotResponseService, MessageService],
+  providers: [WspService, BotResponseService, MessageService, DoctorService],
   exports: [WspService]
 })
 export class WspModule {}
