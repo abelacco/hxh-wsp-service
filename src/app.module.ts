@@ -7,6 +7,7 @@ import { EnvConfiguration } from './config/app.config';
 import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
+import { DoctorModule } from './doctor/doctor.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MessageModule } from './message/message.module';
     MongooseModule.forRoot(process.env.MONGODB),
     WspModule,
     MessageModule,
+    DoctorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

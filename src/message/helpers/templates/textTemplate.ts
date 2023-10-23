@@ -1,231 +1,260 @@
 export class Templates {
-
-     static generateTextResponseStep1(message: string , phone: string) {
-        return {
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "text",
-            text: {
-                body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: 01-10-23 10:00 am',
-            }
-        }
-    }
-
-    static generateTextAccount(message: string , phone: string) {
-      return {
-          messaging_product: "whatsapp",
-          to: phone,
-          type: "text",
-          text: {
-              body: 'Puede realizar el yape al 947308823 a nombre de DoctorQali SRL, por favor enviar el voucher de pago.',
-          }
-      }
+  static dateStepTemplateMessage(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: 01-10-23 10:00 am',
+      },
+    };
   }
 
-  static confirmationPayment(message: string , phone: string) {
+  static defaultMessageTemplate(phone: string) {
     return {
-        messaging_product: "whatsapp",
-        to: phone,
-        type: "text",
-        text: {
-            body: "¡Gracias por reservar con Dr(a) Leandro! A continuación los datos de tu cita"
-            
-        }
-    }
-}
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'No es lo que esperaba, vuelve a intentar',
+      },
+    };
+  }
 
-    static generateSpecialitiesList(message: string ,phone:string) {
-        return {
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "interactive",
-            interactive: {
-                "type": "list",
-                "header": {
-                  "type": "text",
-                  "text": "Lista de especialidades"
-                },
-                "body": {
-                  "text": "Bienvenido a DoctorQali, te ayudaremos a encontrar el especialista que necesitas.",
-                },
-                "footer": {
-                  "text": "DoctorQali te cuida"
-                },
-                "action": {
-                  "button": "Ver especialidades",
-                  "sections": [
-                    {
-                      "title": "Especialidades",
-                      "rows": [
-                        {
-                          "id": "1",
-                          "title": "Nutrición",
-                        //   "description": "SECTION_1_ROW_1_DESCRIPTION"
-                        },
-                        {
-                          "id": "2",
-                          "title": "Psicología",
-                        //   "description": "SECTION_1_ROW_2_DESCRIPTION"
-                        },
-                        {
-                            "id": "3",
-                            "title": "Medicina General",
-                            // "description": "SECTION_1_ROW_2_DESCRIPTION"
-                        },
-                        {
-                            "id": "4",
-                            "title": "Cardiología",
-                            // "description": "SECTION_1_ROW_2_DESCRIPTION"
- 
-                        },
-                        {
-                          "id": "5",
-                          "title": "Ginecología",
-                        },
-                        
-                      ]
-                    },
-                    // {
-                    //   "title": "SECTION_2_TITLE",
-                    //   "rows": [
-                    //     {
-                    //       "id": "SECTION_2_ROW_1_ID",
-                    //       "title": "SECTION_2_ROW_1_TITLE",
-                    //       "description": "SECTION_2_ROW_1_DESCRIPTION"
-                    //     },
-                    //     {
-                    //       "id": "SECTION_2_ROW_2_ID",
-                    //       "title": "SECTION_2_ROW_2_TITLE",
-                    //       "description": "SECTION_2_ROW_2_DESCRIPTION"
-                    //     }
-                    //   ]
-                    // }
-                  ]
-                }
-            } 
-        }
-    }
+  static doctorNotification(
+    doctorPhone: string,
+    messageId: string,
+    patientName: string,
+  ) {
+    return {
+      messaging_product: 'whatsapp',
+      to: doctorPhone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `${patientName} requiere de una consulta`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: `accptcta-${messageId}`,
+                title: 'Aceptar',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
 
-    static generatePaymentOptions(message: string ,phone:string) {
-        return {
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "interactive",
-            interactive: {
-                type: "button",
-                body: {
-                  "text": "Escoger medio de pago",
-                },
-                action: {
-                  buttons: [
-                    {
-                      type: "reply",
-                      reply: {
-                        id: "UNIQUE_BUTTON_ID_1",
-                        title: "Yape/Plin"
-                      }
-                    },
-                    {
-                      type: "reply",
-                      reply: {
-                        id: "UNIQUE_BUTTON_ID_2",
-                        title: "Tarjeta"
-                      }
-                    },
-                    // {
-                    //     "type": "reply",
-                    //     "reply": {
-                    //       "id": "UNIQUE_BUTTON_ID_3",
-                    //       "title": "La próxima semana"
-                    //     }
-                    //   }
-                  ]
-                }
-              }
-           
-            
-        }
-    }
+  static generateTextAccount(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Puede realizar el yape al 947308823 a nombre de DoctorQali SRL, por favor enviar el voucher de pago.',
+      },
+    };
+  }
 
-    static generateThreeOptions(message: string ,phone:string) {
-        return {
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "interactive",
-            interactive: {
-                type: "button",
-                body: {
-                  "text": "¿Cúando te gustaría agendar tu cita?",
-                },
-                action: {
-                  buttons: [
-                    {
-                      type: "reply",
-                      reply: {
-                        id: "UNIQUE_BUTTON_ID_1",
-                        title: "Hoy"
-                      }
-                    },
-                    {
-                      type: "reply",
-                      reply: {
-                        id: "UNIQUE_BUTTON_ID_2",
-                        title: "Esta semana"
-                      }
-                    },
-                    {
-                        "type": "reply",
-                        "reply": {
-                          "id": "UNIQUE_BUTTON_ID_3",
-                          "title": "La próxima semana"
-                        }
-                      }
-                  ]
-                }
-              }
-           
-            
-        }
-    }
+  static confirmationPayment(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: '¡Gracias por reservar con Dr(a) Leandro! A continuación los datos de tu cita',
+      },
+    };
+  }
 
-    static generateInfoDoctor(message: string ,phone:string) {
-        return {
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "interactive",
-            interactive: {
-                type: "button",
-                header: {
-                        type: "image",
-                        image: {
-                            link: "https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427010/doctorPresentacion2_b9o0vw.jpg"
-                        }
+  static generateSpecialitiesList(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'list',
+        header: {
+          type: 'text',
+          text: 'Lista de especialidades',
+        },
+        body: {
+          text: 'Bienvenido a DoctorQali, te ayudaremos a encontrar el especialista que necesitas.',
+        },
+        footer: {
+          text: 'DoctorQali te cuida',
+        },
+        action: {
+          button: 'Ver especialidades',
+          sections: [
+            {
+              title: 'Especialidades',
+              rows: [
+                {
+                  id: '1',
+                  title: 'Nutrición',
+                  //   "description": "SECTION_1_ROW_1_DESCRIPTION"
                 },
-                body: {
-                  "text": "El turno dispoble es a las 10:00 am del día de hoy, el costo de la consuta es de S/ 50.00 soles.",
+                {
+                  id: '2',
+                  title: 'Psicología',
+                  //   "description": "SECTION_1_ROW_2_DESCRIPTION"
                 },
-                action: {
-                  buttons: [
-                    {
-                      type: "reply",
-                      reply: {
-                        id: "UNIQUE_BUTTON_ID_1",
-                        title: "Reservar cita"
-                      }
-                    },
-                    // {
-                    //   type: "reply",
-                    //   reply: {
-                    //     id: "UNIQUE_BUTTON_ID_2",
-                    //     title: "Esta semana"
-                    //   }
-                    // }
-                  ]
-                }
-              }
-           
-            
-        }
-    }
+                {
+                  id: '3',
+                  title: 'Medicina General',
+                  // "description": "SECTION_1_ROW_2_DESCRIPTION"
+                },
+                {
+                  id: '4',
+                  title: 'Cardiología',
+                  // "description": "SECTION_1_ROW_2_DESCRIPTION"
+                },
+                {
+                  id: '5',
+                  title: 'Ginecología',
+                },
+              ],
+            },
+            // {
+            //   "title": "SECTION_2_TITLE",
+            //   "rows": [
+            //     {
+            //       "id": "SECTION_2_ROW_1_ID",
+            //       "title": "SECTION_2_ROW_1_TITLE",
+            //       "description": "SECTION_2_ROW_1_DESCRIPTION"
+            //     },
+            //     {
+            //       "id": "SECTION_2_ROW_2_ID",
+            //       "title": "SECTION_2_ROW_2_TITLE",
+            //       "description": "SECTION_2_ROW_2_DESCRIPTION"
+            //     }
+            //   ]
+            // }
+          ],
+        },
+      },
+    };
+  }
 
+  static generatePaymentOptions(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: 'Escoger medio de pago',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'UNIQUE_BUTTON_ID_1',
+                title: 'Yape/Plin',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'UNIQUE_BUTTON_ID_2',
+                title: 'Tarjeta',
+              },
+            },
+            // {
+            //     "type": "reply",
+            //     "reply": {
+            //       "id": "UNIQUE_BUTTON_ID_3",
+            //       "title": "La próxima semana"
+            //     }
+            //   }
+          ],
+        },
+      },
+    };
+  }
+
+  static generateThreeOptions(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: '¿Cúando te gustaría agendar tu cita?',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'UNIQUE_BUTTON_ID_1',
+                title: 'Hoy',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'UNIQUE_BUTTON_ID_2',
+                title: 'Esta semana',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'UNIQUE_BUTTON_ID_3',
+                title: 'La próxima semana',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  static generateInfoDoctor(phone: string, docNumber: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        header: {
+          type: 'image',
+          image: {
+            link: 'https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427010/doctorPresentacion2_b9o0vw.jpg',
+          },
+        },
+        body: {
+          text: 'El turno dispoble es a las 10:00 am del día de hoy, el costo de la consuta es de S/ 50.00 soles.',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: docNumber,
+                title: 'Reservar cita',
+              },
+            },
+            // {
+            //   type: "reply",
+            //   reply: {
+            //     id: "UNIQUE_BUTTON_ID_2",
+            //     title: "Esta semana"
+            //   }
+            // }
+          ],
+        },
+      },
+    };
+  }
 }

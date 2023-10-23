@@ -3,6 +3,7 @@ import { WspService } from './wsp.service';
 import { CreateWspDto } from './dto/create-wsp.dto';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { Response } from 'express';
+import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
 
 @Controller('wsp')
 export class WspController {
@@ -10,17 +11,14 @@ export class WspController {
 
   @Post('/webHook')
   @HttpCode(200)
-  async proccess(@Body() messageWSP: any) {
-    console.log(" CONTROLLER - Iniciando proceso de mensaje")
+  async proccess(@Body() messageWSP: WspReceivedMessageDto) {
     try {
       await this.wspService.proccessMessage(messageWSP);
     } catch (error) {
-      console.error("Error processing message:", error);
-      // Puedes manejar errores internos aquí si es necesario
+      throw new Error(error);
     }
-    // Siempre devolvemos un 200 OK, como especifica la documentación
-    // return res.status(200).send();
-    return 'OK'
+
+    return 'OK';
   }
 
   @Get('/webHook')
@@ -30,9 +28,7 @@ export class WspController {
 
   @Post('/sendMessage')
   sendMessage(@Body() botResponse: any) {
-    console.log("CONTROLLER - Iniciando proceso de mensaje", botResponse)
+    console.log('CONTROLLER - Iniciando proceso de mensaje', botResponse);
     return this.wspService.sendMessages(botResponse);
   }
-
-
 }
