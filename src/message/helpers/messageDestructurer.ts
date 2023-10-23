@@ -1,5 +1,6 @@
 import { WspReceivedMessageDto } from "src/message/dto/wspReceivedMessage.dto";
 import { IParsedMessage } from "../entities/parsedMessage";
+import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "./constants";
 
 export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     const parsedMessage: IParsedMessage = {
@@ -8,6 +9,8 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
         type: '',
         content: {}
     }
+    const {BUTTON_REPLY, LIST_REPLY} = INTERACTIVE_REPLIES_TYPES
+    const {TEXT, INTERACTIVE} = WSP_MESSAGE_TYPES
     const contact = messageDto.entry[0].changes[0].value.contacts[0];
     const message = messageDto.entry[0].changes[0].value.messages[0];
 
@@ -16,23 +19,23 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     parsedMessage.type = message.type;
 
     switch (message.type) {
-      case 'interactive':
+      case INTERACTIVE:
         const interactiveType = message.interactive.type;
-        if (interactiveType === 'button_reply') {
+        if (interactiveType === BUTTON_REPLY) {
           parsedMessage.content = {
-            title: message.interactive['button_reply'].title,
-            id: message.interactive['button_reply'].id,
+            title: message.interactive[BUTTON_REPLY].title,
+            id: message.interactive[BUTTON_REPLY].id,
           };
           break;
-        } else if (interactiveType === 'list_reply') {
+        } else if (interactiveType === LIST_REPLY) {
           parsedMessage.content = {
-            title: message.interactive["list_reply"].title,
-            id: message.interactive["list_reply"].id,
-            description: message.interactive["list_reply"].description,
+            title: message.interactive[LIST_REPLY].title,
+            id: message.interactive[LIST_REPLY].id,
+            description: message.interactive[LIST_REPLY].description,
           };
         }
         break;
-      case 'text':
+      case TEXT:
         parsedMessage.content = message.text.body;
         break;
       default:

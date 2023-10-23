@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { WspQueriesDto } from './dto/queries-webhook';
-import { BotResponseService } from 'src/message/bot-response/bot-response.service';
 import { MessageService } from 'src/message/message.service';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
-import { Message } from 'src/message/entities/message.entity';
 
 @Injectable()
 export class WspService {
   constructor(
-    private botResponse: BotResponseService,
     private msgService: MessageService,
   ) {}
   async proccessMessage(messageWSP: WspReceivedMessageDto) {

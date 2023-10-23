@@ -12,30 +12,15 @@ import { IParsedMessage } from './entities/parsedMessage';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
 import { WspReceivedMessageDto } from './dto/wspReceivedMessage.dto';
-import { receivedMessageValidator } from './helpers/receivedMessageValidator';
+import { DoctorMessageValidator, receivedMessageValidator } from './helpers/receivedMessageValidator';
+import { DoctorService } from 'src/doctor/doctor.service';
 @Injectable()
 export class MessageService {
-  doctors = [
-    {
-      name: 'Dr Experto',
-      phone: '59895278124',
-      speciality: 'Psicología',
-    },
-    {
-      name: 'Dr Bueno',
-      phone: '59891813601',
-      speciality: 'Psicología',
-    },
-    {
-      name: 'Dr Bueno',
-      phone: '59895631601',
-      speciality: 'Nutricionista',
-    },
-  ];
   constructor(
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
+    private readonly doctorService: DoctorService
   ) {}
 
   // async proccessMessage(messageFromWSP: any) {
@@ -172,18 +157,12 @@ export class MessageService {
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
     // validar si existe algun mensaje en la db
     const infoMessage = messageDestructurer(messageFromWSP);
-    if (
-      !(
-        infoMessage.content.title === 'Aceptar' &&
-        infoMessage.content.id?.split('-')[0] === 'accptcta'
-      )
-    ) {
+    if (!DoctorMessageValidator(infoMessage)) {
       const findMessage = await this.findOrCreateMessage(infoMessage);
       return await this.patientPath(infoMessage, findMessage);
     } else {
       const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
-      const res = await this.doctorResponse(infoMessage, getMessageResponded);
-      return res;
+      return this.doctorResponse(infoMessage, getMessageResponded);
     }
   }
 
@@ -193,46 +172,45 @@ export class MessageService {
       infoMessage,
     );
     if (!validateStep) return false;
-    const messageId = findMessage.id;
     // validar en que paso estamod
     const buildedMessages = [];
     switch (findMessage.step) {
       // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
       case STEPS.INIT:
-        findMessage.step = '1';
+        findMessage.step = STEPS.SELECT_SPECIALTY;
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
         break;
       case STEPS.SELECT_SPECIALTY:
-        findMessage.step = '2';
+        findMessage.step = STEPS.INSERT_DATE;
         findMessage.speciality = infoMessage.content.title;
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
         break;
       case STEPS.INSERT_DATE:
-        findMessage.step = '3';
+        findMessage.step = STEPS.SELECT_DOCTOR;
         findMessage.date = infoMessage.content;
-        const doctors = await this.notifyDoctor(findMessage);
+        const doctors = await this.doctorService.notifyDoctor(findMessage);
         doctors.forEach((doc) => buildedMessages.push(doc));
         await this.updateMessage(findMessage.id, findMessage);
         break;
       case STEPS.SELECT_DOCTOR:
-        findMessage.step = '4';
+        findMessage.step = STEPS.SELECT_PAYMENT;
         findMessage.doctor = infoMessage.content.id
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
         break;
       case STEPS.SELECT_PAYMENT:
-        findMessage.step = '5';
+        findMessage.step = STEPS.SUBMIT_VOUCHER;
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
         break;
       case STEPS.SUBMIT_VOUCHER:
-        findMessage.step = '6';
+        findMessage.step = STEPS.SEND_CONFIRMATION;
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
@@ -247,9 +225,7 @@ export class MessageService {
 
   doctorResponse(infoMessage: IParsedMessage, message: Message) {
     if (
-      message.step === STEPS.SELECT_DOCTOR &&
-      infoMessage.type === 'interactive' &&
-      infoMessage.content.title === 'Aceptar'
+      message.step === STEPS.SELECT_DOCTOR
     ) {
       message.doctor = infoMessage.clientPhone;
       return [this.messageBuilder.buildMessage(message)];
@@ -262,23 +238,7 @@ export class MessageService {
     return this.messageBuilder.buildMessage(message);
   }
 
-  async notifyDoctor(message: Message) {
-    const doctors = [];
-    const doctor = this.doctors.filter(
-      (doc) => doc.speciality === message.speciality,
-    );
-    doctor.forEach((doc) => {
-      doctors.push(
-        this.messageBuilder.buildDoctorNotification(
-          doc.phone,
-          message.id,
-          message.clientName,
-        ),
-      );
-    });
-
-    return doctors;
-  }
+  
   //   console.log("iniciando para los otros pasos")
   //   switch(messageExist.step){
   //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
@@ -350,9 +310,6 @@ export class MessageService {
     // find
     // create(conditional)
     // return message
-    const getDoctor = this.doctors.filter(
-      (doc) => doc.phone === receivedMessage.clientPhone,
-    );
     const message = await this.messageModel.findOne({
       phone: receivedMessage.clientPhone,
     });
