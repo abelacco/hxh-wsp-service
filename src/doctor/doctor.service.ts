@@ -35,7 +35,7 @@ export class DoctorService {
         );
       });
     });
-
+    console.log('doctors', doctors)
     return doctors;
   }
 }
