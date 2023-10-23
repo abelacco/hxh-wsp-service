@@ -19,23 +19,45 @@ export class DoctorService {
 
   async notifyDoctor(message: Message) {
     const doctors = [];
+    
 
-    fetch(
-      `${process.env.API_SERVICE}/doctor?speciality=${message.speciality}`,
-    ).then(async (res) => {
+    // fetch(
+    //   `${process.env.API_SERVICE}/doctor?speciality=${message.speciality}`,
+    // ).then(async (res) => {
+    //   const getDoctors = await res.json();
+    //   console.log(getDoctors)
+    //   getDoctors.forEach((doc) => {
+    //     doctors.push(
+    //       this.messageBuilder.buildDoctorNotification(
+    //         doc.phone,
+    //         message.id,
+    //         message.clientName,
+    //       ),
+    //     );
+    //     console.log('doctor', doctors)
+    //   });
+    // });
+    // return doctors;
+
+    try {
+      const res = await fetch(`${process.env.API_SERVICE}/doctor?speciality=${message.speciality}`);
       const getDoctors = await res.json();
-      console.log(getDoctors)
-      getDoctors.forEach((doc) => {
-        doctors.push(
-          this.messageBuilder.buildDoctorNotification(
-            doc.phone,
-            message.id,
-            message.clientName,
-          ),
+      
+      for (const doc of getDoctors) {
+        const notification = this.messageBuilder.buildDoctorNotification(
+          doc.phone,
+          message.id,
+          message.clientName,
         );
-      });
-    });
-    console.log('doctor', doctors)
-    return doctors;
+        doctors.push(notification);
+      }
+  
+      console.log('doctor', doctors);
+      return doctors;
+    } catch (error) {
+      console.error('Error notifying doctor:', error);
+      throw error;
+    }
+    
   }
 }

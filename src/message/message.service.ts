@@ -193,6 +193,7 @@ export class MessageService {
         findMessage.step = STEPS.SELECT_DOCTOR;
         findMessage.date = infoMessage.content;
         const doctors = await this.doctorService.notifyDoctor(findMessage);
+        console.log('doctor', doctors)
         doctors.forEach((doc) => buildedMessages.push(doc));
         await this.updateMessage(findMessage.id, findMessage);
         break;
