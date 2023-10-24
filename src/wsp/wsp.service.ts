@@ -14,7 +14,6 @@ export class WspService {
     if (!response) {
       return false;
     }
-    console.log('ultimo step', response)
     response.forEach((message) => this.sendMessages(message));
 
     return 'This action adds a new wsp';

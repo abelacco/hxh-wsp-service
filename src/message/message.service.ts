@@ -23,159 +23,49 @@ export class MessageService {
     private readonly doctorService: DoctorService
   ) {}
 
-  // async proccessMessage(messageFromWSP: any) {
-
-  //   // validar si es un mensaje valido
-  //   const validMessage = this.validateMessage(messageFromWSP);
-  //   console.log("aqui",validMessage)
-  //   if(!validMessage.valid){
-  //     return false;
-  //   }
-
-  //   const messageParsed = this.parseMesssageFromWSP(validMessage.messageInfo);
-
-  //   if(validMessage.messageInfo.type === 'text' && (validMessage.messageInfo.text.body).toUpperCase() === 'RESET' ){
-  //     messageParsed.step = STEPS.INIT;
-  //     const updatedMessage = await this.updateMessage(messageParsed);
-  //   }
-
-  //   const messageExist = await this.findOne(messageParsed.phone);
-  //   console.log("aqui messageExist",messageExist)
-  //   try{
-  //     if(!messageExist){
-  //        // Si el mensaje no existe en la base de datos, lo creas con el paso STEPS.INIT
-  //        console.log("Mensaje no existe")
-  //        const newMessage = await this.create(messageParsed);
-  //        console.log("Mensaje creado:");
-  //        return {
-  //         message: newMessage,
-  //         responseClient: validMessage.response
-  //       }
-  //     } else {
-  //       let updatedMessage:any;
-  //       switch(messageExist.step){
-  //         // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
-  //         case STEPS.INIT:
-  //           console.log("Entre al switch INIT")
-
-  //           if (validMessage.type === 'interactive') {
-  //             messageParsed.step = STEPS.SELECT_SPECIALTY;
-  //             const updatedMessage = await this.updateMessage(messageParsed);
-  //             console.log("Mensaje actualizado:", updatedMessage);
-  //             return {
-  //               message: updatedMessage,
-  //               responseClient: validMessage.response
-  //             }
-  //           } else {
-  //             return {
-  //               message: messageExist,
-  //               responseClient: validMessage.response
-  //             };
-  //           }
-  //         case STEPS.SELECT_SPECIALTY:
-  //           messageParsed.step = STEPS.INSERT_DATE;
-  //           updatedMessage = await this.updateMessage(messageParsed);
-  //           return {
-  //             message: updatedMessage,
-  //             responseClient: validMessage.response
-  //           };
-  //           case STEPS.INSERT_DATE:
-  //             messageParsed.step = STEPS.SELECT_DOCTOR;
-  //             updatedMessage = await this.updateMessage(messageParsed);
-  //             return {
-  //               message: updatedMessage,
-  //               responseClient: validMessage.response
-  //             };
-  //           case STEPS.SELECT_DOCTOR:
-  //             messageParsed.step = STEPS.SELECT_PAYMENT;
-  //             updatedMessage = await this.updateMessage(messageParsed);
-  //             return {
-  //               message: updatedMessage,
-  //               responseClient: validMessage.response
-  //             };
-  //           case STEPS.SELECT_PAYMENT:
-  //             messageParsed.step = STEPS.SUBMIT_VOUCHER;
-  //             updatedMessage = await this.updateMessage(messageParsed);
-  //             return {
-  //               message: updatedMessage,
-  //               responseClient: validMessage.response
-  //             };
-  //           case STEPS.SUBMIT_VOUCHER:
-  //             messageParsed.step = STEPS.SEND_CONFIRMATION;
-  //             updatedMessage = await this.updateMessage(messageParsed);
-  //             return {
-  //               message: updatedMessage,
-  //               responseClient: validMessage.response
-  //             };
-  //           default:
-  //             return {
-  //               message: messageExist,
-  //               responseClient: validMessage.response
-  //             };
-
-  //       }
-  //     //   console.log("iniciando para los otros pasos")
-  //     //   switch(messageExist.step){
-  //     //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
-  //     //     case STEPS.INIT:
-  //     //       messageParsed.step = STEPS.SELECT_SPECIALTY;
-  //     //       const updateMessage = this.updateMessage(messageParsed);
-  //     //       console.log("aqui updateMessage",updateMessage)
-  //     //       return messageParsed;
-  //     //     case STEPS.INSERT_DATE:
-  //     //       break;
-  //     //     case STEPS.SELECT_DOCTOR:
-  //     //       break;
-  //     //     case STEPS.SELECT_PAYMENT:
-  //     //       break;
-  //     //     case STEPS.SUBMIT_VOUCHER:
-  //     //       break;
-  //     //     case STEPS.SEND_CONFIRMATION:
-  //     //       break;
-  //     //     default:
-  //     //       return messageParsed;
-  //     //   }
-  //     // }
-  //     // else{
-  //     //   if(messageExist){
-  //     //     return messageExist;
-  //     //   }
-  //     //   const newMessage = await this.create(messageParsed);
-  //     //   // responder con el mensaje de bienvenida
-  //     //   console.log("aquiiiiiiiiiiii",newMessage)
-  //     //   return newMessage;
-
-  //     // }
-  //     // return messageParsed;
-  //     }
-  //   }
-  //   catch(error){
-  //     this.handleExceptions(error);
-  //   }
-
-  // }
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
-    // validar si existe algun mensaje en la db
+    /*
+      Get required info of the received message
+    */
     const infoMessage = messageDestructurer(messageFromWSP);
+
+    /*
+      Verify if it's a doctor response or
+      a patient message
+    */
     if (!DoctorMessageValidator(infoMessage)) {
       const findMessage = await this.findOrCreateMessage(infoMessage);
-      return await this.patientPath(infoMessage, findMessage);
+      return await this.patientMessageHandler(infoMessage, findMessage);
     } else {
       const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
-      return this.doctorResponse(infoMessage, getMessageResponded);
+      return this.doctorMessageHandler(infoMessage, getMessageResponded);
     }
   }
 
-  async patientPath(infoMessage: IParsedMessage, findMessage: Message) {
+  async patientMessageHandler(infoMessage: IParsedMessage, findMessage: Message) {
+    const buildedMessages = [];
+    /*
+      Reset the information of the patient message
+    */
+    if(infoMessage.type === 'text' && (infoMessage.content).toUpperCase() === 'RESET'){
+      findMessage.step = STEPS.SELECT_SPECIALTY;
+      findMessage.speciality = '';
+      findMessage.doctor = '';
+      findMessage.date = null;
+      buildedMessages.push(await this.updateAndBuildPatientMessage(findMessage));
+      return buildedMessages;
+    }
+
     const validateStep = receivedMessageValidator(
       findMessage.step,
       infoMessage,
     );
     if (!validateStep) return false;
-    // validar en que paso estamod
-    const buildedMessages = [];
     switch (findMessage.step) {
-      // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
+      /*
+        Handle what message template would be returned
+        according to the step
+      */
       case STEPS.INIT:
         findMessage.step = STEPS.SELECT_SPECIALTY;
         buildedMessages.push(
@@ -192,8 +82,7 @@ export class MessageService {
       case STEPS.INSERT_DATE:
         findMessage.step = STEPS.SELECT_DOCTOR;
         findMessage.date = infoMessage.content;
-        const doctors = await this.doctorService.notifyDoctor(findMessage);
-        console.log('doctor', doctors)
+        const doctors = await this.doctorService.buildDoctorNotification(findMessage);
         doctors.forEach((doc) => buildedMessages.push(doc));
         await this.updateMessage(findMessage.id, findMessage);
         break;
@@ -224,7 +113,7 @@ export class MessageService {
     return buildedMessages;
   }
 
-  doctorResponse(infoMessage: IParsedMessage, message: Message) {
+  doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
     if (
       message.step === STEPS.SELECT_DOCTOR
     ) {
@@ -308,9 +197,10 @@ export class MessageService {
   }
 
   async findOrCreateMessage(receivedMessage: IParsedMessage): Promise<Message> {
-    // find
-    // create(conditional)
-    // return message
+    /*
+      Find or create a new message
+      Receive a parsed message
+    */
     const message = await this.messageModel.findOne({
       phone: receivedMessage.clientPhone,
     });
