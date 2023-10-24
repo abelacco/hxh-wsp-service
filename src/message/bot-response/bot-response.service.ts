@@ -35,11 +35,11 @@ export class BotResponseService {
   }
 
 
-  buildDoctorNotification(doctorPhone: string, messageId: string, patientName: string) {
+  buildDoctorNotification(doctorPhone: string, messageId: string, patientName: string, date: string) {
     /*
       Build a doctor response template
     */
-    return Templates.doctorNotification(doctorPhone, messageId, patientName);
+    return Templates.doctorNotification(doctorPhone, messageId, patientName, date);
   
   }
 }
