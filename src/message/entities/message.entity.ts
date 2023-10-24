@@ -31,7 +31,7 @@ export class Message extends Document {
         // required: true,
         // index: true
     })
-    date: Date;
+    date: string;
 
     @Prop({
         // required: true,
@@ -59,6 +59,12 @@ export class Message extends Document {
         // index: true
     })
     imageVoucher: string;
+
+    @Prop({
+        // required: true,
+        // index: true
+    })
+    fee: number;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

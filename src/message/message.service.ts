@@ -162,7 +162,7 @@ export class MessageService {
       return await this.patientPath(infoMessage, findMessage);
     } else {
       const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
-      return this.doctorResponse(infoMessage, getMessageResponded);
+      return await this.doctorResponse(infoMessage, getMessageResponded);
     }
   }
 
@@ -194,12 +194,16 @@ export class MessageService {
         findMessage.date = infoMessage.content;
         const doctors = await this.doctorService.notifyDoctor(findMessage);
         console.log('doctor', doctors)
-        doctors.forEach((doc) => buildedMessages.push(doc));
+        for (const doc of doctors) {
+          buildedMessages.push(doc)
+        }
         await this.updateMessage(findMessage.id, findMessage);
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = STEPS.SELECT_PAYMENT;
         findMessage.doctor = infoMessage.content.id
+        const doctor = await this.doctorService.findByPhone(infoMessage.content.id);
+        findMessage.fee = doctor[0].fee;
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
@@ -224,11 +228,13 @@ export class MessageService {
     return buildedMessages;
   }
 
-  doctorResponse(infoMessage: IParsedMessage, message: Message) {
+  async doctorResponse(infoMessage: IParsedMessage, message: Message) {
     if (
       message.step === STEPS.SELECT_DOCTOR
     ) {
       message.doctor = infoMessage.clientPhone;
+      const doctor = await this.doctorService.findByPhone(infoMessage.clientPhone);
+      message.fee = doctor[0].fee;
       return [this.messageBuilder.buildMessage(message)];
     }
     return false;

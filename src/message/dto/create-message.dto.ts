@@ -17,9 +17,9 @@ export class CreateMessageDto {
     @IsOptional()
     phone: string;
     
-    @IsDate()
+    @IsString()
     @IsOptional()
-    date: Date;
+    date: string;
     
     @IsString()
     @IsOptional()
