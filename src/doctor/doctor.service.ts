@@ -5,15 +5,16 @@ import { Message } from 'src/message/entities/message.entity';
 @Injectable()
 export class DoctorService {
   constructor(private readonly messageBuilder: BotResponseService) {}
-
-  findByPhone(doctorPhone: string) {
+  async findByPhone(doctorPhone: string) {
     const result = [];
-    fetch(
-      `${process.env.API_SERVICE}/doctor?phone=${doctorPhone}`,
-    ).then(async (res) => {
-      const getDoctors = await res.json();
-      getDoctors.forEach((doc) => doc);
-    });
+    const res = await fetch(`${process.env.API_SERVICE}/doctor?phone=${doctorPhone}`);
+
+    const getDoctors = await res.json();
+      
+    for (const doc of getDoctors) {
+      result.push(doc)
+    }
+    
     return result;
   }
 
@@ -29,6 +30,7 @@ export class DoctorService {
           doc.phone,
           message.id,
           message.clientName,
+          message.date
         );
         doctors.push(notification);
       }

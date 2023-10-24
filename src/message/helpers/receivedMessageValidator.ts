@@ -47,7 +47,7 @@ export const receivedMessageValidator = (
     case STEPS.SELECT_PAYMENT:
       if (
         infoMessage.type === INTERACTIVE &&
-        PAYMENTS_OPTIONS.some(infoMessage.content)
+        PAYMENTS_OPTIONS.some(opt => opt === infoMessage.content.title)
       ) {
         return true;
       }

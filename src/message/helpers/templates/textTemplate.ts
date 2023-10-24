@@ -25,6 +25,8 @@ export class Templates {
     doctorPhone: string,
     messageId: string,
     patientName: string,
+    date: string,
+
   ) {
     return {
       messaging_product: 'whatsapp',
@@ -33,7 +35,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `${patientName} requiere de una consulta`,
+          text: `${patientName} requiere de una consulta el día ${date}`,
         },
         action: {
           buttons: [
@@ -220,7 +222,7 @@ export class Templates {
     };
   }
 
-  static generateInfoDoctor(phone: string, docNumber: string) {
+  static generateInfoDoctor(phone: string, docNumber: string, date: string, fee: number) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -234,7 +236,7 @@ export class Templates {
           },
         },
         body: {
-          text: 'El turno dispoble es a las 10:00 am del día de hoy, el costo de la consuta es de S/ 50.00 soles.',
+          text: `Turno disponible para el día ${date}, el costo de la consuta es de S/ ${fee} soles.`,
         },
         action: {
           buttons: [
