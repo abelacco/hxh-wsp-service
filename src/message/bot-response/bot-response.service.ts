@@ -6,9 +6,11 @@ import { Message } from '../entities/message.entity';
 @Injectable()
 export class BotResponseService {
   buildMessage(messageClient: Message) {
-    // necesito recibir el mensaje(la info para llenar los template)
-    // switch para busacr el template que le correponde
-    console.log('generando respuesta para', messageClient);
+
+    /*
+      Create a template according to the step
+    */
+
     const step = messageClient.step;
     const phone = messageClient.phone;
     const doctor = messageClient.doctor;
@@ -32,17 +34,12 @@ export class BotResponseService {
     }
   }
 
-  buildDoctorNotification(
-    doctorPhone: string,
-    messageId: string,
-    patientName: string,
-    date: string,
-  ) {
-    return Templates.doctorNotification(
-      doctorPhone,
-      messageId,
-      patientName,
-      date,
-    );
+
+  buildDoctorNotification(doctorPhone: string, messageId: string, patientName: string) {
+    /*
+      Build a doctor response template
+    */
+    return Templates.doctorNotification(doctorPhone, messageId, patientName);
+  
   }
 }

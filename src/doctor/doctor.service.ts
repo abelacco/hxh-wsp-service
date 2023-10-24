@@ -18,27 +18,8 @@ export class DoctorService {
     return result;
   }
 
-  async notifyDoctor(message: Message) {
+  async buildDoctorNotification(message: Message) {
     const doctors = [];
-    
-
-    // fetch(
-    //   `${process.env.API_SERVICE}/doctor?speciality=${message.speciality}`,
-    // ).then(async (res) => {
-    //   const getDoctors = await res.json();
-    //   console.log(getDoctors)
-    //   getDoctors.forEach((doc) => {
-    //     doctors.push(
-    //       this.messageBuilder.buildDoctorNotification(
-    //         doc.phone,
-    //         message.id,
-    //         message.clientName,
-    //       ),
-    //     );
-    //     console.log('doctor', doctors)
-    //   });
-    // });
-    // return doctors;
 
     try {
       const res = await fetch(`${process.env.API_SERVICE}/doctor?speciality=${message.speciality}`);
@@ -53,8 +34,6 @@ export class DoctorService {
         );
         doctors.push(notification);
       }
-  
-      console.log('doctor', doctors);
       return doctors;
     } catch (error) {
       console.error('Error notifying doctor:', error);
