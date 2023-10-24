@@ -120,7 +120,7 @@ export class MessageService {
   }
 
 
-  doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
+  async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
 
     if (
       message.step === STEPS.SELECT_DOCTOR
