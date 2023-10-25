@@ -112,16 +112,28 @@ export class MessageService {
         );
         break;
       case STEPS.SEND_CONFIRMATION:
-        findMessage.imageVoucher = infoMessage.content;
-        const response = await this.updateAndBuildPatientMessage(findMessage);
-        buildedMessages.push(response);
+        buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
         buildedMessages.push(this.messageBuilder.buildConfirmationNotification(infoMessage.clientPhone));
+        //await this.sendVoucherImage(infoMessage.content, findMessage);
         break;
       default:
         return false;
     }
     return buildedMessages;
   }
+
+  // async sendVoucherImage(image: string, mesage: Message) {
+  //   const request = await fetch('general-service-api', {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       image: image
+  //     })
+  //   })
+  //   const response = await request.json();
+  //   message.imageVoucher = response.url;
+  //   await this.updateMessage(mesage.id, message);
+  // }
+
 
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
