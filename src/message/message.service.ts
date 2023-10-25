@@ -27,7 +27,9 @@ export class MessageService {
     /*
       Get required info of the received message
     */
+    console.log("mensaje recibido: ", messageFromWSP)
     const infoMessage = messageDestructurer(messageFromWSP);
+    console.log("mensaje parseado: ", infoMessage)
 
     /*
       Verify if it's a doctor response or
@@ -40,7 +42,6 @@ export class MessageService {
       const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
 
       return this.doctorMessageHandler(infoMessage, getMessageResponded);
-
     }
   }
 
@@ -111,6 +112,7 @@ export class MessageService {
         );
         break;
       case STEPS.SEND_CONFIRMATION:
+        console.log("entro en el switch");
         buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
         buildedMessages.push(this.messageBuilder.buildConfirmationNotification(infoMessage.clientPhone));
         //await this.sendVoucherImage(infoMessage.content, findMessage);
