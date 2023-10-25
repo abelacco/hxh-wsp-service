@@ -5,10 +5,11 @@ import { MessageController } from './message.controller';
 import { Message, MessageSchema } from './entities/message.entity';
 import { BotResponseService } from './bot-response/bot-response.service';
 import { DoctorService } from 'src/doctor/doctor.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Module({
   controllers: [MessageController],
-  providers: [MessageService, BotResponseService, DoctorService],
+  providers: [MessageService, BotResponseService, DoctorService, NotificationsService],
   imports: [
     MongooseModule.forFeature([
       {
