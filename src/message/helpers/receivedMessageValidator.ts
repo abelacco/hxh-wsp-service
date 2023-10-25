@@ -53,15 +53,15 @@ export const receivedMessageValidator = (
       }
       return false;
     case STEPS.SUBMIT_VOUCHER:
-      if (infoMessage.type === TEXT && infoMessage.content === SUBMIT_VOUCHER) {
+      if(infoMessage.type === IMAGE) {
         return true;
       }
       return false;
-    case STEPS.SEND_CONFIRMATION:
-      if(infoMessage.type === IMAGE) {
-          return true;
-        }
-      return false;
+    // case STEPS.SEND_CONFIRMATION:
+    //   if(infoMessage.type === IMAGE) {
+    //       return true;
+    //     }
+    //   return false;
     default:
       return false;
   }

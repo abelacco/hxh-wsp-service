@@ -63,6 +63,7 @@ export class MessageService {
       findMessage.step,
       infoMessage,
     );
+    console.log('validacion: ', validateStep)
     if (!validateStep) return false;
     switch (findMessage.step) {
       /*
