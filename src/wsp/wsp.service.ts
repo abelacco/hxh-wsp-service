@@ -14,7 +14,10 @@ export class WspService {
     if (!response) {
       return false;
     }
-    response.forEach((message) => this.sendMessages(message));
+
+    for (const message of response) {
+      this.sendMessages(message)
+    }
 
     return 'This action adds a new wsp';
   }

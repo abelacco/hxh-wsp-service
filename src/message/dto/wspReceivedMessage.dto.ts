@@ -29,9 +29,9 @@ interface IMessage {
 }
 
 interface IImageObject {
-  image: {
-    link: string;
-  };
+  link?: string;
+  id?: string;
+  sha256?: string;
 }
 
 interface IInteractiveObject {
