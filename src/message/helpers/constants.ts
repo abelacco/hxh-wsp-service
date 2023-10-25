@@ -6,6 +6,7 @@ export const INTERACTIVE_REPLIES_TYPES = {
 export const WSP_MESSAGE_TYPES = {
   TEXT: 'text',
   INTERACTIVE: 'interactive',
+  IMAGE: 'image',
 };
 
 export const WSP_REPLIES = {

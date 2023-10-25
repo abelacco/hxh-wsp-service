@@ -28,7 +28,7 @@ export class BotResponseService {
       case STEPS.SUBMIT_VOUCHER:
         return Templates.generateTextAccount(phone);
       case STEPS.SEND_CONFIRMATION:
-        return Templates.confirmationPayment(phone);
+        return Templates.verifyingVoucherTemplate(phone);
       default:
         return Templates.defaultMessageTemplate(phone);
     }
@@ -42,4 +42,13 @@ export class BotResponseService {
     return Templates.doctorNotification(doctorPhone, messageId, patientName, date);
   
   }
+
+  buildConfirmationNotification(phone: string) {
+    /*
+      Build confirmation notification template
+    */
+    return Templates.confirmationPayment(phone);
+  
+  }
+
 }

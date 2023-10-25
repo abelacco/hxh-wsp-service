@@ -10,7 +10,7 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
         content: {}
     }
     const {BUTTON_REPLY, LIST_REPLY} = INTERACTIVE_REPLIES_TYPES
-    const {TEXT, INTERACTIVE} = WSP_MESSAGE_TYPES
+    const {TEXT, INTERACTIVE, IMAGE} = WSP_MESSAGE_TYPES
     const contact = messageDto.entry[0].changes[0].value.contacts[0];
     const message = messageDto.entry[0].changes[0].value.messages[0];
 
@@ -37,6 +37,11 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
         break;
       case TEXT:
         parsedMessage.content = message.text.body;
+        break;
+      case IMAGE:
+        //Could be message.sha256 or get message.id and retrieve image
+        //from cloud api https://graph.facebook.com/v17.0/message.id
+        parsedMessage.content = message.image.link || message.image.sha256
         break;
       default:
         return;

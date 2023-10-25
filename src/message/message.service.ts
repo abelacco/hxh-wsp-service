@@ -112,6 +112,10 @@ export class MessageService {
         );
         break;
       case STEPS.SEND_CONFIRMATION:
+        findMessage.imageVoucher = infoMessage.content;
+        const response = await this.updateAndBuildPatientMessage(findMessage);
+        buildedMessages.push(response);
+        buildedMessages.push(this.messageBuilder.buildConfirmationNotification(infoMessage.clientPhone));
         break;
       default:
         return false;
