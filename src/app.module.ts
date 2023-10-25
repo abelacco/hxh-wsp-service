@@ -8,6 +8,7 @@ import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
 import { DoctorModule } from './doctor/doctor.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DoctorModule } from './doctor/doctor.module';
     WspModule,
     MessageModule,
     DoctorModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

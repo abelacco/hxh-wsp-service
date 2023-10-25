@@ -20,7 +20,7 @@ export class MessageService {
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
-    private readonly doctorService: DoctorService
+    private readonly doctorService: DoctorService,
   ) {}
 
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
@@ -84,11 +84,10 @@ export class MessageService {
       case STEPS.INSERT_DATE:
         findMessage.step = STEPS.SELECT_DOCTOR;
         findMessage.date = infoMessage.content;
-
-        const doctors = await this.doctorService.buildDoctorNotification(findMessage);
-        doctors.forEach((doc) => buildedMessages.push(doc));
-
+        const patientMessage = this.messageBuilder.searchingDoctorTemplateBuilder(infoMessage.clientPhone);
+        buildedMessages.push(patientMessage);
         await this.updateMessage(findMessage.id, findMessage);
+        this.messageBuilder.buildDoctorNotification(findMessage);
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = STEPS.SELECT_PAYMENT;
@@ -153,7 +152,6 @@ export class MessageService {
     await this.updateMessage(message.id, message);
     return this.messageBuilder.buildMessage(message);
   }
-
   
   //   console.log("iniciando para los otros pasos")
   //   switch(messageExist.step){

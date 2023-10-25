@@ -2,9 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { Templates } from '../helpers/templates/textTemplate';
 import { STEPS } from 'src/config/constants';
 import { Message } from '../entities/message.entity';
+import { DoctorService } from 'src/doctor/doctor.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class BotResponseService {
+  constructor(
+    private readonly doctorService: DoctorService,
+    private readonly notificationManager: NotificationsService,
+  ) {}
   buildMessage(messageClient: Message) {
 
     /*
@@ -35,12 +41,20 @@ export class BotResponseService {
   }
 
 
-  buildDoctorNotification(doctorPhone: string, messageId: string, patientName: string, date: string) {
+  async buildDoctorNotification(message: Message) {
     /*
       Build a doctor response template
     */
-    return Templates.doctorNotification(doctorPhone, messageId, patientName, date);
-  
+    const {id, clientName, date, speciality} = message
+    const doctors = await this.doctorService.getDoctors(speciality)
+    for (const doc of doctors) {
+      const notification = Templates.doctorNotification(doc.phone, id, clientName, date);
+      this.notificationManager.sendNotification(notification);
+    }
+  }
+
+  searchingDoctorTemplateBuilder(phone: string) {
+    return Templates.notifyingDoctorsTemplate(phone);
   }
 
   buildConfirmationNotification(phone: string) {

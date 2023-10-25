@@ -20,7 +20,7 @@ export class Templates {
       },
     };
   }
-
+  
   static verifyingVoucherTemplate(phone: string) {
     return {
       messaging_product: 'whatsapp',
@@ -28,6 +28,17 @@ export class Templates {
       type: 'text',
       text: {
         body: 'Estamos verificando su comprobante de pago',
+      },
+    };
+  }
+  
+  static notifyingDoctorsTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Estamos contactando especialistas, aguarda mientras responden',
       },
     };
   }
@@ -247,7 +258,7 @@ export class Templates {
           },
         },
         body: {
-          text: `Turno disponible para el día ${date}, el costo de la consuta es de S/ ${fee} soles.`,
+          text: `Turno disponible para el día ${date}, el costo de la consulta es de S/ ${fee} soles.`,
         },
         action: {
           buttons: [
