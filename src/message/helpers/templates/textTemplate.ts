@@ -21,6 +21,17 @@ export class Templates {
     };
   }
 
+  static verifyingVoucherTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Estamos verificando su comprobante de pago',
+      },
+    };
+  }
+
   static doctorNotification(
     doctorPhone: string,
     messageId: string,

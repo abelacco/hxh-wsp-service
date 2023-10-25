@@ -3,7 +3,7 @@ import { IParsedMessage } from '../entities/parsedMessage';
 import { WSP_MESSAGE_TYPES, WSP_REPLIES, SPECIALITIES, REPLIES_IDs } from './constants';
 import { dateValidator } from './dateValidator';
 
-const { TEXT, INTERACTIVE } = WSP_MESSAGE_TYPES;
+const { TEXT, INTERACTIVE, IMAGE } = WSP_MESSAGE_TYPES;
 const { GREETING, SELECT_DOCTOR, PAYMENTS_OPTIONS, SUBMIT_VOUCHER, DOCTOR_ACCEPT, } = WSP_REPLIES;
 const { DOCTOR_ACCEPT_ID } = REPLIES_IDs;
 
@@ -56,6 +56,11 @@ export const receivedMessageValidator = (
       if (infoMessage.type === TEXT && infoMessage.content === SUBMIT_VOUCHER) {
         return true;
       }
+      return false;
+    case STEPS.SEND_CONFIRMATION:
+      if(infoMessage.type === IMAGE) {
+          return true;
+        }
       return false;
     default:
       return false;
