@@ -128,7 +128,6 @@ export class MessageService {
         );
         break;
       case STEPS.SUBMIT_VOUCHER:
-        findMessage.step = STEPS.SEND_CONFIRMATION;
         const waitingMessage = await this.updateAndBuildPatientMessage(findMessage);
         buildedMessages.push(
           waitingMessage,
