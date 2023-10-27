@@ -159,7 +159,7 @@ export class MessageService {
       }
     });
     const imageBuffer = getMedia.data;
-    const request = await fetch(`${process.env.API_SERVICE}/api/v1/cloudinary/uploadbuffer`, {
+    const request = await fetch(`${process.env.API_SERVICE}/cloudinary/uploadbuffer`, {
       method: 'POST',
       body: JSON.stringify({
         imageBuffer
