@@ -152,7 +152,12 @@ export class MessageService {
     });
     const imageUrl = await getImage.json();
     console.log('image from whatsapp', imageUrl)
-    const getMedia = await axios.get(imageUrl.url);
+    const getMedia = await axios.get(imageUrl.url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+      }
+    });
     const imageBuffer = getMedia.data;
     console.log('encoded image', imageBuffer);
     const request = await fetch(`${process.env.API_SERVICE}/api/v1/cloudinary/uploadbuffer`, {
