@@ -145,7 +145,12 @@ export class MessageService {
   }
 
   async sendVoucherImage(image: string, message: Message) {
-    const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`);
+    const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+      },
+    });
     const imageUrl = await getImage.json();
     console.log('image from whatsapp', imageUrl)
     // const request = await fetch(`${process.env.API_SERVICE}/`, {
