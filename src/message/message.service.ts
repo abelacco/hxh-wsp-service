@@ -12,8 +12,13 @@ import { IParsedMessage } from './entities/parsedMessage';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
 import { WspReceivedMessageDto } from './dto/wspReceivedMessage.dto';
-import { DoctorMessageValidator, receivedMessageValidator } from './helpers/receivedMessageValidator';
+import {
+  DoctorMessageValidator,
+  receivedMessageValidator,
+} from './helpers/receivedMessageValidator';
 import { DoctorService } from 'src/doctor/doctor.service';
+import { stringToDate } from './helpers/dateParser';
+import { createAppointment } from './helpers/createAppointment';
 @Injectable()
 export class MessageService {
   constructor(
@@ -27,9 +32,9 @@ export class MessageService {
     /*
       Get required info of the received message
     */
-    console.log("mensaje recibido: ", messageFromWSP)
+    console.log('mensaje recibido: ', messageFromWSP);
     const infoMessage = messageDestructurer(messageFromWSP);
-    console.log("mensaje parseado: ", infoMessage)
+    console.log('mensaje parseado: ', infoMessage);
 
     /*
       Verify if it's a doctor response or
@@ -39,23 +44,33 @@ export class MessageService {
       const findMessage = await this.findOrCreateMessage(infoMessage);
       return await this.patientMessageHandler(infoMessage, findMessage);
     } else {
-      const getMessageResponded = await this.findById(infoMessage.content.id.split('-')[1]);
+      const getMessageResponded = await this.findById(
+        infoMessage.content.id.split('-')[1],
+      );
 
       return this.doctorMessageHandler(infoMessage, getMessageResponded);
     }
   }
 
-  async patientMessageHandler(infoMessage: IParsedMessage, findMessage: Message) {
+  async patientMessageHandler(
+    infoMessage: IParsedMessage,
+    findMessage: Message,
+  ) {
     const buildedMessages = [];
     /*
       Reset the information of the patient message
     */
-    if(infoMessage.type === 'text' && (infoMessage.content).toUpperCase() === 'RESET'){
+    if (
+      infoMessage.type === 'text' &&
+      infoMessage.content.toUpperCase() === 'RESET'
+    ) {
       findMessage.step = STEPS.SELECT_SPECIALTY;
       findMessage.speciality = '';
       findMessage.doctor = '';
       findMessage.date = null;
-      buildedMessages.push(await this.updateAndBuildPatientMessage(findMessage));
+      buildedMessages.push(
+        await this.updateAndBuildPatientMessage(findMessage),
+      );
       return buildedMessages;
     }
 
@@ -63,7 +78,7 @@ export class MessageService {
       findMessage.step,
       infoMessage,
     );
-    console.log('validacion: ', validateStep)
+    console.log('validacion: ', validateStep);
     if (!validateStep) return false;
     switch (findMessage.step) {
       /*
@@ -85,17 +100,23 @@ export class MessageService {
         break;
       case STEPS.INSERT_DATE:
         findMessage.step = STEPS.SELECT_DOCTOR;
-        findMessage.date = infoMessage.content;
-        const patientMessage = this.messageBuilder.searchingDoctorTemplateBuilder(infoMessage.clientPhone);
+        findMessage.date = stringToDate(infoMessage.content);
+        const patientMessage =
+          this.messageBuilder.searchingDoctorTemplateBuilder(
+            infoMessage.clientPhone,
+          );
         buildedMessages.push(patientMessage);
         await this.updateMessage(findMessage.id, findMessage);
         this.messageBuilder.buildDoctorNotification(findMessage);
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = STEPS.SELECT_PAYMENT;
-        findMessage.doctor = infoMessage.content.id
-        const doctor = await this.doctorService.findByPhone(infoMessage.content.id);
+        findMessage.doctor = infoMessage.content.id;
+        const doctor = await this.doctorService.findByPhone(
+          infoMessage.content.id,
+        );
         findMessage.fee = doctor[0].fee;
+        await createAppointment(findMessage)
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
@@ -108,14 +129,13 @@ export class MessageService {
         break;
       case STEPS.SUBMIT_VOUCHER:
         findMessage.step = STEPS.SEND_CONFIRMATION;
+        const waitingMessage = await this.updateAndBuildPatientMessage(findMessage);
         buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
+          waitingMessage,
+          this.messageBuilder.buildConfirmationNotification(
+            infoMessage.clientPhone,
+          ),
         );
-        break;
-      case STEPS.SEND_CONFIRMATION:
-        console.log("entro en el switch");
-        buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
-        buildedMessages.push(this.messageBuilder.buildConfirmationNotification(infoMessage.clientPhone));
         //await this.sendVoucherImage(infoMessage.content, findMessage);
         break;
       default:
@@ -136,15 +156,12 @@ export class MessageService {
   //   await this.updateMessage(mesage.id, message);
   // }
 
-
-
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
-
-    if (
-      message.step === STEPS.SELECT_DOCTOR
-    ) {
+    if (message.step === STEPS.SELECT_DOCTOR) {
       message.doctor = infoMessage.clientPhone;
-      const doctor = await this.doctorService.findByPhone(infoMessage.clientPhone);
+      const doctor = await this.doctorService.findByPhone(
+        infoMessage.clientPhone,
+      );
       message.fee = doctor[0].fee;
       return [this.messageBuilder.buildMessage(message)];
     }
@@ -155,7 +172,7 @@ export class MessageService {
     await this.updateMessage(message.id, message);
     return this.messageBuilder.buildMessage(message);
   }
-  
+
   //   console.log("iniciando para los otros pasos")
   //   switch(messageExist.step){
   //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
