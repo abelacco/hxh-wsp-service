@@ -145,6 +145,7 @@ export class MessageService {
   }
 
   async sendVoucherImage(image: string, message: Message) {
+    console.log("getting image", image);
     const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`, {
       headers: {
         'Content-Type': 'application/json',
