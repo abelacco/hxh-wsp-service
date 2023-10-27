@@ -136,7 +136,7 @@ export class MessageService {
             infoMessage.clientPhone,
           ),
         );
-        //await this.sendVoucherImage(infoMessage.content, findMessage);
+        await this.sendVoucherImage(infoMessage.content, findMessage);
         break;
       default:
         return false;
@@ -144,17 +144,21 @@ export class MessageService {
     return buildedMessages;
   }
 
-  // async sendVoucherImage(image: string, mesage: Message) {
-  //   const request = await fetch('general-service-api', {
-  //     method: 'POST',
-  //     body: JSON.stringify({
-  //       image: image
-  //     })
-  //   })
-  //   const response = await request.json();
-  //   message.imageVoucher = response.url;
-  //   await this.updateMessage(mesage.id, message);
-  // }
+  async sendVoucherImage(image: string, message: Message) {
+    const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`);
+    const imageUrl = await getImage.json();
+    console.log('image from whatsapp', imageUrl)
+    // const request = await fetch(`${process.env.API_SERVICE}/`, {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     appointmentId: message.id,
+    //     image: imageUrl.url
+    //   })
+    // })
+    // const response = await request.json();
+    // message.imageVoucher = response.url;
+    // await this.updateMessage(message.id, message);
+  }
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
     if (message.step === STEPS.SELECT_DOCTOR) {
