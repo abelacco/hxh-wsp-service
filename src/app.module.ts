@@ -9,6 +9,7 @@ import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
 import { DoctorModule } from './doctor/doctor.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MessageModule,
     DoctorModule,
     NotificationsModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
