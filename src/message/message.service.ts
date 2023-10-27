@@ -32,7 +32,6 @@ export class MessageService {
     /*
       Get required info of the received message
     */
-    console.log('mensaje recibido: ', messageFromWSP);
     const infoMessage = messageDestructurer(messageFromWSP);
     console.log('mensaje parseado: ', infoMessage);
 
@@ -144,7 +143,6 @@ export class MessageService {
   }
 
   async sendVoucherImage(image: string, message: Message) {
-    console.log("getting image", image);
     const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`, {
       headers: {
         'Content-Type': 'application/json',

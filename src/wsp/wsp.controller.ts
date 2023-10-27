@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ConsoleLogger, Res, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ConsoleLogger,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { WspService } from './wsp.service';
 import { CreateWspDto } from './dto/create-wsp.dto';
 import { WspQueriesDto } from './dto/queries-webhook';
@@ -14,11 +26,10 @@ export class WspController {
   async proccess(@Body() messageWSP: WspReceivedMessageDto) {
     try {
       await this.wspService.proccessMessage(messageWSP);
+      return 'OK';
     } catch (error) {
-      throw new Error(error);
+      return 'OK';
     }
-
-    return 'OK';
   }
 
   @Get('/webHook')
