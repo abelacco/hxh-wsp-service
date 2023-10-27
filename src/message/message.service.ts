@@ -20,6 +20,7 @@ import { DoctorService } from 'src/doctor/doctor.service';
 import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
+import { v2 as cloudinary } from 'cloudinary';
 @Injectable()
 export class MessageService {
   constructor(
@@ -116,7 +117,7 @@ export class MessageService {
           infoMessage.content.id,
         );
         findMessage.fee = doctor[0].fee;
-        await createAppointment(findMessage)
+        await createAppointment(findMessage);
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
         );
@@ -128,6 +129,7 @@ export class MessageService {
         );
         break;
       case STEPS.SUBMIT_VOUCHER:
+        findMessage.step = STEPS.SEND_CONFIRMATION;
         const waitingMessage = await this.updateAndBuildPatientMessage(findMessage);
         buildedMessages.push(
           waitingMessage,
@@ -151,24 +153,31 @@ export class MessageService {
       },
     });
     const imageUrl = await getImage.json();
-    console.log('image from whatsapp', imageUrl)
-    const getMedia = await axios.get(imageUrl.url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-      }
+    cloudinary.config({
+      cloud_name: 'dadixkia1',
+      api_key: '515163273321127',
+      api_secret: 'c8lcMIt84PWdTkFxPiSvtJlZqjc',
     });
-    const imageBuffer = getMedia.data;
-    const request = await fetch(`${process.env.API_SERVICE}/cloudinary/uploadbuffer`, {
-      method: 'POST',
-      body: JSON.stringify({
-        imageBuffer
+    try {
+      const imageData = await axios
+      .get(imageUrl.url, {
+        responseType: 'arraybuffer',
+        headers: {
+          Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+        },
       })
-    })
-    const response = await request.json();
-    console.log(response);
-    // message.imageVoucher = response.url;
-    // await this.updateMessage(message.id, message);
+      const imageBuffer = Buffer.from(imageData.data, 'binary');
+      const mimeType = imageData.headers["content-type"];
+      const base64Image = imageBuffer.toString('base64');
+
+      const uploadResponse = await axios.post(`${process.env.API_SERVICE}/cloudinary/uploadbuffer`, {
+        imageBuffer: `data:${mimeType};base64,${base64Image}`
+      });
+      message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
+      await this.updateMessage(message.id, message);
+    } catch (error) {
+        console.error('Error al obtener la imagen:', error);
+    }
   }
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
