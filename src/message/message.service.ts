@@ -159,7 +159,6 @@ export class MessageService {
       }
     });
     const imageBuffer = getMedia.data;
-    console.log('encoded image', imageBuffer);
     const request = await fetch(`${process.env.API_SERVICE}/api/v1/cloudinary/uploadbuffer`, {
       method: 'POST',
       body: JSON.stringify({
@@ -167,6 +166,7 @@ export class MessageService {
       })
     })
     const response = await request.json();
+    console.log(response);
     // message.imageVoucher = response.url;
     // await this.updateMessage(message.id, message);
   }
