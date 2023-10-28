@@ -3,14 +3,14 @@ import { Templates } from '../helpers/templates/textTemplate';
 import { STEPS } from 'src/config/constants';
 import { Message } from '../entities/message.entity';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationService } from 'src/notification/notification.service';
 import { dateToString } from '../helpers/dateParser';
 
 @Injectable()
 export class BotResponseService {
   constructor(
     private readonly doctorService: DoctorService,
-    private readonly notificationManager: NotificationsService,
+    private readonly notificationManager: NotificationService,
   ) {}
   buildMessage(messageClient: Message) {
 
@@ -59,11 +59,19 @@ export class BotResponseService {
     return Templates.notifyingDoctorsTemplate(phone);
   }
 
-  buildConfirmationNotification(phone: string) {
+  buildConfirmationNotification(date: Date, phone: string) {
     /*
       Build confirmation notification template
     */
-    return Templates.confirmationPayment(phone);
+    return Templates.confirmationPayment(phone, date);
+  
+  }
+
+  buildRejectionNotification(date: Date, phone: string) {
+    /*
+      Build confirmation notification template
+    */
+    return Templates.rejectionPayment(phone, date);
   
   }
 

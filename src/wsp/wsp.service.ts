@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { MessageService } from 'src/message/message.service';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
+import { NotificationService } from 'src/notification/notification.service';
+import { PaymentStatus, PaymentStatusDto } from './dto/paymentStatus.dto';
+import axios from 'axios';
 
 @Injectable()
 export class WspService {
   constructor(
     private msgService: MessageService,
+    private readonly notificationService: NotificationService
   ) {}
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
     console.log('procesando mensaje');
@@ -37,23 +41,33 @@ export class WspService {
     }
   }
 
+  async updateStatus(paymentStatusDto: PaymentStatusDto) {
+    const id = paymentStatusDto.messageId;
+    const status = paymentStatusDto.status;
+    const message = await this.msgService.findById(id);
+    message.status = status;
+    await this.msgService.updateMessage(id, message);
+    const templates = this.msgService.createStatusNotification(message);
+
+    for (const template of templates) {
+      this.sendMessages(template);
+    }
+  }
+
   async sendMessages(messageClient: any) {
     // const buildMessage = this.botResponse.buildMessage(messageClient);
     console.log('enviando mensaje, body: ', messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
-      const response = await fetch(
-        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
+      await axios.post(
+        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,messageClient,
         {
-          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
           },
-          body: JSON.stringify(messageClient),
         },
       );
-      return response;
     } catch (error) {
       throw new Error(error);
     }
