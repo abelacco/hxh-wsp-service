@@ -8,8 +8,7 @@ import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
 import { DoctorModule } from './doctor/doctor.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { PaymentModule } from './payment/payment.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -21,8 +20,7 @@ import { PaymentModule } from './payment/payment.module';
     WspModule,
     MessageModule,
     DoctorModule,
-    NotificationsModule,
-    PaymentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

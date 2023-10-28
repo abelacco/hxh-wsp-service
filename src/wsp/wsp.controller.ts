@@ -3,19 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   Query,
-  ConsoleLogger,
-  Res,
   HttpCode,
 } from '@nestjs/common';
 import { WspService } from './wsp.service';
-import { CreateWspDto } from './dto/create-wsp.dto';
 import { WspQueriesDto } from './dto/queries-webhook';
-import { Response } from 'express';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
+import { PaymentStatusDto } from './dto/paymentStatus.dto';
 
 @Controller('wsp')
 export class WspController {
@@ -41,5 +35,12 @@ export class WspController {
   sendMessage(@Body() botResponse: any) {
     console.log('CONTROLLER - Iniciando proceso de mensaje', botResponse);
     return this.wspService.sendMessages(botResponse);
+  }
+
+  @Post('/paymentStatus')
+  updateStatus(@Body() paymentConfirmation: PaymentStatusDto) {
+    this.wspService.updateStatus(paymentConfirmation);
+
+    return "Ok";
   }
 }

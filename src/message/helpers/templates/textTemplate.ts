@@ -1,3 +1,5 @@
+import { dateToString } from "../dateParser";
+
 export class Templates {
   static dateStepTemplateMessage(phone: string) {
     return {
@@ -85,13 +87,26 @@ export class Templates {
     };
   }
 
-  static confirmationPayment(phone: string) {
+  static confirmationPayment(phone: string, date: Date) {
+    const dateString = dateToString(date);
     return {
       messaging_product: 'whatsapp',
       to: phone,
       type: 'text',
       text: {
-        body: '¡Gracias por reservar con Dr(a) Leandro! A continuación los datos de tu cita',
+        body: `Su cita del día ${dateString} fue agendada exitosamente`,
+      },
+    };
+  }
+
+  static rejectionPayment(phone: string, date: Date) {
+    const dateString = dateToString(date);
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: `Su cita del día ${dateString} no pudo ser agendada`,
       },
     };
   }

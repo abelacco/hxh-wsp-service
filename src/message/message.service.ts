@@ -131,12 +131,7 @@ export class MessageService {
       case STEPS.SUBMIT_VOUCHER:
         findMessage.step = STEPS.SEND_CONFIRMATION;
         const waitingMessage = await this.updateAndBuildPatientMessage(findMessage);
-        buildedMessages.push(
-          waitingMessage,
-          this.messageBuilder.buildConfirmationNotification(
-            infoMessage.clientPhone,
-          ),
-        );
+        buildedMessages.push(waitingMessage);
         await this.sendVoucherImage(infoMessage.content, findMessage);
         break;
       default:
@@ -190,6 +185,24 @@ export class MessageService {
       return [this.messageBuilder.buildMessage(message)];
     }
     return false;
+  }
+
+  createStatusNotification(message: Message) {
+    const messages = [];
+    const date = message.date;
+    if(message.status === "2") {
+      messages.push(
+        this.messageBuilder.buildConfirmationNotification(date, message.phone),
+        this.messageBuilder.buildConfirmationNotification(date, message.doctor),
+      );
+      return messages;
+    }
+
+    messages.push(
+      this.messageBuilder.buildRejectionNotification(date, message.phone),
+      this.messageBuilder.buildRejectionNotification(date, message.doctor)
+    );
+    return messages;
   }
 
   async updateAndBuildPatientMessage(message: Message) {

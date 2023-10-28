@@ -1,11 +1,11 @@
 import { IsEnum, IsString } from "class-validator";
 
 export enum PaymentStatus {
-    ACCEPTED = "accepted",
-    REJECTED = "rejected"
+    ACCEPTED = "2",
+    REJECTED = "3"
 }
 
-export class ConfirmPaymentDto {
+export class PaymentStatusDto {
     @IsString()
     messageId: string;
 

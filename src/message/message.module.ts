@@ -4,12 +4,12 @@ import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
 import { Message, MessageSchema } from './entities/message.entity';
 import { BotResponseService } from './bot-response/bot-response.service';
-import { DoctorService } from 'src/doctor/doctor.service';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationModule } from 'src/notification/notification.module';
+import { DoctorModule } from 'src/doctor/doctor.module';
 
 @Module({
   controllers: [MessageController],
-  providers: [MessageService, BotResponseService, DoctorService, NotificationsService],
+  providers: [MessageService, BotResponseService],
   imports: [
     MongooseModule.forFeature([
       {
@@ -17,6 +17,8 @@ import { NotificationsService } from 'src/notifications/notifications.service';
         schema: MessageSchema,
       },
     ]),
+    NotificationModule,
+    DoctorModule
   ],
   exports: [MongooseModule, MessageService, BotResponseService],
 })
