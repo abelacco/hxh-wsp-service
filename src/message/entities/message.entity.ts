@@ -31,7 +31,7 @@ export class Message extends Document {
         // required: true,
         // index: true
     })
-    date: string;
+    date: Date;
 
     @Prop({
         // required: true,

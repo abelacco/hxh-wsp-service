@@ -4,7 +4,7 @@ export const dateValidator = (receivedDate: string) => {
   if(!receivedDate) return false;
   const period = receivedDate.split(' ').at(-1).toLowerCase();
   const periods = ['am', 'pm']
-  const fecha1 = moment(receivedDate, 'DD-MM-YY h:mm a');
+  const fecha1 = moment(receivedDate, 'DD-MM-YY hh:mm a');
   
   if(!fecha1.isValid()) return false;
   if(!period || !periods.some(p => p === period)) return false;

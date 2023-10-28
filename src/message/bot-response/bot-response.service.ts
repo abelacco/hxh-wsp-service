@@ -4,6 +4,7 @@ import { STEPS } from 'src/config/constants';
 import { Message } from '../entities/message.entity';
 import { DoctorService } from 'src/doctor/doctor.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { dateToString } from '../helpers/dateParser';
 
 @Injectable()
 export class BotResponseService {
@@ -20,7 +21,7 @@ export class BotResponseService {
     const step = messageClient.step;
     const phone = messageClient.phone;
     const doctor = messageClient.doctor;
-    const date = messageClient.date;
+    const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
     switch (step) {
       case STEPS.SELECT_SPECIALTY:
@@ -28,7 +29,7 @@ export class BotResponseService {
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
       case STEPS.SELECT_DOCTOR:
-        return Templates.generateInfoDoctor(phone, doctor, date, fee);
+        return Templates.generateInfoDoctor(phone, doctor, stringDate, fee);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:
@@ -46,9 +47,10 @@ export class BotResponseService {
       Build a doctor response template
     */
     const {id, clientName, date, speciality} = message
+    const stringDate = dateToString(date)
     const doctors = await this.doctorService.getDoctors(speciality)
     for (const doc of doctors) {
-      const notification = Templates.doctorNotification(doc.phone, id, clientName, date);
+      const notification = Templates.doctorNotification(doc.phone, id, clientName, stringDate);
       this.notificationManager.sendNotification(notification);
     }
   }
