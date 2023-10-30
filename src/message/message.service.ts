@@ -66,7 +66,8 @@ export class MessageService {
     ) {
       findMessage.step = STEPS.SELECT_SPECIALTY;
       findMessage.speciality = '';
-      findMessage.doctor = '';
+      findMessage.doctorId = '';
+      findMessage.doctorPhone = '';
       findMessage.date = null;
       buildedMessages.push(
         await this.updateAndBuildPatientMessage(findMessage),
@@ -111,10 +112,11 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = STEPS.SELECT_PAYMENT;
-        findMessage.doctor = infoMessage.content.id;
-        const doctor = await this.doctorService.findByPhone(
+        const doctor = await this.doctorService.findById(
           infoMessage.content.id,
-        );
+          );
+        findMessage.doctorPhone = doctor[0].phone;
+        findMessage.doctorId = doctor[0]._id;
         findMessage.fee = doctor[0].fee;
         await createAppointment(findMessage);
         buildedMessages.push(
@@ -171,10 +173,11 @@ export class MessageService {
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
     if (message.step === STEPS.SELECT_DOCTOR) {
-      message.doctor = infoMessage.clientPhone;
       const doctor = await this.doctorService.findByPhone(
         infoMessage.clientPhone,
-      );
+        );
+      message.doctorPhone = doctor[0].phone;
+      message.doctorId = doctor[0]._id;
       message.fee = doctor[0].fee;
       return [this.messageBuilder.buildMessage(message)];
     }
@@ -187,14 +190,14 @@ export class MessageService {
     if(message.status === "2") {
       messages.push(
         this.messageBuilder.buildConfirmationNotification(date, message.phone),
-        this.messageBuilder.buildConfirmationNotification(date, message.doctor),
+        this.messageBuilder.buildConfirmationNotification(date, message.doctorPhone),
       );
       return messages;
     }
 
     messages.push(
       this.messageBuilder.buildRejectionNotification(date, message.phone),
-      this.messageBuilder.buildRejectionNotification(date, message.doctor)
+      this.messageBuilder.buildRejectionNotification(date, message.doctorPhone)
     );
     return messages;
   }
@@ -276,13 +279,19 @@ export class MessageService {
       Find or create a new message
       Receive a parsed message
     */
+    const getPatient = await axios.get(
+      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`
+    );
+    const patient = getPatient.data;
+    console.log("pati", patient)
     const message = await this.messageModel.findOne({
       phone: receivedMessage.clientPhone,
     });
     if (!message) {
       const createMessage = new this.messageModel({
+        clientId: patient._id,
         phone: receivedMessage.clientPhone,
-        clientName: receivedMessage.clientName,
+        clientName: patient.name,
         doctor: '',
       });
       await createMessage.save();

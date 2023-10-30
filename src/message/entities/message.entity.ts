@@ -8,12 +8,17 @@ export class Message extends Document {
     @Prop({
         // index: true
     })
+    clientId: string;
+    
+    @Prop({
+        // index: true
+    })
     clientName: string;
 
     @Prop({
         // index: true
     })
-    doctor: string;
+    doctorId: string;
 
     @Prop({
         // index: true
@@ -26,6 +31,11 @@ export class Message extends Document {
         // index: true
     })
     phone: string;
+
+    @Prop({
+        // index: true
+    })
+    doctorPhone: string;
 
    @Prop({
         // required: true,
