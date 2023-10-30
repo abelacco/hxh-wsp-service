@@ -9,6 +9,6 @@ export class CreateAppointmentDto {
   patientId: string;
   date: Date;
   fee: number;
-  code: number;
+  code?: number;
   voucher?: string;
 }

@@ -20,7 +20,6 @@ import { DoctorService } from 'src/doctor/doctor.service';
 import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
-import { v2 as cloudinary } from 'cloudinary';
 @Injectable()
 export class MessageService {
   constructor(
@@ -148,11 +147,6 @@ export class MessageService {
       },
     });
     const imageUrl = await getImage.json();
-    cloudinary.config({
-      cloud_name: 'dadixkia1',
-      api_key: '515163273321127',
-      api_secret: 'c8lcMIt84PWdTkFxPiSvtJlZqjc',
-    });
     try {
       const imageData = await axios
       .get(imageUrl.url, {
