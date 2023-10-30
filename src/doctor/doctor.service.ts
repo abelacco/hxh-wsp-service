@@ -16,14 +16,9 @@ export class DoctorService {
   }
 
   async findById(doctorId: string) {
-    const result = [];
-    const res = await fetch(`${process.env.API_SERVICE}/doctor/${doctorId}`);
+    const getDoctors = await fetch(`${process.env.API_SERVICE}/doctor/${doctorId}`);
 
-    const getDoctors = await res.json();
-      
-    for (const doc of getDoctors) {
-      result.push(doc)
-    }
+    const result = await getDoctors.json();
     
     return result;
   }

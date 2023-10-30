@@ -114,10 +114,10 @@ export class MessageService {
         findMessage.step = STEPS.SELECT_PAYMENT;
         const doctor = await this.doctorService.findById(
           infoMessage.content.id,
-          );
-        findMessage.doctorPhone = doctor[0].phone;
-        findMessage.doctorId = doctor[0]._id;
-        findMessage.fee = doctor[0].fee;
+        );
+        findMessage.doctorPhone = doctor.phone;
+        findMessage.doctorId = doctor._id;
+        findMessage.fee = doctor.fee;
         await createAppointment(findMessage);
         buildedMessages.push(
           await this.updateAndBuildPatientMessage(findMessage),
@@ -131,7 +131,9 @@ export class MessageService {
         break;
       case STEPS.SUBMIT_VOUCHER:
         findMessage.step = STEPS.SEND_CONFIRMATION;
-        const waitingMessage = await this.updateAndBuildPatientMessage(findMessage);
+        const waitingMessage = await this.updateAndBuildPatientMessage(
+          findMessage,
+        );
         buildedMessages.push(waitingMessage);
         await this.sendVoucherImage(infoMessage.content, findMessage);
         break;
@@ -150,24 +152,26 @@ export class MessageService {
     });
     const imageUrl = await getImage.json();
     try {
-      const imageData = await axios
-      .get(imageUrl.url, {
+      const imageData = await axios.get(imageUrl.url, {
         responseType: 'arraybuffer',
         headers: {
           Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
         },
-      })
+      });
       const imageBuffer = Buffer.from(imageData.data, 'binary');
-      const mimeType = imageData.headers["content-type"];
+      const mimeType = imageData.headers['content-type'];
       const base64Image = imageBuffer.toString('base64');
 
-      const uploadResponse = await axios.post(`${process.env.API_SERVICE}/cloudinary/uploadbuffer`, {
-        imageBuffer: `data:${mimeType};base64,${base64Image}`
-      });
+      const uploadResponse = await axios.post(
+        `${process.env.API_SERVICE}/cloudinary/uploadbuffer`,
+        {
+          imageBuffer: `data:${mimeType};base64,${base64Image}`,
+        },
+      );
       message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
       await this.updateMessage(message.id, message);
     } catch (error) {
-        console.error('Error al obtener la imagen:', error);
+      console.error('Error al obtener la imagen:', error);
     }
   }
 
@@ -175,7 +179,7 @@ export class MessageService {
     if (message.step === STEPS.SELECT_DOCTOR) {
       const doctor = await this.doctorService.findByPhone(
         infoMessage.clientPhone,
-        );
+      );
       message.doctorPhone = doctor[0].phone;
       message.doctorId = doctor[0]._id;
       message.fee = doctor[0].fee;
@@ -187,17 +191,20 @@ export class MessageService {
   createStatusNotification(message: Message) {
     const messages = [];
     const date = message.date;
-    if(message.status === "2") {
+    if (message.status === '2') {
       messages.push(
         this.messageBuilder.buildConfirmationNotification(date, message.phone),
-        this.messageBuilder.buildConfirmationNotification(date, message.doctorPhone),
+        this.messageBuilder.buildConfirmationNotification(
+          date,
+          message.doctorPhone,
+        ),
       );
       return messages;
     }
 
     messages.push(
       this.messageBuilder.buildRejectionNotification(date, message.phone),
-      this.messageBuilder.buildRejectionNotification(date, message.doctorPhone)
+      this.messageBuilder.buildRejectionNotification(date, message.doctorPhone),
     );
     return messages;
   }
@@ -280,10 +287,10 @@ export class MessageService {
       Receive a parsed message
     */
     const getPatient = await axios.get(
-      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`
+      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`,
     );
     const patient = getPatient.data;
-    console.log("pati", patient)
+    console.log('pati', patient);
     const message = await this.messageModel.findOne({
       phone: receivedMessage.clientPhone,
     });
