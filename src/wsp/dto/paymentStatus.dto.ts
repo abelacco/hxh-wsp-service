@@ -7,7 +7,7 @@ export enum PaymentStatus {
 
 export class PaymentStatusDto {
     @IsString()
-    messageId: string;
+    id: string;
 
     @IsEnum(PaymentStatus)
     status: PaymentStatus;

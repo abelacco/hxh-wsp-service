@@ -19,7 +19,7 @@ export const WSP_REPLIES = {
 };
 
 export const SPECIALITIES = [
-  'Psicología',
+  'Psicologia',
   'Cardiología',
   'Medicina General',
   'Nutrición',
