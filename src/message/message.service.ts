@@ -119,7 +119,8 @@ export class MessageService {
           findMessage.doctorPhone = doctor.phone;
           findMessage.doctorId = doctor._id;
           findMessage.fee = doctor.fee;
-          await createAppointment(findMessage);
+          const appointment = await createAppointment(findMessage);
+          findMessage.appointmentId = appointment._id;
           buildedMessages.push(
             await this.updateAndBuildPatientMessage(findMessage),
           );
@@ -283,6 +284,13 @@ export class MessageService {
 
   async findById(id: string): Promise<Message> {
     const message = await this.messageModel.findById(id);
+    return message;
+  }
+
+  async findByAppointmentId(id: string): Promise<Message> {
+    const message = await this.messageModel.findOne({
+      appointmentId: id,
+    });
     return message;
   }
 

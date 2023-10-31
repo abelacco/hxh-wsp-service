@@ -9,9 +9,11 @@ export const createAppointment = async (message: Message) => {
         message.fee,
         message.date,
     );
-    console.log("dto para crear appointment", appointment)
     const api = process.env.API_SERVICE
-    await axios.post(`${api}/appointment`, {
+    const query = await axios.post(`${api}/appointment`, {
         ...appointment
     })
+    const response = query.data;
+
+    return response;
 }

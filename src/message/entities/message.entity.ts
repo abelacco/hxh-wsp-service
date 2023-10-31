@@ -9,6 +9,11 @@ export class Message extends Document {
         // index: true
     })
     clientId: string;
+
+    @Prop({
+        // index: true
+    })
+    appointmentId: string;
     
     @Prop({
         // index: true

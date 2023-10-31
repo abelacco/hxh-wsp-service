@@ -44,7 +44,7 @@ export class WspService {
   async updateStatus(paymentStatusDto: PaymentStatusDto) {
     const id = paymentStatusDto.messageId;
     const status = paymentStatusDto.status;
-    const message = await this.msgService.findById(id);
+    const message = await this.msgService.findByAppointmentId(id);
     message.status = status;
     await this.msgService.updateMessage(id, message);
     const templates = this.msgService.createStatusNotification(message);
