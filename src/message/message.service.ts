@@ -290,7 +290,6 @@ export class MessageService {
       `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`,
     );
     const patient = getPatient.data;
-    console.log('pati', patient);
     const message = await this.messageModel.findOne({
       phone: receivedMessage.clientPhone,
     });
