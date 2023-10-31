@@ -112,16 +112,21 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         findMessage.step = STEPS.SELECT_PAYMENT;
-        const doctor = await this.doctorService.findById(
-          infoMessage.content.id,
-        );
-        findMessage.doctorPhone = doctor.phone;
-        findMessage.doctorId = doctor._id;
-        findMessage.fee = doctor.fee;
-        await createAppointment(findMessage);
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
+        try {
+          const doctor = await this.doctorService.findById(
+            infoMessage.content.id,
+          );
+          findMessage.doctorPhone = doctor.phone;
+          findMessage.doctorId = doctor._id;
+          findMessage.fee = doctor.fee;
+          await createAppointment(findMessage);
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+          
+        } catch (error) {
+            console.log("erro creating appointment", error);
+        }
         break;
       case STEPS.SELECT_PAYMENT:
         findMessage.step = STEPS.SUBMIT_VOUCHER;
