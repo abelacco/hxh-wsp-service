@@ -96,6 +96,7 @@ export class MessageService {
             infoMessage.content,
           );
           if (response.specialist) {
+            console.log('Especialidad encontrada');
             const specialistSelected = SPECIALITIES_LIST.find((speciality) => speciality.title === response.specialist);
             if (specialistSelected) {
               buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone, specialistSelected.title));

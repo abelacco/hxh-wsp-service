@@ -110,7 +110,7 @@ export class ChatgtpService {
         response : recommendation + "\n\nRecuerde, siempre es importante consultar a un médico en persona para obtener un diagnóstico y tratamiento adecuados.",
         specialist : specialistResponse
       }
-      
+      console.log('finalResponse',finalResponse)
       return finalResponse
     } else {
       const botResponse = await this.askOpenAI();
