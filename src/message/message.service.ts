@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -82,7 +80,7 @@ export class MessageService {
     console.log('validacion: ', validateStep);
     if (!validateStep) {
       const errorMessage = messageErrorHandler(findMessage);
-      buildedMessages.push(errorMessage);
+      buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
     switch (findMessage.step) {
@@ -91,32 +89,53 @@ export class MessageService {
         according to the step
       */
       case STEPS.INIT:
-        findMessage.step = STEPS.SELECT_SPECIALTY;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
-        break;
-      case STEPS.SELECT_SPECIALTY:
-        findMessage.step = STEPS.INSERT_DATE;
-        findMessage.speciality = infoMessage.content.title;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
-        break;
-      case STEPS.INSERT_DATE:
-        findMessage.step = STEPS.SELECT_DOCTOR;
-        findMessage.date = stringToDate(infoMessage.content);
-        const patientMessage =
-          this.messageBuilder.searchingDoctorTemplateBuilder(
+        try {
+          findMessage.step = STEPS.SELECT_SPECIALTY;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
-        buildedMessages.push(patientMessage);
-        await this.updateMessage(findMessage.id, findMessage);
-        this.messageBuilder.buildDoctorNotification(findMessage);
+          buildedMessages.push(errorResponse);
+        }
+        break;
+      case STEPS.SELECT_SPECIALTY:
+        try {
+          findMessage.step = STEPS.INSERT_DATE;
+          findMessage.speciality = infoMessage.content.title;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
+        break;
+      case STEPS.INSERT_DATE:
+        try {
+          findMessage.step = STEPS.SELECT_DOCTOR;
+          findMessage.date = stringToDate(infoMessage.content);
+          const patientMessage =
+            this.messageBuilder.searchingDoctorTemplateBuilder(
+              infoMessage.clientPhone,
+            );
+          buildedMessages.push(patientMessage);
+          await this.updateMessage(findMessage.id, findMessage);
+          this.messageBuilder.buildDoctorNotification(findMessage);
+        } catch (error) {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       case STEPS.SELECT_DOCTOR:
-        findMessage.step = STEPS.SELECT_PAYMENT;
         try {
+          findMessage.step = STEPS.SELECT_PAYMENT;
           const doctor = await this.doctorService.findById(
             infoMessage.content.id,
           );
@@ -128,27 +147,45 @@ export class MessageService {
           buildedMessages.push(
             await this.updateAndBuildPatientMessage(findMessage),
           );
-          
-        } catch (error) {
-            console.log("erro creating appointment", error);
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
         }
         break;
       case STEPS.SELECT_PAYMENT:
-        findMessage.step = STEPS.SUBMIT_VOUCHER;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
+        try {
+          findMessage.step = STEPS.SUBMIT_VOUCHER;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       case STEPS.SUBMIT_VOUCHER:
-        findMessage.step = STEPS.SEND_CONFIRMATION;
-        const waitingMessage = await this.updateAndBuildPatientMessage(
-          findMessage,
-        );
-        buildedMessages.push(waitingMessage);
-        await this.sendVoucherImage(infoMessage.content, findMessage);
+        try {
+          findMessage.step = STEPS.SEND_CONFIRMATION;
+          const waitingMessage = await this.updateAndBuildPatientMessage(
+            findMessage,
+          );
+          buildedMessages.push(waitingMessage);
+          await this.sendVoucherImage(infoMessage.content, findMessage);
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       default:
-        return false;
+        buildedMessages.push(
+          this.messageBuilder.buildDefaultTemplate(infoMessage.clientPhone),
+        );
     }
     return buildedMessages;
   }
@@ -196,6 +233,10 @@ export class MessageService {
       return [this.messageBuilder.buildMessage(message)];
     }
     return false;
+  }
+
+  errorResponseHandler(phone: string) {
+    return this.messageBuilder.buildDefaultTemplate(phone);
   }
 
   createStatusNotification(message: Message) {

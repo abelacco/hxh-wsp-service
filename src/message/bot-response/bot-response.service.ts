@@ -13,7 +13,6 @@ export class BotResponseService {
     private readonly notificationManager: NotificationService,
   ) {}
   buildMessage(messageClient: Message) {
-
     /*
       Create a template according to the step
     */
@@ -41,16 +40,20 @@ export class BotResponseService {
     }
   }
 
-
   async buildDoctorNotification(message: Message) {
     /*
       Build a doctor response template
     */
-    const {id, clientName, date, speciality} = message
-    const stringDate = dateToString(date)
-    const doctors = await this.doctorService.getDoctors(speciality)
+    const { id, clientName, date, speciality } = message;
+    const stringDate = dateToString(date);
+    const doctors = await this.doctorService.getDoctors(speciality);
     for (const doc of doctors) {
-      const notification = Templates.doctorNotification(doc.phone, id, clientName, stringDate);
+      const notification = Templates.doctorNotification(
+        doc.phone,
+        id,
+        clientName,
+        stringDate,
+      );
       this.notificationManager.sendNotification(notification);
     }
   }
@@ -64,7 +67,6 @@ export class BotResponseService {
       Build confirmation notification template
     */
     return Templates.confirmationPayment(phone, date);
-  
   }
 
   buildRejectionNotification(date: Date, phone: string) {
@@ -72,7 +74,11 @@ export class BotResponseService {
       Build confirmation notification template
     */
     return Templates.rejectionPayment(phone, date);
-  
   }
-
+  buildDefaultTemplate(phone: string) {
+    /*
+      Build confirmation notification template
+    */
+    return Templates.defaultMessageTemplate(phone);
+  }
 }
