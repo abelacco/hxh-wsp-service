@@ -12,6 +12,8 @@ export const receivedMessageValidator = (
   infoMessage: IParsedMessage,
 ) => {
   switch (step) {
+    case STEPS.CHAT_GTP:
+      return true;
     case STEPS.INIT:
       if (
         infoMessage.type === TEXT &&
