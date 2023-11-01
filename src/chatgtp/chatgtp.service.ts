@@ -122,7 +122,7 @@ export class ChatgtpService {
     const requestPayload:any = {
       model: 'gpt-3.5-turbo',
       messages: this.messageHistory,
-      max_tokens: 150,
+      max_tokens: 50,
     };
 
     try {
