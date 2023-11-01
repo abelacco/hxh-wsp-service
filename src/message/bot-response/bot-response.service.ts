@@ -20,7 +20,7 @@ export class BotResponseService {
 
     const step = messageClient.step;
     const phone = messageClient.phone;
-    const doctor = messageClient.doctor;
+    const doctor = messageClient.doctorId;
     const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
     switch (step) {

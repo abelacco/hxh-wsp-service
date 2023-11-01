@@ -259,7 +259,7 @@ export class Templates {
     };
   }
 
-  static generateInfoDoctor(phone: string, docNumber: string, date: string, fee: number) {
+  static generateInfoDoctor(phone: string, docId: string, date: string, fee: number) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -280,7 +280,7 @@ export class Templates {
             {
               type: 'reply',
               reply: {
-                id: docNumber,
+                id: docId,
                 title: 'Reservar cita',
               },
             },
