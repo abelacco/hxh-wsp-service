@@ -21,6 +21,9 @@ import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { doctorTemplate } from './helpers/templates/templatesBuilder';
+import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
+import { SPECIALITIES_LIST } from './helpers/constants';
+
 @Injectable()
 export class MessageService {
   constructor(
@@ -28,7 +31,8 @@ export class MessageService {
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
-  ) {}
+    private readonly chatgtpService: ChatgtpService,
+  ) { }
 
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
     /*
@@ -87,6 +91,36 @@ export class MessageService {
         Handle what message template would be returned
         according to the step
       */
+      case STEPS.CHAT_GTP:
+        if(infoMessage.type === 'text') {
+          const response = await this.chatgtpService.getResponse(
+            infoMessage.content,
+          );
+          if (response.specialist) {
+            console.log('Especialidad encontrada');
+            const specialistSelected = SPECIALITIES_LIST.find((speciality) => speciality.title === response.specialist);
+            if (specialistSelected) {
+              buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone, specialistSelected.title));
+            } else {
+              console.log('Especialidad no encontrada');
+            }
+          }
+          buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone));
+        } else {
+          if(infoMessage.content !== 'Otra especialidad') {
+            findMessage.step = STEPS.SELECT_SPECIALTY;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+          } else {
+            findMessage.step = STEPS.INSERT_DATE;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+          }
+        }
+
+        break;
       case STEPS.INIT:
         findMessage.step = STEPS.SELECT_SPECIALTY;
         buildedMessages.push(
@@ -125,9 +159,9 @@ export class MessageService {
           buildedMessages.push(
             await this.updateAndBuildPatientMessage(findMessage),
           );
-          
+
         } catch (error) {
-            console.log("erro creating appointment", error);
+          console.log("erro creating appointment", error);
         }
         break;
       case STEPS.SELECT_PAYMENT:
