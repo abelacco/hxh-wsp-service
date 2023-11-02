@@ -29,7 +29,7 @@ export class MessageService {
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
     private readonly chatgtpService: ChatgtpService,
-  ) { }
+  ) {}
 
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
     /*
@@ -93,34 +93,8 @@ export class MessageService {
         according to the step
       */
       case STEPS.CHAT_GTP:
-        if(infoMessage.type === 'text') {
-          const response = await this.chatgtpService.getResponse(
-            infoMessage.content,
-          );
-          if (response.specialist) {
-            console.log('Especialidad encontrada');
-            const specialistSelected = SPECIALITIES_LIST.find((speciality) => speciality.title === response.specialist);
-            if (specialistSelected) {
-              buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone, specialistSelected.title));
-            } else {
-              console.log('Especialidad no encontrada');
-            }
-          }
-          buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone));
-        } else {
-          if(infoMessage.content !== 'Otra especialidad') {
-            findMessage.step = STEPS.SELECT_SPECIALTY;
-            buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
-            );
-          } else {
-            findMessage.step = STEPS.INSERT_DATE;
-            buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
-            );
-          }
-        }
-
+        const chatGptResponse = await this.chatGptHandler(infoMessage, findMessage);
+        buildedMessages.push(...chatGptResponse);
         break;
       case STEPS.INIT:
         try {
@@ -222,6 +196,51 @@ export class MessageService {
         );
     }
     return buildedMessages;
+  }
+
+  async chatGptHandler(messageInfo, dbMessage) {
+    const finalMessages = [];
+    if (messageInfo.type === 'text') {
+      const response = await this.chatgtpService.getResponse(
+        messageInfo.content,
+      );
+      if (response.specialist) {
+        console.log('Especialidad encontrada');
+        const specialistSelected = SPECIALITIES_LIST.find(
+          (speciality) => speciality.title === response.specialist,
+        );
+        if (specialistSelected) {
+          finalMessages.push(
+            this.messageBuilder.buildMessageChatGTP(
+              response.response,
+              dbMessage.phone,
+              specialistSelected.title,
+            ),
+          );
+        } else {
+          console.log('Especialidad no encontrada');
+        }
+      }
+      finalMessages.push(
+        this.messageBuilder.buildMessageChatGTP(
+          response.response,
+          dbMessage.phone,
+        ),
+      );
+    } else {
+      if (messageInfo.content !== 'Otra especialidad') {
+        dbMessage.step = STEPS.SELECT_SPECIALTY;
+        finalMessages.push(
+          await this.updateAndBuildPatientMessage(dbMessage),
+        );
+      } else {
+        dbMessage.step = STEPS.INSERT_DATE;
+        finalMessages.push(
+          await this.updateAndBuildPatientMessage(dbMessage),
+        );
+      }
+    }
+    return finalMessages;
   }
 
   async sendVoucherImage(image: string, message: Message) {
