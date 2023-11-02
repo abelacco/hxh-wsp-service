@@ -13,7 +13,6 @@ export class WspService {
     private readonly notificationService: NotificationService
   ) {}
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
-    console.log('procesando mensaje');
     const response = await this.msgService.proccessMessage(messageWSP);
     if (!response) {
       return false;

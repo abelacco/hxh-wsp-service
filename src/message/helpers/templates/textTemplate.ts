@@ -13,6 +13,17 @@ export class Templates {
     };
   }
 
+  static botIntroductionTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+      },
+    };
+  }
+
   static defaultMessageTemplate(phone: string) {
     return {
       messaging_product: 'whatsapp',

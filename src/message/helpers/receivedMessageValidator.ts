@@ -1,10 +1,21 @@
 import { STEPS } from 'src/config/constants';
 import { IParsedMessage } from '../entities/parsedMessage';
-import { WSP_MESSAGE_TYPES, WSP_REPLIES, SPECIALITIES, REPLIES_IDs } from './constants';
+import {
+  WSP_MESSAGE_TYPES,
+  WSP_REPLIES,
+  SPECIALITIES,
+  REPLIES_IDs,
+} from './constants';
 import { dateValidator } from './dateValidator';
 
 const { TEXT, INTERACTIVE, IMAGE } = WSP_MESSAGE_TYPES;
-const { GREETING, SELECT_DOCTOR, PAYMENTS_OPTIONS, SUBMIT_VOUCHER, DOCTOR_ACCEPT, } = WSP_REPLIES;
+const {
+  GREETING,
+  SELECT_DOCTOR,
+  PAYMENTS_OPTIONS,
+  SUBMIT_VOUCHER,
+  DOCTOR_ACCEPT,
+} = WSP_REPLIES;
 const { DOCTOR_ACCEPT_ID } = REPLIES_IDs;
 
 export const receivedMessageValidator = (
@@ -12,13 +23,8 @@ export const receivedMessageValidator = (
   infoMessage: IParsedMessage,
 ) => {
   switch (step) {
-    case STEPS.CHAT_GTP:
-      return true;
     case STEPS.INIT:
-      if (
-        infoMessage.type === TEXT &&
-        (GREETING.some(text => text === infoMessage.content))
-      ) {
+      if (infoMessage.type === TEXT) {
         return true;
       }
       return false;
@@ -31,10 +37,7 @@ export const receivedMessageValidator = (
       }
       return false;
     case STEPS.INSERT_DATE:
-      if (
-        infoMessage.type === TEXT &&
-        dateValidator(infoMessage.content)
-      ) {
+      if (infoMessage.type === TEXT && dateValidator(infoMessage.content)) {
         return true;
       }
       return false;
@@ -49,13 +52,13 @@ export const receivedMessageValidator = (
     case STEPS.SELECT_PAYMENT:
       if (
         infoMessage.type === INTERACTIVE &&
-        PAYMENTS_OPTIONS.some(opt => opt === infoMessage.content.title)
+        PAYMENTS_OPTIONS.some((opt) => opt === infoMessage.content.title)
       ) {
         return true;
       }
       return false;
     case STEPS.SUBMIT_VOUCHER:
-      if(infoMessage.type === IMAGE) {
+      if (infoMessage.type === IMAGE) {
         return true;
       }
       return false;
