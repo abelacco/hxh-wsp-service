@@ -23,6 +23,17 @@ export class Templates {
       },
     };
   }
+
+  static resetQuestions(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
+      },
+    };
+  }
   
   static verifyingVoucherTemplate(phone: string) {
     return {

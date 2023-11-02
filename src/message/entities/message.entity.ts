@@ -71,6 +71,13 @@ export class Message extends Document {
     @Prop({
         // required: true,
         // index: true
+        default: 0
+    })
+    attempts: number;
+
+    @Prop({
+        // required: true,
+        // index: true
     })
     imageVoucher: string;
 

@@ -84,6 +84,9 @@ export class MessageService {
     );
     console.log('validacion: ', validateStep);
     if (!validateStep) {
+      findMessage.attempts++;
+      console.log(findMessage.attempts);
+      await this.updateMessage(findMessage.id, findMessage);
       const errorMessage = messageErrorHandler(findMessage);
       buildedMessages.push(...errorMessage);
       return buildedMessages;
