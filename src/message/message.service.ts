@@ -20,6 +20,7 @@ import { DoctorService } from 'src/doctor/doctor.service';
 import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
+import { doctorTemplate } from './helpers/templates/templatesBuilder';
 @Injectable()
 export class MessageService {
   constructor(
@@ -189,7 +190,7 @@ export class MessageService {
       message.doctorPhone = doctor[0].phone;
       message.doctorId = doctor[0]._id;
       message.fee = doctor[0].fee;
-      return [this.messageBuilder.buildMessage(message)];
+      return [doctorTemplate(message)];
     }
     return false;
   }

@@ -69,7 +69,7 @@ export class WspService {
         },
       );
     } catch (error) {
-      throw new Error(error);
+      console.log(error);
     }
   }
 }
