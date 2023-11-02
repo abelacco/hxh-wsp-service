@@ -81,4 +81,16 @@ export class BotResponseService {
     */
     return Templates.defaultMessageTemplate(phone);
   }
+
+  buildMessageChatGTP(message: string, phone: string , specialistSelected?: string) {
+    /*
+      Build confirmation notification template
+    */
+   if(specialistSelected) {
+    return Templates.generateChatGPToptions(message, phone, specialistSelected);
+   }
+    return Templates.generateTextChatGTP(message, phone);
+  
+  }
+
 }

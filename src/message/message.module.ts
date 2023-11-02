@@ -6,6 +6,7 @@ import { Message, MessageSchema } from './entities/message.entity';
 import { BotResponseService } from './bot-response/bot-response.service';
 import { NotificationModule } from 'src/notification/notification.module';
 import { DoctorModule } from 'src/doctor/doctor.module';
+import { ChatgtpModule } from 'src/chatgtp/chatgtp.module';
 
 @Module({
   controllers: [MessageController],
@@ -18,7 +19,8 @@ import { DoctorModule } from 'src/doctor/doctor.module';
       },
     ]),
     NotificationModule,
-    DoctorModule
+    DoctorModule,
+    ChatgtpModule,
   ],
   exports: [MongooseModule, MessageService, BotResponseService],
 })

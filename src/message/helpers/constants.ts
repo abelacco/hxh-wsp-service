@@ -29,3 +29,26 @@ export const SPECIALITIES = [
 export const REPLIES_IDs = {
     DOCTOR_ACCEPT_ID : "accptcta",
 }
+
+export const SPECIALITIES_LIST = [
+  {
+    id: '1',
+    title: 'Nutrición',
+  },
+  {
+    id: '2',
+    title: 'Psicología',
+  },
+  {
+    id: '3',
+    title: 'Medicina General',
+  },
+  {
+    id: '4',
+    title: 'Cardiología',
+  },
+  {
+    id: '5',
+    title: 'Ginecología',
+  },
+];

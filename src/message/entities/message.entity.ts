@@ -53,10 +53,9 @@ export class Message extends Document {
         // index: true
         type: String,
         enum: STEPS,
-        default: STEPS.INIT
+        default: STEPS.CHAT_GTP
     })
-    step: string = STEPS.INIT;
-    
+    step: string;
     @Prop({
         // required: true,
         // index: true

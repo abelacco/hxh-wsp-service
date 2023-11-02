@@ -1,3 +1,4 @@
+import { SPECIALITIES_LIST } from "../constants";
 import { dateToString } from "../dateParser";
 
 export class Templates {
@@ -133,48 +134,77 @@ export class Templates {
           sections: [
             {
               title: 'Especialidades',
-              rows: [
-                {
-                  id: '1',
-                  title: 'Nutrición',
-                  //   "description": "SECTION_1_ROW_1_DESCRIPTION"
-                },
-                {
-                  id: '2',
-                  title: 'Psicología',
-                  //   "description": "SECTION_1_ROW_2_DESCRIPTION"
-                },
-                {
-                  id: '3',
-                  title: 'Medicina General',
-                  // "description": "SECTION_1_ROW_2_DESCRIPTION"
-                },
-                {
-                  id: '4',
-                  title: 'Cardiología',
-                  // "description": "SECTION_1_ROW_2_DESCRIPTION"
-                },
-                {
-                  id: '5',
-                  title: 'Ginecología',
-                },
-              ],
+              rows: SPECIALITIES_LIST
+              // rows: [
+              //   {
+              //     id: '1',
+              //     title: 'Nutrición',
+              //     //   "description": "SECTION_1_ROW_1_DESCRIPTION"
+              //   },
+              //   {
+              //     id: '2',
+              //     title: 'Psicología',
+              //     //   "description": "SECTION_1_ROW_2_DESCRIPTION"
+              //   },
+              //   {
+              //     id: '3',
+              //     title: 'Medicina General',
+              //     // "description": "SECTION_1_ROW_2_DESCRIPTION"
+              //   },
+              //   {
+              //     id: '4',
+              //     title: 'Cardiología',
+              //     // "description": "SECTION_1_ROW_2_DESCRIPTION"
+              //   },
+              //   {
+              //     id: '5',
+              //     title: 'Ginecología',
+              //   },
+              // ],
             },
-            // {
-            //   "title": "SECTION_2_TITLE",
-            //   "rows": [
-            //     {
-            //       "id": "SECTION_2_ROW_1_ID",
-            //       "title": "SECTION_2_ROW_1_TITLE",
-            //       "description": "SECTION_2_ROW_1_DESCRIPTION"
-            //     },
-            //     {
-            //       "id": "SECTION_2_ROW_2_ID",
-            //       "title": "SECTION_2_ROW_2_TITLE",
-            //       "description": "SECTION_2_ROW_2_DESCRIPTION"
-            //     }
-            //   ]
-            // }
+          ],
+        },
+      },
+    };
+  }
+
+  static generateTextChatGTP(text:string ,phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: text,
+      },
+    };
+  }
+
+  static generateChatGPToptions(phone: string , text: string , speciality: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: text,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: '1',
+                title: speciality,
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: '2',
+                title: 'Otra especialidad',
+              },
+            },
           ],
         },
       },
@@ -220,44 +250,44 @@ export class Templates {
     };
   }
 
-  static generateThreeOptions(phone: string) {
-    return {
-      messaging_product: 'whatsapp',
-      to: phone,
-      type: 'interactive',
-      interactive: {
-        type: 'button',
-        body: {
-          text: '¿Cúando te gustaría agendar tu cita?',
-        },
-        action: {
-          buttons: [
-            {
-              type: 'reply',
-              reply: {
-                id: 'UNIQUE_BUTTON_ID_1',
-                title: 'Hoy',
-              },
-            },
-            {
-              type: 'reply',
-              reply: {
-                id: 'UNIQUE_BUTTON_ID_2',
-                title: 'Esta semana',
-              },
-            },
-            {
-              type: 'reply',
-              reply: {
-                id: 'UNIQUE_BUTTON_ID_3',
-                title: 'La próxima semana',
-              },
-            },
-          ],
-        },
-      },
-    };
-  }
+  // static generateThreeOptions(phone: string) {
+  //   return {
+  //     messaging_product: 'whatsapp',
+  //     to: phone,
+  //     type: 'interactive',
+  //     interactive: {
+  //       type: 'button',
+  //       body: {
+  //         text: '¿Cúando te gustaría agendar tu cita?',
+  //       },
+  //       action: {
+  //         buttons: [
+  //           {
+  //             type: 'reply',
+  //             reply: {
+  //               id: 'UNIQUE_BUTTON_ID_1',
+  //               title: 'Hoy',
+  //             },
+  //           },
+  //           {
+  //             type: 'reply',
+  //             reply: {
+  //               id: 'UNIQUE_BUTTON_ID_2',
+  //               title: 'Esta semana',
+  //             },
+  //           },
+  //           {
+  //             type: 'reply',
+  //             reply: {
+  //               id: 'UNIQUE_BUTTON_ID_3',
+  //               title: 'La próxima semana',
+  //             },
+  //           },
+  //         ],
+  //       },
+  //     },
+  //   };
+  // }
 
   static generateInfoDoctor(phone: string, docId: string, date: string, fee: number) {
     return {
