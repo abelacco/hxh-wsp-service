@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -21,6 +17,8 @@ import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { doctorTemplate } from './helpers/templates/templatesBuilder';
+import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
+import { messageErrorHandler } from './helpers/messageErrorHandler';
 import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
 import { SPECIALITIES_LIST } from './helpers/constants';
 
@@ -32,7 +30,7 @@ export class MessageService {
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
     private readonly chatgtpService: ChatgtpService,
-  ) { }
+  ) {}
 
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
     /*
@@ -85,69 +83,68 @@ export class MessageService {
       infoMessage,
     );
     console.log('validacion: ', validateStep);
-    if (!validateStep) return false;
+    if (!validateStep) {
+      const errorMessage = messageErrorHandler(findMessage);
+      buildedMessages.push(...errorMessage);
+      return buildedMessages;
+    }
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
         according to the step
       */
       case STEPS.CHAT_GTP:
-        if(infoMessage.type === 'text') {
-          const response = await this.chatgtpService.getResponse(
-            infoMessage.content,
-          );
-          if (response.specialist) {
-            console.log('Especialidad encontrada');
-            const specialistSelected = SPECIALITIES_LIST.find((speciality) => speciality.title === response.specialist);
-            if (specialistSelected) {
-              buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone, specialistSelected.title));
-            } else {
-              console.log('Especialidad no encontrada');
-            }
-          }
-          buildedMessages.push(this.messageBuilder.buildMessageChatGTP(response.response, findMessage.phone));
-        } else {
-          if(infoMessage.content !== 'Otra especialidad') {
-            findMessage.step = STEPS.SELECT_SPECIALTY;
-            buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
-            );
-          } else {
-            findMessage.step = STEPS.INSERT_DATE;
-            buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
-            );
-          }
-        }
-
+        const chatGptResponse = await this.chatGptHandler(infoMessage, findMessage);
+        buildedMessages.push(...chatGptResponse);
         break;
       case STEPS.INIT:
-        findMessage.step = STEPS.SELECT_SPECIALTY;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
-        break;
-      case STEPS.SELECT_SPECIALTY:
-        findMessage.step = STEPS.INSERT_DATE;
-        findMessage.speciality = infoMessage.content.title;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
-        break;
-      case STEPS.INSERT_DATE:
-        findMessage.step = STEPS.SELECT_DOCTOR;
-        findMessage.date = stringToDate(infoMessage.content);
-        const patientMessage =
-          this.messageBuilder.searchingDoctorTemplateBuilder(
+        try {
+          findMessage.step = STEPS.SELECT_SPECIALTY;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
-        buildedMessages.push(patientMessage);
-        await this.updateMessage(findMessage.id, findMessage);
-        this.messageBuilder.buildDoctorNotification(findMessage);
+          buildedMessages.push(errorResponse);
+        }
+        break;
+      case STEPS.SELECT_SPECIALTY:
+        try {
+          findMessage.step = STEPS.INSERT_DATE;
+          findMessage.speciality = infoMessage.content.title;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
+        break;
+      case STEPS.INSERT_DATE:
+        try {
+          findMessage.step = STEPS.SELECT_DOCTOR;
+          findMessage.date = stringToDate(infoMessage.content);
+          const patientMessage =
+            this.messageBuilder.searchingDoctorTemplateBuilder(
+              infoMessage.clientPhone,
+            );
+          buildedMessages.push(patientMessage);
+          await this.updateMessage(findMessage.id, findMessage);
+          this.messageBuilder.buildDoctorNotification(findMessage);
+        } catch (error) {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       case STEPS.SELECT_DOCTOR:
-        findMessage.step = STEPS.SELECT_PAYMENT;
         try {
+          findMessage.step = STEPS.SELECT_PAYMENT;
           const doctor = await this.doctorService.findById(
             infoMessage.content.id,
           );
@@ -159,29 +156,92 @@ export class MessageService {
           buildedMessages.push(
             await this.updateAndBuildPatientMessage(findMessage),
           );
-
-        } catch (error) {
-          console.log("erro creating appointment", error);
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
         }
         break;
       case STEPS.SELECT_PAYMENT:
-        findMessage.step = STEPS.SUBMIT_VOUCHER;
-        buildedMessages.push(
-          await this.updateAndBuildPatientMessage(findMessage),
-        );
+        try {
+          findMessage.step = STEPS.SUBMIT_VOUCHER;
+          buildedMessages.push(
+            await this.updateAndBuildPatientMessage(findMessage),
+          );
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       case STEPS.SUBMIT_VOUCHER:
-        findMessage.step = STEPS.SEND_CONFIRMATION;
-        const waitingMessage = await this.updateAndBuildPatientMessage(
-          findMessage,
-        );
-        buildedMessages.push(waitingMessage);
-        await this.sendVoucherImage(infoMessage.content, findMessage);
+        try {
+          findMessage.step = STEPS.SEND_CONFIRMATION;
+          const waitingMessage = await this.updateAndBuildPatientMessage(
+            findMessage,
+          );
+          buildedMessages.push(waitingMessage);
+          await this.sendVoucherImage(infoMessage.content, findMessage);
+        } catch {
+          const errorResponse = this.errorResponseHandler(
+            infoMessage.clientPhone,
+          );
+          buildedMessages.push(errorResponse);
+        }
         break;
       default:
-        return false;
+        buildedMessages.push(
+          this.messageBuilder.buildDefaultTemplate(infoMessage.clientPhone),
+        );
     }
     return buildedMessages;
+  }
+
+  async chatGptHandler(messageInfo, dbMessage) {
+    const finalMessages = [];
+    if (messageInfo.type === 'text') {
+      const response = await this.chatgtpService.getResponse(
+        messageInfo.content,
+      );
+      if (response.specialist) {
+        console.log('Especialidad encontrada');
+        const specialistSelected = SPECIALITIES_LIST.find(
+          (speciality) => speciality.title === response.specialist,
+        );
+        if (specialistSelected) {
+          finalMessages.push(
+            this.messageBuilder.buildMessageChatGTP(
+              response.response,
+              dbMessage.phone,
+              specialistSelected.title,
+            ),
+          );
+        } else {
+          console.log('Especialidad no encontrada');
+        }
+      }
+      finalMessages.push(
+        this.messageBuilder.buildMessageChatGTP(
+          response.response,
+          dbMessage.phone,
+        ),
+      );
+    } else {
+      if (messageInfo.content !== 'Otra especialidad') {
+        dbMessage.step = STEPS.SELECT_SPECIALTY;
+        finalMessages.push(
+          await this.updateAndBuildPatientMessage(dbMessage),
+        );
+      } else {
+        dbMessage.step = STEPS.INSERT_DATE;
+        finalMessages.push(
+          await this.updateAndBuildPatientMessage(dbMessage),
+        );
+      }
+    }
+    return finalMessages;
   }
 
   async sendVoucherImage(image: string, message: Message) {
@@ -229,6 +289,10 @@ export class MessageService {
     return false;
   }
 
+  errorResponseHandler(phone: string) {
+    return this.messageBuilder.buildDefaultTemplate(phone);
+  }
+
   createStatusNotification(message: Message) {
     const messages = [];
     const date = message.date;
@@ -254,68 +318,6 @@ export class MessageService {
     await this.updateMessage(message.id, message);
     return this.messageBuilder.buildMessage(message);
   }
-
-  //   console.log("iniciando para los otros pasos")
-  //   switch(messageExist.step){
-  //     // VERIFICO EL PASO QUE SE ENCUENTRA EL USUARIO
-  //     case STEPS.INIT:
-  //       messageParsed.step = STEPS.SELECT_SPECIALTY;
-  //       const updateMessage = this.updateMessage(messageParsed);
-  //       console.log("aqui updateMessage",updateMessage)
-  //       return messageParsed;
-  //     case STEPS.INSERT_DATE:
-  //       break;
-  //     case STEPS.SELECT_DOCTOR:
-  //       break;
-  //     case STEPS.SELECT_PAYMENT:
-  //       break;
-  //     case STEPS.SUBMIT_VOUCHER:
-  //       break;
-  //     case STEPS.SEND_CONFIRMATION:
-  //       break;
-  //     default:
-  //       return messageParsed;
-  //   }
-  // }
-  // else{
-  //   if(messageExist){
-  //     return messageExist;
-  //   }
-  //   const newMessage = await this.create(messageParsed);
-  //   // responder con el mensaje de bienvenida
-  //   console.log("aquiiiiiiiiiiii",newMessage)
-  //   return newMessage;
-
-  // }
-  // return messageParsed;
-
-  // }
-  // catch(error){
-  //   this.handleExceptions(error);
-  // }
-
-  // }
-
-  // extractInfo(message: any){
-  //     // nameCient
-  //     // phoneClient
-  //     // type
-  //     // contenido de mensaje(considerar id y textos)
-  //     // return  {
-  //             // nameCient
-  //     // phoneClient
-  //     // type
-  //     // }
-  // }
-
-  // async createDirect(createMessageDto: CreateMessageDto) {
-  //   try{
-  //     const message = await this.messageModel.create(createMessageDto);
-  //     return message;
-  //   }
-  //   catch(error){
-  //     this.handleExceptions(error);
-  //   }
 
   async findById(id: string): Promise<Message> {
     const message = await this.messageModel.findById(id);
@@ -360,7 +362,7 @@ export class MessageService {
       const message = await this.messageModel.create(createMessageDto);
       return message;
     } catch (error) {
-      this.handleExceptions(error);
+      mongoErrorHandler(error);
     }
   }
 
@@ -384,16 +386,5 @@ export class MessageService {
 
   remove(id: number) {
     return `This action removes a #${id} message`;
-  }
-
-  private handleExceptions(error: any) {
-    if (error.code === 11000) {
-      throw new BadRequestException(
-        'Doctor ya existe' + JSON.stringify(error.keyValue),
-      );
-    }
-    throw new InternalServerErrorException(
-      'Error creando doctor' + JSON.stringify(error),
-    );
   }
 }

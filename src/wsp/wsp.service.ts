@@ -20,7 +20,7 @@ export class WspService {
     }
 
     for (const message of response) {
-      this.sendMessages(message)
+      await this.sendMessages(message)
     }
 
     return 'This action adds a new wsp';
