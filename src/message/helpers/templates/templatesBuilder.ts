@@ -1,6 +1,7 @@
 import { Message } from 'src/message/entities/message.entity';
+import { dateToString } from '../dateParser';
 
-function obj(content, type?) {
+function paramObj(content, type?) {
   let obj = { content: content, type: '' };
   if (type) obj.type = type;
   return obj;
@@ -18,13 +19,10 @@ export const doctorTemplate = (message: Message) => {
   const phone = message.phone;
   const doctorId = message.doctorId;
   const templateName = 'doctor_info';
-  
+  const date = dateToString(message.date)
   const params = templateParamsGenerator([
-    obj(message.clientName),
-    obj(message.date),
-    obj(message.fee),
-    obj(message.appointmentId),
-    obj(message.phone),
+    paramObj(date),
+    paramObj(message.fee),
   ]);
 
   const body = {
@@ -75,11 +73,11 @@ export const confirmationTemplate = (message: Message) => {
   const templateName = 'doctor_info';
   
   const params = templateParamsGenerator([
-    obj(message.clientName),
-    obj(message.date),
-    obj(message.fee),
-    obj(message.appointmentId),
-    obj(message.phone),
+    paramObj(message.clientName),
+    paramObj(message.date),
+    paramObj(message.fee),
+    paramObj(message.appointmentId),
+    paramObj(message.phone),
   ]);
 
   const body = {

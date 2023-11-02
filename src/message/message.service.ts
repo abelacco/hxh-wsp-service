@@ -284,7 +284,7 @@ export class MessageService {
       message.doctorPhone = doctor[0].phone;
       message.doctorId = doctor[0]._id;
       message.fee = doctor[0].fee;
-      return [doctorTemplate(message)];
+      return [this.messageBuilder.buildMessage(message)];
     }
     return false;
   }
