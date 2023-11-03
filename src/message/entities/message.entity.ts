@@ -85,4 +85,6 @@ export class Message extends Document {
     fee: number;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message);
+ const prevMessageSchema = SchemaFactory.createForClass(Message);
+ prevMessageSchema.paths.phone.options.unique = false;
+ export const MessageSchema = prevMessageSchema;
