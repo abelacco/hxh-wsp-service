@@ -341,17 +341,33 @@ export class MessageService {
     );
     const patient = getPatient.data;
     const message = await this.messageModel.findOne({
-      phone: receivedMessage.clientPhone,
+       '$and': [
+          {
+            phone: receivedMessage.clientPhone,
+          },
+          {
+            status: {'$ne': '2'}
+          },
+          {
+            status: {'$ne': '3'}
+          },
+      ]
     });
     if (!message) {
-      const createMessage = new this.messageModel({
-        clientId: patient._id,
-        phone: receivedMessage.clientPhone,
-        clientName: patient.name,
-        doctor: '',
-      });
-      await createMessage.save();
-      return createMessage;
+      try {
+        const createMessage = new this.messageModel({
+          clientId: patient._id,
+          phone: receivedMessage.clientPhone,
+          clientName: patient.name,
+          doctor: '',
+        });
+        await createMessage.save();
+        console.log("mensaje encontrado", createMessage);
+        return createMessage;
+        
+      } catch (error) {
+          console.log(error)
+      }
     }
 
     return message;

@@ -3,7 +3,7 @@ import { WspQueriesDto } from './dto/queries-webhook';
 import { MessageService } from 'src/message/message.service';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
 import { NotificationService } from 'src/notification/notification.service';
-import { PaymentStatus, PaymentStatusDto } from './dto/paymentStatus.dto';
+import { PaymentStatusDto } from './dto/paymentStatus.dto';
 import axios from 'axios';
 
 @Injectable()
@@ -46,7 +46,8 @@ export class WspService {
     const status = paymentStatusDto.status;
     const message = await this.msgService.findByAppointmentId(id);
     message.status = status;
-    await this.msgService.updateMessage(id, message);
+    await this.msgService.updateMessage(message.id, message);
+    console.log("message status", message)
     const templates = this.msgService.createStatusNotification(message);
 
     for (const template of templates) {

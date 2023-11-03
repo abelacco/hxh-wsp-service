@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { STEPS } from "src/config/constants";
+import { PAYMENTSTATUS, STEPS } from "src/config/constants";
 
 @Schema()
 export class Message extends Document {
@@ -12,6 +12,7 @@ export class Message extends Document {
 
     @Prop({
         // index: true
+        unique: true,
     })
     appointmentId: string;
     
@@ -32,7 +33,6 @@ export class Message extends Document {
 
     @Prop({
         // required: true,
-        unique: true,
         // index: true
     })
     phone: string;
@@ -56,21 +56,19 @@ export class Message extends Document {
         default: STEPS.CHAT_GTP
     })
     step: string;
-    @Prop({
-        // required: true,
-        // index: true
-    })
-    message: string;
 
     @Prop({
         // required: true,
         // index: true
+        type: String,
+        enum: PAYMENTSTATUS,
     })
     status: string;
 
     @Prop({
         // required: true,
         // index: true
+        unique: true,
     })
     imageVoucher: string;
 
