@@ -13,6 +13,17 @@ export class Templates {
     };
   }
 
+  static botIntroductionTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+      },
+    };
+  }
+
   static defaultMessageTemplate(phone: string) {
     return {
       messaging_product: 'whatsapp',
@@ -20,6 +31,17 @@ export class Templates {
       type: 'text',
       text: {
         body: 'No es lo que esperaba, vuelve a intentar',
+      },
+    };
+  }
+
+  static resetQuestions(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
       },
     };
   }

@@ -21,6 +21,7 @@ import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
 import { messageErrorHandler } from './helpers/messageErrorHandler';
 import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
 import { SPECIALITIES_LIST } from './helpers/constants';
+import { CohereService } from 'src/cohere/cohere.service';
 
 @Injectable()
 export class MessageService {
@@ -30,6 +31,7 @@ export class MessageService {
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
     private readonly chatgtpService: ChatgtpService,
+    private readonly cohereService: CohereService,
   ) {}
 
   async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
@@ -67,7 +69,7 @@ export class MessageService {
       infoMessage.type === 'text' &&
       infoMessage.content.toUpperCase() === 'RESET'
     ) {
-      findMessage.step = STEPS.SELECT_SPECIALTY;
+      findMessage.step = STEPS.INIT;
       findMessage.speciality = '';
       findMessage.doctorId = '';
       findMessage.doctorPhone = '';
@@ -84,6 +86,9 @@ export class MessageService {
     );
     console.log('validacion: ', validateStep);
     if (!validateStep) {
+      findMessage.attempts++;
+      console.log(findMessage.attempts);
+      await this.updateMessage(findMessage.id, findMessage);
       const errorMessage = messageErrorHandler(findMessage);
       buildedMessages.push(...errorMessage);
       return buildedMessages;
@@ -93,13 +98,14 @@ export class MessageService {
         Handle what message template would be returned
         according to the step
       */
-      case STEPS.CHAT_GTP:
-        const chatGptResponse = await this.chatGptHandler(infoMessage, findMessage);
-        buildedMessages.push(...chatGptResponse);
-        break;
       case STEPS.INIT:
         try {
-          findMessage.step = STEPS.SELECT_SPECIALTY;
+          const iaResponse = await this.cohereService.classyfier(
+            infoMessage.content,
+          );
+          if (iaResponse.toLowerCase() === 'speciality') {
+            findMessage.step = STEPS.SELECT_SPECIALTY;
+          }
           buildedMessages.push(
             await this.updateAndBuildPatientMessage(findMessage),
           );
@@ -231,14 +237,10 @@ export class MessageService {
     } else {
       if (messageInfo.content !== 'Otra especialidad') {
         dbMessage.step = STEPS.SELECT_SPECIALTY;
-        finalMessages.push(
-          await this.updateAndBuildPatientMessage(dbMessage),
-        );
+        finalMessages.push(await this.updateAndBuildPatientMessage(dbMessage));
       } else {
         dbMessage.step = STEPS.INSERT_DATE;
-        finalMessages.push(
-          await this.updateAndBuildPatientMessage(dbMessage),
-        );
+        finalMessages.push(await this.updateAndBuildPatientMessage(dbMessage));
       }
     }
     return finalMessages;

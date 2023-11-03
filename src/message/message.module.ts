@@ -7,6 +7,7 @@ import { BotResponseService } from './bot-response/bot-response.service';
 import { NotificationModule } from 'src/notification/notification.module';
 import { DoctorModule } from 'src/doctor/doctor.module';
 import { ChatgtpModule } from 'src/chatgtp/chatgtp.module';
+import { CohereModule } from 'src/cohere/cohere.module';
 
 @Module({
   controllers: [MessageController],
@@ -21,6 +22,7 @@ import { ChatgtpModule } from 'src/chatgtp/chatgtp.module';
     NotificationModule,
     DoctorModule,
     ChatgtpModule,
+    CohereModule
   ],
   exports: [MongooseModule, MessageService, BotResponseService],
 })

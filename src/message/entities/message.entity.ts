@@ -53,7 +53,7 @@ export class Message extends Document {
         // index: true
         type: String,
         enum: STEPS,
-        default: STEPS.CHAT_GTP
+        default: STEPS.INIT
     })
     step: string;
 
@@ -68,7 +68,13 @@ export class Message extends Document {
     @Prop({
         // required: true,
         // index: true
-        unique: true,
+        default: 0
+    })
+    attempts: number;
+
+    @Prop({
+        // required: true,
+        // index: true
     })
     imageVoucher: string;
 
