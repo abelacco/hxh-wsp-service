@@ -8,6 +8,7 @@ export const createAppointment = async (message: Message) => {
         message.doctorId,
         message.fee,
         message.date,
+        message.imageVoucher
     );
     const api = process.env.API_SERVICE
     const query = await axios.post(`${api}/appointment`, {
