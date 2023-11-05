@@ -3,14 +3,12 @@ import { Templates } from '../helpers/templates/textTemplate';
 import { STEPS } from 'src/config/constants';
 import { Message } from '../entities/message.entity';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { NotificationService } from 'src/notification/notification.service';
 import { dateToString } from '../helpers/dateParser';
 
 @Injectable()
 export class BotResponseService {
   constructor(
     private readonly doctorService: DoctorService,
-    private readonly notificationManager: NotificationService,
   ) {}
   buildMessage(messageClient: Message) {
     /*
@@ -50,6 +48,7 @@ export class BotResponseService {
     const { id, clientName, date, speciality } = message;
     const stringDate = dateToString(date);
     const doctors = await this.doctorService.getDoctors(speciality);
+    const notifications = [];
     for (const doc of doctors) {
       const notification = Templates.doctorNotification(
         doc.phone,
@@ -57,8 +56,9 @@ export class BotResponseService {
         clientName,
         stringDate,
       );
-      this.notificationManager.sendNotification(notification);
+      notifications.push(notification);
     }
+    return notifications;
   }
 
   searchingDoctorTemplateBuilder(phone: string) {

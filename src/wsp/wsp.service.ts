@@ -2,24 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { MessageService } from 'src/message/message.service';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
-import { NotificationService } from 'src/notification/notification.service';
 import { PaymentStatusDto } from './dto/paymentStatus.dto';
 import axios from 'axios';
+import { messageDestructurer } from './helpers/messageDestructurer';
+import { WSP_MESSAGE_TYPES } from './helpers/constants';
 
 @Injectable()
 export class WspService {
-  constructor(
-    private msgService: MessageService,
-    private readonly notificationService: NotificationService
-  ) {}
+  constructor(private msgService: MessageService) {}
+
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
-    const response = await this.msgService.proccessMessage(messageWSP);
+    const parsedMessage = messageDestructurer(messageWSP);
+    if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
+      parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
+    const response = await this.msgService.proccessMessage(parsedMessage);
     if (!response) {
       return false;
     }
 
     for (const message of response) {
-      await this.sendMessages(message)
+      await this.sendMessages(message);
     }
 
     return 'This action adds a new wsp';
@@ -46,7 +48,6 @@ export class WspService {
     const message = await this.msgService.findByAppointmentId(id);
     message.status = status;
     await this.msgService.updateMessage(message.id, message);
-    console.log("message status", message)
     const templates = this.msgService.createStatusNotification(message);
 
     for (const template of templates) {
@@ -60,7 +61,8 @@ export class WspService {
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
       await axios.post(
-        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,messageClient,
+        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
+        messageClient,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -71,5 +73,19 @@ export class WspService {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  async getWhatsappMediaUrl(imageId: string) {
+    const getImage = await axios.get(
+      `https://graph.facebook.com/v16.0/${imageId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+        },
+      },
+    );
+    const imageUrl = await getImage.data.url;
+    return imageUrl;
   }
 }

@@ -39,8 +39,6 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
         parsedMessage.content = message.text.body;
         break;
       case IMAGE:
-        //Could be message.sha256 or get message.id and retrieve image
-        //from cloud api https://graph.facebook.com/v17.0/message.id
         parsedMessage.content = message.image.id
         break;
       default:

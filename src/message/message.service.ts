@@ -3,11 +3,8 @@ import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { STEPS } from '../config/constants';
-import { messageDestructurer } from './helpers/messageDestructurer';
-import { IParsedMessage } from './entities/parsedMessage';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
-import { WspReceivedMessageDto } from './dto/wspReceivedMessage.dto';
 import {
   DoctorMessageValidator,
   receivedMessageValidator,
@@ -16,12 +13,14 @@ import { DoctorService } from 'src/doctor/doctor.service';
 import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
-import { doctorTemplate } from './helpers/templates/templatesBuilder';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
 import { messageErrorHandler } from './helpers/messageErrorHandler';
 import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
 import { SPECIALITIES_LIST } from './helpers/constants';
 import { CohereService } from 'src/cohere/cohere.service';
+import { binaryToBase64 } from './helpers/bufferToBase64';
+import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class MessageService {
@@ -30,30 +29,30 @@ export class MessageService {
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
+    private readonly notificationService: NotificationService,
     private readonly chatgtpService: ChatgtpService,
     private readonly cohereService: CohereService,
   ) {}
 
-  async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
+  async proccessMessage(messageFromWSP: IParsedMessage) {
     /*
       Get required info of the received message
     */
-    const infoMessage = messageDestructurer(messageFromWSP);
-    console.log('mensaje parseado: ', infoMessage);
+    console.log('mensaje parseado: ', messageFromWSP);
 
     /*
       Verify if it's a doctor response or
       a patient message
     */
-    if (!DoctorMessageValidator(infoMessage)) {
-      const findMessage = await this.findOrCreateMessage(infoMessage);
-      return await this.patientMessageHandler(infoMessage, findMessage);
+    if (!DoctorMessageValidator(messageFromWSP)) {
+      const findMessage = await this.findOrCreateMessage(messageFromWSP);
+      return await this.patientMessageHandler(messageFromWSP, findMessage);
     } else {
       const getMessageResponded = await this.findById(
-        infoMessage.content.id.split('-')[1],
+        messageFromWSP.content.id.split('-')[1],
       );
 
-      return this.doctorMessageHandler(infoMessage, getMessageResponded);
+      return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
     }
   }
 
@@ -69,13 +68,9 @@ export class MessageService {
       infoMessage.type === 'text' &&
       infoMessage.content.toUpperCase() === 'RESET'
     ) {
-      findMessage.step = STEPS.INIT;
-      findMessage.speciality = '';
-      findMessage.doctorId = '';
-      findMessage.doctorPhone = '';
-      findMessage.date = null;
+      const resetedMessage = this.resetMessage(findMessage);
       buildedMessages.push(
-        await this.updateAndBuildPatientMessage(findMessage),
+        await this.updateAndBuildPatientMessage(resetedMessage),
       );
       return buildedMessages;
     }
@@ -84,15 +79,16 @@ export class MessageService {
       findMessage.step,
       infoMessage,
     );
+
     console.log('validacion: ', validateStep);
     if (!validateStep) {
       findMessage.attempts++;
-      console.log(findMessage.attempts);
       await this.updateMessage(findMessage.id, findMessage);
       const errorMessage = messageErrorHandler(findMessage);
       buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
+    
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
@@ -140,7 +136,7 @@ export class MessageService {
             );
           buildedMessages.push(patientMessage);
           await this.updateMessage(findMessage.id, findMessage);
-          this.messageBuilder.buildDoctorNotification(findMessage);
+          this.notifyDoctors(findMessage);
         } catch (error) {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -205,6 +201,23 @@ export class MessageService {
     return buildedMessages;
   }
 
+  resetMessage(message: Message) {
+    message.step = STEPS.INIT;
+    message.speciality = '';
+    message.doctorId = '';
+    message.doctorPhone = '';
+    message.date = null;
+
+    return message;
+  }
+
+  async notifyDoctors(message: Message) {
+    const messages = await this.messageBuilder.buildDoctorNotification(message);
+    for (const message of messages) {
+      await this.notificationService.sendNotification(message);
+    }
+  }
+
   async chatGptHandler(messageInfo, dbMessage) {
     const finalMessages = [];
     if (messageInfo.type === 'text') {
@@ -246,29 +259,21 @@ export class MessageService {
     return finalMessages;
   }
 
-  async sendVoucherImage(image: string, message: Message) {
-    const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-      },
-    });
-    const imageUrl = await getImage.json();
+  async sendVoucherImage(imageUrl: string, message: Message) {
     try {
-      const imageData = await axios.get(imageUrl.url, {
+      const imageData = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
         headers: {
           Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
         },
       });
-      const imageBuffer = Buffer.from(imageData.data, 'binary');
+      const imageBinary = imageData.data;
       const mimeType = imageData.headers['content-type'];
-      const base64Image = imageBuffer.toString('base64');
-
+      const base64Image = binaryToBase64(imageBinary, mimeType);
       const uploadResponse = await axios.post(
         `${process.env.API_SERVICE}/cloudinary/uploadbuffer`,
         {
-          imageBuffer: `data:${mimeType};base64,${base64Image}`,
+          imageBuffer: base64Image,
         },
       );
       message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
@@ -343,17 +348,17 @@ export class MessageService {
     );
     const patient = getPatient.data;
     const message = await this.messageModel.findOne({
-       '$and': [
-          {
-            phone: receivedMessage.clientPhone,
-          },
-          {
-            status: {'$ne': '2'}
-          },
-          {
-            status: {'$ne': '3'}
-          },
-      ]
+      $and: [
+        {
+          phone: receivedMessage.clientPhone,
+        },
+        {
+          status: { $ne: '2' },
+        },
+        {
+          status: { $ne: '3' },
+        },
+      ],
     });
     if (!message) {
       try {
@@ -364,11 +369,10 @@ export class MessageService {
           doctor: '',
         });
         await createMessage.save();
-        console.log("mensaje encontrado", createMessage);
+        console.log('mensaje encontrado', createMessage);
         return createMessage;
-        
       } catch (error) {
-          console.log(error)
+        console.log(error);
       }
     }
 

@@ -1,19 +1,17 @@
 import { STEPS } from 'src/config/constants';
-import { IParsedMessage } from '../entities/parsedMessage';
 import {
-  WSP_MESSAGE_TYPES,
   WSP_REPLIES,
   SPECIALITIES,
   REPLIES_IDs,
 } from './constants';
 import { dateValidator } from './dateValidator';
+import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 
 const { TEXT, INTERACTIVE, IMAGE } = WSP_MESSAGE_TYPES;
 const {
-  GREETING,
   SELECT_DOCTOR,
   PAYMENTS_OPTIONS,
-  SUBMIT_VOUCHER,
   DOCTOR_ACCEPT,
 } = WSP_REPLIES;
 const { DOCTOR_ACCEPT_ID } = REPLIES_IDs;

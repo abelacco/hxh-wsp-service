@@ -3,7 +3,6 @@ import { WspService } from './wsp.service';
 import { WspController } from './wsp.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from 'src/message/entities/message.entity';
-import { NotificationModule } from 'src/notification/notification.module';
 import { MessageModule } from 'src/message/message.module';
 import { DoctorModule } from 'src/doctor/doctor.module';
 
@@ -11,9 +10,8 @@ import { DoctorModule } from 'src/doctor/doctor.module';
   controllers: [WspController],
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-    NotificationModule,
     MessageModule,
-    DoctorModule
+    DoctorModule,
   ],
   providers: [WspService],
   exports: [WspService]
