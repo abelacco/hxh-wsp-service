@@ -1,4 +1,3 @@
-import { Message } from 'src/message/entities/message.entity';
 import { dateToString } from '../dateParser';
 
 function paramObj(content, type?) {
@@ -15,14 +14,14 @@ const templateParamsGenerator = (params) => {
   });
 };
 
-export const doctorTemplate = (message: Message) => {
-  const phone = message.phone;
-  const doctorId = message.doctorId;
+export const doctorTemplate = (appointment: any) => {
+  const phone = appointment.phone;
+  const doctorId = appointment.doctorId;
   const templateName = 'doctor_info';
-  const date = dateToString(message.date)
+  const date = dateToString(appointment.date)
   const params = templateParamsGenerator([
     paramObj(date),
-    paramObj(message.fee),
+    paramObj(appointment.fee),
   ]);
 
   const body = {
@@ -32,7 +31,7 @@ export const doctorTemplate = (message: Message) => {
     template: {
       name: templateName,
       language: {
-        code: 'es_MX',
+        code: 'es_ES',
       },
       components: [
         {
@@ -68,26 +67,71 @@ export const doctorTemplate = (message: Message) => {
   return body;
 };
 
-export const confirmationTemplate = (message: Message) => {
-  const phone = message.phone;
-  const templateName = 'doctor_info';
+export const clientConfirmationTemplate = (appointment: any) => {
+  //Obtener la informacion del modelo cita del api general
+  const {code, date, fee, patientId, doctorId} = appointment;
+  const {name: docName, speciality, phone: doctorPhone} = doctorId;
+  const {phone: patientPhone, name: patientName} = patientId;
+
+  const templateName = 'cliente_confirmacion_cita_servicio';
   
   const params = templateParamsGenerator([
-    paramObj(message.clientName),
-    paramObj(message.date),
-    paramObj(message.fee),
-    paramObj(message.appointmentId),
-    paramObj(message.phone),
+    paramObj(docName),
+    paramObj(patientName),
+    paramObj(speciality),
+    paramObj("presencial"),
+    paramObj(date),
+    paramObj("Hospital privado"),
+    paramObj("-"),
+    paramObj(fee),
+    paramObj(doctorPhone),
+    paramObj(code),
   ]);
 
   const body = {
     messaging_product: 'whatsapp',
-    to: phone,
+    to: patientPhone,
     type: 'template',
     template: {
       name: templateName,
       language: {
-        code: 'es_MX',
+        code: 'es_ES',
+      },
+      components: [
+        {
+          type: 'body',
+          parameters: params,
+        },
+      ],
+    },
+  };
+
+  return body;
+};
+
+export const doctorConfirmationTemplate = (appointment: any) => {
+  const { date, fee, patientId, doctorId } = appointment;
+  const { phone: doctorPhone } = doctorId;
+  const { phone: patientPhone, name: patientName } = patientId;
+  const templateName = 'doctor_confirmacion_cita';
+  
+  const params = templateParamsGenerator([
+    paramObj(patientName),
+    paramObj(patientPhone),
+    paramObj("presencial"),
+    paramObj(date),
+    paramObj('-'),
+    paramObj(fee),
+  ]);
+
+  const body = {
+    messaging_product: 'whatsapp',
+    to: doctorPhone,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: {
+        code: 'es_ES',
       },
       components: [
         {
