@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -21,6 +21,10 @@ import { CohereService } from 'src/cohere/cohere.service';
 import { binaryToBase64 } from './helpers/bufferToBase64';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { NotificationService } from 'src/notification/notification.service';
+import { Logger } from '@nestjs/common';
+import { dateValidator } from './helpers/dateValidator';
+
+const logger = new Logger('MessageService');
 
 @Injectable()
 export class MessageService {
@@ -129,7 +133,9 @@ export class MessageService {
       case STEPS.INSERT_DATE:
         try {
           findMessage.step = STEPS.SELECT_DOCTOR;
-          findMessage.date = stringToDate(infoMessage.content);
+          const dateFromChatGpt = await this.chatgtpService.getDateResponse(infoMessage.content);
+          if(dateFromChatGpt.includes('404') || !dateValidator(dateFromChatGpt)) throw new BadRequestException();
+          findMessage.date = stringToDate(dateFromChatGpt);
           const patientMessage =
             this.messageBuilder.searchingDoctorTemplateBuilder(
               infoMessage.clientPhone,
@@ -372,7 +378,7 @@ export class MessageService {
         console.log('mensaje encontrado', createMessage);
         return createMessage;
       } catch (error) {
-        console.log(error);
+        logger.error(error);
       }
     }
 

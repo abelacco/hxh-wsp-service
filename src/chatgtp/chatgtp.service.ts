@@ -118,23 +118,35 @@ export class ChatgtpService {
     }
   }
 
+  async getDateResponse(userMessage: string): Promise<string> {
+    const currentYear = new Date().getFullYear();
+    const systemMessage = `¿Qué dia, mes y hora se infiere en este mensaje: "${userMessage}"? La respuesta solo debe tener la fecha en el formato DD-MM-YY HH:MM siendo el año ${currentYear}, sin ningun texto extra. Si no se puede inferir, responder 404`;
+
+    this.messageHistory.push({ role: 'system', content: systemMessage });
+
+    const chatGptAnswer = await this.askOpenAI();
+    console.log("chat answerr",chatGptAnswer)
+
+    return chatGptAnswer;
+  }
+
   private async askOpenAI(): Promise<string> {
     const requestPayload:any = {
       model: 'gpt-3.5-turbo',
       messages: this.messageHistory,
-      max_tokens: 50,
+      max_tokens: 30,
     };
 
     try {
       const response = await this.openai.chat.completions.create(requestPayload);
       let botResponse = response.choices[0].message.content.trim();
   
-      if (this.messageHistory.length < this.maxQuestions * 2) {
-        // Si aún no se han hecho suficientes preguntas, invitamos a hacer más preguntas.
-        botResponse += "\n\n¿Hay algo más sobre lo que pueda preguntar o desea que le recomiende un especialista basándome en la información proporcionada hasta ahora?";
-      }
+      // if (this.messageHistory.length < this.maxQuestions * 2) {
+      //   // Si aún no se han hecho suficientes preguntas, invitamos a hacer más preguntas.
+      //   botResponse += "\n\n¿Hay algo más sobre lo que pueda preguntar o desea que le recomiende un especialista basándome en la información proporcionada hasta ahora?";
+      // }
   
-      this.messageHistory.push({ role: 'assistant', content: botResponse });
+      // this.messageHistory.push({ role: 'assistant', content: botResponse });
       return botResponse;
     } catch (error) {
       console.error('Error al llamar a OpenAI:', error);

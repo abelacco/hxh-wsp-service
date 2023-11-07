@@ -60,7 +60,7 @@ export class WspService {
     console.log('enviando mensaje, body: ', messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
-      await axios.post(
+      const wspResponse = await axios.post(
         `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
         messageClient,
         {
@@ -70,6 +70,7 @@ export class WspService {
           },
         },
       );
+        console.log(wspResponse.data)
     } catch (error) {
       console.log(error);
     }

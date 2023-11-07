@@ -35,7 +35,7 @@ export const receivedMessageValidator = (
       }
       return false;
     case STEPS.INSERT_DATE:
-      if (infoMessage.type === TEXT && dateValidator(infoMessage.content)) {
+      if (infoMessage.type === TEXT) {
         return true;
       }
       return false;
@@ -60,11 +60,6 @@ export const receivedMessageValidator = (
         return true;
       }
       return false;
-    // case STEPS.SEND_CONFIRMATION:
-    //   if(infoMessage.type === IMAGE) {
-    //       return true;
-    //     }
-    //   return false;
     default:
       return false;
   }

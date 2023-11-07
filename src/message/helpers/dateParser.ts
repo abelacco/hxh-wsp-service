@@ -3,7 +3,9 @@ import * as moment from 'moment';
 const format = 'DD-MM-YY hh:mm a';
 
 export const stringToDate = (date: string) => {
+
   const result = moment(date, format);
+  if(!result.isValid()) throw new Error();
   return result.toDate();
 };
 

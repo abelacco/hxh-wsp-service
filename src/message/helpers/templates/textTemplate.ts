@@ -8,7 +8,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: 01-10-23 10:00 am',
+        body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: dd mm h.m am/pm.\nEjemplo: 6 11 3.40 pm',
       },
     };
   }
