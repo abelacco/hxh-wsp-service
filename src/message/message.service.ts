@@ -21,6 +21,7 @@ import { CohereService } from 'src/cohere/cohere.service';
 import { binaryToBase64 } from './helpers/bufferToBase64';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { NotificationService } from 'src/notification/notification.service';
+import { clientConfirmationTemplate, doctorConfirmationTemplate, doctorTemplate } from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -300,16 +301,15 @@ export class MessageService {
     return this.messageBuilder.buildDefaultTemplate(phone);
   }
 
-  createStatusNotification(message: Message) {
+  async createStatusNotification(message: Message) {
     const messages = [];
+    const query = await axios.get(`${process.env.API_SERVICE}/apponintment/${message.appointmentId}`);
+    const appointment = query.data;
     const date = message.date;
     if (message.status === '2') {
       messages.push(
-        this.messageBuilder.buildConfirmationNotification(date, message.phone),
-        this.messageBuilder.buildConfirmationNotification(
-          date,
-          message.doctorPhone,
-        ),
+        clientConfirmationTemplate(appointment),
+        doctorConfirmationTemplate(appointment),
       );
       return messages;
     }
