@@ -74,13 +74,14 @@ export const clientConfirmationTemplate = (appointment: any) => {
   const {phone: patientPhone, name: patientName} = patientId;
 
   const templateName = 'cliente_confirmacion_cita_servicio';
+  const stringDate = dateToString(date);
   
   const params = templateParamsGenerator([
     paramObj(docName),
     paramObj(patientName),
     paramObj(speciality),
     paramObj("presencial"),
-    paramObj(date),
+    paramObj(stringDate),
     paramObj("Hospital privado"),
     paramObj("-"),
     paramObj(fee),
@@ -114,12 +115,14 @@ export const doctorConfirmationTemplate = (appointment: any) => {
   const { phone: doctorPhone } = doctorId;
   const { phone: patientPhone, name: patientName } = patientId;
   const templateName = 'doctor_confirmacion_cita';
+  const stringDate = dateToString(date);
+
   
   const params = templateParamsGenerator([
     paramObj(patientName),
     paramObj(patientPhone),
     paramObj("presencial"),
-    paramObj(date),
+    paramObj(stringDate),
     paramObj('-'),
     paramObj(fee),
   ]);
