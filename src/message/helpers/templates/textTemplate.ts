@@ -17,9 +17,23 @@ export class Templates {
     return {
       messaging_product: 'whatsapp',
       to: phone,
-      type: 'text',
-      text: {
-        body: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'see_specialities_button_id',
+                title: 'Ver especialidades',
+              },
+            },
+          ],
+        },
       },
     };
   }
@@ -39,9 +53,23 @@ export class Templates {
     return {
       messaging_product: 'whatsapp',
       to: phone,
-      type: 'text',
-      text: {
-        body: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'button_reset_id',
+                title: 'Reset',
+              },
+            },
+          ],
+        },
       },
     };
   }
