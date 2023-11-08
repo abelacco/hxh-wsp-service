@@ -70,7 +70,6 @@ export class WspService {
           },
         },
       );
-        console.log(wspResponse.data)
     } catch (error) {
       console.log(error);
     }

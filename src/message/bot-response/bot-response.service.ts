@@ -20,7 +20,6 @@ export class BotResponseService {
     const doctor = messageClient.doctorId;
     const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
-    console.log("builder step",step)
     switch (step) {
       case STEPS.INIT:
         return Templates.botIntroductionTemplate(phone);
