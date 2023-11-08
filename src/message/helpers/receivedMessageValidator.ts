@@ -22,14 +22,15 @@ export const receivedMessageValidator = (
 ) => {
   switch (step) {
     case STEPS.INIT:
-      if (infoMessage.type === TEXT) {
+      if (infoMessage.type === TEXT || (infoMessage.type === INTERACTIVE && infoMessage.content.title.includes('especialidades'))) {
         return true;
       }
       return false;
     case STEPS.SELECT_SPECIALTY:
       if (
         infoMessage.type === INTERACTIVE &&
-        SPECIALITIES.some((s) => s === infoMessage.content.title)
+        (infoMessage.content.id === "retry_speciality" || infoMessage.content.id === "accpt_speciality" || SPECIALITIES.some((s) => s === infoMessage.content.title)
+        )
       ) {
         return true;
       }

@@ -17,9 +17,23 @@ export class Templates {
     return {
       messaging_product: 'whatsapp',
       to: phone,
-      type: 'text',
-      text: {
-        body: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'see_specialities_button_id',
+                title: 'Ver especialidades',
+              },
+            },
+          ],
+        },
       },
     };
   }
@@ -39,9 +53,23 @@ export class Templates {
     return {
       messaging_product: 'whatsapp',
       to: phone,
-      type: 'text',
-      text: {
-        body: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: 'Has tenido varios inconvenientes, puedes reiniciar el proceso siempre que quieras escribiendo "Reset"',
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'button_reset_id',
+                title: 'Reset',
+              },
+            },
+          ],
+        },
       },
     };
   }
@@ -106,6 +134,63 @@ export class Templates {
       type: 'text',
       text: {
         body: 'Puede realizar el yape al 947308823 a nombre de DoctorQali SRL, por favor enviar el voucher de pago.',
+      },
+    };
+  }
+
+  static specialityConfirmation(phone: string, speciality: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma su selección?: ${speciality} `,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_speciality',
+                title: 'Confirmar',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_speciality',
+                title: 'Seleccionar otra',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  static doctorConfirmation(phone: string, docName: string, fee: number, date: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma su cita con el doctor ${docName}, el dia y hora ${date} por un precio de S/ ${fee} soles?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_doctor',
+                title: 'Confirmar',
+              },
+            }
+          ],
+        },
       },
     };
   }

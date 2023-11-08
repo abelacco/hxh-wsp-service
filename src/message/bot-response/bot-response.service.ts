@@ -65,6 +65,16 @@ export class BotResponseService {
     return Templates.notifyingDoctorsTemplate(phone);
   }
 
+  specialityConfirmationTemplate(phone: string, speciality: string) {
+    return Templates.specialityConfirmation(phone, speciality);
+  }
+
+  doctorConfirmationTemplate(docName:string, message: Message) {
+    const {fee, date, phone} = message;
+    const stringDate = dateToString(date);
+    return Templates.doctorConfirmation(phone, docName, fee, stringDate);
+  }
+
   buildConfirmationNotification(date: Date, phone: string) {
     /*
       Build confirmation notification template

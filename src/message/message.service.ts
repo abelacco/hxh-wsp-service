@@ -25,6 +25,7 @@ import { Logger } from '@nestjs/common';
 import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
+import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 
 @Injectable()
 export class MessageService {
@@ -69,8 +70,10 @@ export class MessageService {
       Reset the information of the patient message
     */
     if (
-      infoMessage.type === 'text' &&
-      infoMessage.content.toUpperCase() === 'RESET'
+      (infoMessage.type === WSP_MESSAGE_TYPES.TEXT &&
+        infoMessage.content.toUpperCase() === 'RESET') ||
+      (infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+        infoMessage.content?.title?.toUpperCase() === 'RESET')
     ) {
       const resetedMessage = this.resetMessage(findMessage);
       buildedMessages.push(
@@ -78,7 +81,6 @@ export class MessageService {
       );
       return buildedMessages;
     }
-
     const validateStep = receivedMessageValidator(
       findMessage.step,
       infoMessage,
@@ -92,7 +94,7 @@ export class MessageService {
       buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
-    
+
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
@@ -101,7 +103,7 @@ export class MessageService {
       case STEPS.INIT:
         try {
           const iaResponse = await this.cohereService.classyfier(
-            infoMessage.content,
+            infoMessage.content.title || infoMessage.content,
           );
           if (iaResponse.toLowerCase() === 'speciality') {
             findMessage.step = STEPS.SELECT_SPECIALTY;
@@ -118,11 +120,35 @@ export class MessageService {
         break;
       case STEPS.SELECT_SPECIALTY:
         try {
-          findMessage.step = STEPS.INSERT_DATE;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_speciality'
+          ) {
+            findMessage.step = STEPS.INSERT_DATE;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_speciality'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
           findMessage.speciality = infoMessage.content.title;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const phone = findMessage.phone;
+          const speciality = findMessage.speciality;
+          const specialityConfirmationMessage =
+            this.messageBuilder.specialityConfirmationTemplate(
+              phone,
+              speciality,
+            );
+          buildedMessages.push(specialityConfirmationMessage);
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -152,7 +178,25 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         try {
-          findMessage.step = STEPS.SELECT_PAYMENT;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_doctor'
+          ) {
+            findMessage.step = STEPS.SELECT_PAYMENT;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_doctor'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
           const doctor = await this.doctorService.findById(
             infoMessage.content.id,
           );
@@ -161,9 +205,10 @@ export class MessageService {
           findMessage.fee = doctor.fee;
           const appointment = await createAppointment(findMessage);
           findMessage.appointmentId = appointment._id;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const docConfirmationMessage =
+            this.messageBuilder.doctorConfirmationTemplate(doctor.name, findMessage);
+          buildedMessages.push(docConfirmationMessage);
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -209,6 +254,7 @@ export class MessageService {
 
   resetMessage(message: Message) {
     message.step = STEPS.INIT;
+    message.attempts = 0;
     message.speciality = '';
     message.doctorId = '';
     message.doctorPhone = '';
