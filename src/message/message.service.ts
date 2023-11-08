@@ -313,19 +313,19 @@ export class MessageService {
 
   async sendVoucherImage(imageUrl: string, message: Message) {
     try {
-      const imageData = await axios.get(imageUrl, {
-        responseType: 'arraybuffer',
-        headers: {
-          Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-        },
-      });
-      const imageBinary = imageData.data;
-      const mimeType = imageData.headers['content-type'];
-      const base64Image = binaryToBase64(imageBinary, mimeType);
+      // const imageData = await axios.get(imageUrl, {
+      //   responseType: 'arraybuffer',
+      //   headers: {
+      //     Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+      //   },
+      // });
+      // const imageBinary = imageData.data;
+      // const mimeType = imageData.headers['content-type'];
+      // const base64Image = binaryToBase64(imageBinary, mimeType);
       const uploadResponse = await axios.post(
-        `${process.env.API_SERVICE}/cloudinary/uploadbuffer`,
+        `${process.env.API_SERVICE}/cloudinary/uploadurl`,
         {
-          imageBuffer: base64Image,
+          url: imageUrl,
         },
       );
       message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
