@@ -26,6 +26,7 @@ import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
 import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import { clientConfirmationTemplate, doctorConfirmationTemplate, doctorTemplate } from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -357,16 +358,15 @@ export class MessageService {
     return this.messageBuilder.buildDefaultTemplate(phone);
   }
 
-  createStatusNotification(message: Message) {
+  async createStatusNotification(message: Message) {
     const messages = [];
+    const query = await axios.get(`${process.env.API_SERVICE}/apponintment/${message.appointmentId}`);
+    const appointment = query.data;
     const date = message.date;
     if (message.status === '2') {
       messages.push(
-        this.messageBuilder.buildConfirmationNotification(date, message.phone),
-        this.messageBuilder.buildConfirmationNotification(
-          date,
-          message.doctorPhone,
-        ),
+        clientConfirmationTemplate(appointment),
+        doctorConfirmationTemplate(appointment),
       );
       return messages;
     }
