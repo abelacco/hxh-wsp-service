@@ -116,11 +116,35 @@ export class MessageService {
         break;
       case STEPS.SELECT_SPECIALTY:
         try {
-          findMessage.step = STEPS.INSERT_DATE;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_speciality'
+          ) {
+            findMessage.step = STEPS.INSERT_DATE;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_speciality'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
           findMessage.speciality = infoMessage.content.title;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const phone = findMessage.phone;
+          const speciality = findMessage.speciality;
+          const specialityConfirmationMessage =
+            this.messageBuilder.specialityConfirmationTemplate(
+              phone,
+              speciality,
+            );
+          buildedMessages.push(specialityConfirmationMessage);
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -148,7 +172,25 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         try {
-          findMessage.step = STEPS.SELECT_PAYMENT;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_doctor'
+          ) {
+            findMessage.step = STEPS.SELECT_PAYMENT;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_doctor'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
           const doctor = await this.doctorService.findById(
             infoMessage.content.id,
           );
@@ -157,9 +199,10 @@ export class MessageService {
           findMessage.fee = doctor.fee;
           const appointment = await createAppointment(findMessage);
           findMessage.appointmentId = appointment._id;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const docConfirmationMessage =
+            this.messageBuilder.doctorConfirmationTemplate(doctor.name, findMessage);
+          buildedMessages.push(docConfirmationMessage);
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
