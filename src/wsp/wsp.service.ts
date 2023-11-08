@@ -48,7 +48,7 @@ export class WspService {
     const message = await this.msgService.findByAppointmentId(id);
     message.status = status;
     await this.msgService.updateMessage(message.id, message);
-    const templates = this.msgService.createStatusNotification(message);
+    const templates = await this.msgService.createStatusNotification(message);
 
     for (const template of templates) {
       this.sendMessages(template);

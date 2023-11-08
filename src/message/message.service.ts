@@ -360,7 +360,7 @@ export class MessageService {
 
   async createStatusNotification(message: Message) {
     const messages = [];
-    const query = await axios.get(`${process.env.API_SERVICE}/apponintment/${message.appointmentId}`);
+    const query = await axios.get(`${process.env.API_SERVICE}/appointment/${message.appointmentId}`);
     const appointment = query.data;
     const date = message.date;
     if (message.status === '2') {
