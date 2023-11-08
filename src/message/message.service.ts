@@ -236,7 +236,10 @@ export class MessageService {
             findMessage,
           );
           buildedMessages.push(waitingMessage);
-          await this.sendVoucherImage(infoMessage.content, findMessage);
+          const voucher = await this.sendVoucherImage(infoMessage.content, findMessage);
+          await axios.patch(`${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`, {
+            voucher
+          })
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -328,8 +331,10 @@ export class MessageService {
           url: imageUrl,
         },
       );
-      message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
+      const response = uploadResponse.data.secure_url;
+      message.imageVoucher = response;
       await this.updateMessage(message.id, message);
+      return response;
     } catch (error) {
       console.error('Error al obtener la imagen:', error);
     }
