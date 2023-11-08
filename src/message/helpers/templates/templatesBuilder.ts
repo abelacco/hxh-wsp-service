@@ -86,7 +86,7 @@ export const clientConfirmationTemplate = (appointment: any) => {
     paramObj("-"),
     paramObj(fee),
     paramObj(doctorPhone),
-    paramObj(code),
+    paramObj('code'),
   ]);
 
   const body = {
@@ -125,6 +125,7 @@ export const doctorConfirmationTemplate = (appointment: any) => {
     paramObj(stringDate),
     paramObj('-'),
     paramObj(fee),
+    paramObj('code'),
   ]);
 
   const body = {
