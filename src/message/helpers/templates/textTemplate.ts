@@ -138,6 +138,63 @@ export class Templates {
     };
   }
 
+  static specialityConfirmation(phone: string, speciality: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma su selección?: ${speciality} `,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_speciality',
+                title: 'Confirmar',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_speciality',
+                title: 'Seleccionar otra',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  static doctorConfirmation(phone: string, docName: string, fee: number, date: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma su cita con el doctor ${docName}, el dia y hora ${date} por un precio de S/ ${fee} soles?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_doctor',
+                title: 'Confirmar',
+              },
+            }
+          ],
+        },
+      },
+    };
+  }
+
   static confirmationPayment(phone: string, date: Date) {
     const dateString = dateToString(date);
     return {
