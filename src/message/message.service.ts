@@ -21,6 +21,7 @@ import { CohereService } from 'src/cohere/cohere.service';
 import { binaryToBase64 } from './helpers/bufferToBase64';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { NotificationService } from 'src/notification/notification.service';
+import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 
 @Injectable()
 export class MessageService {
@@ -65,8 +66,10 @@ export class MessageService {
       Reset the information of the patient message
     */
     if (
-      infoMessage.type === 'text' &&
-      infoMessage.content.toUpperCase() === 'RESET'
+      (infoMessage.type === WSP_MESSAGE_TYPES.TEXT &&
+        infoMessage.content.toUpperCase() === 'RESET') ||
+      (infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+        infoMessage.content?.title?.toUpperCase() === 'RESET')
     ) {
       const resetedMessage = this.resetMessage(findMessage);
       buildedMessages.push(
@@ -74,7 +77,6 @@ export class MessageService {
       );
       return buildedMessages;
     }
-
     const validateStep = receivedMessageValidator(
       findMessage.step,
       infoMessage,
@@ -88,7 +90,7 @@ export class MessageService {
       buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
-    
+
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
@@ -97,7 +99,7 @@ export class MessageService {
       case STEPS.INIT:
         try {
           const iaResponse = await this.cohereService.classyfier(
-            infoMessage.content,
+            infoMessage.content.title || infoMessage.content,
           );
           if (iaResponse.toLowerCase() === 'speciality') {
             findMessage.step = STEPS.SELECT_SPECIALTY;
@@ -203,6 +205,7 @@ export class MessageService {
 
   resetMessage(message: Message) {
     message.step = STEPS.INIT;
+    message.attempts = 0;
     message.speciality = '';
     message.doctorId = '';
     message.doctorPhone = '';
