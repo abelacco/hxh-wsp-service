@@ -46,7 +46,6 @@ export class WspService {
     const id = paymentStatusDto.id;
     const status = paymentStatusDto.status;
     const message = await this.msgService.findByAppointmentId(id);
-    console.log("message by appontment id", message)
     message.status = status.toString();
     await this.msgService.updateMessage(message.id, message);
     const templates = await this.msgService.createStatusNotification(message);
@@ -61,7 +60,7 @@ export class WspService {
     console.log('enviando mensaje, body: ', messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
-      const wspResponse = await axios.post(
+      await axios.post(
         `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
         messageClient,
         {

@@ -241,8 +241,7 @@ export class MessageService {
           await axios.patch(`${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`, {
             voucher
           })
-        } catch (e) {
-          console.log(e)
+        } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -427,7 +426,6 @@ export class MessageService {
           doctor: '',
         });
         await createMessage.save();
-        console.log('mensaje encontrado', createMessage);
         return createMessage;
       } catch (error) {
         logger.error(error);
