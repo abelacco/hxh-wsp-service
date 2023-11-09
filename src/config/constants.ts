@@ -1,7 +1,7 @@
 export enum PAYMENTSTATUS {
-  PENDING = '1',
-  ACCEPTED = '2',
-  REJECTED = '3',
+  PENDING = 1,
+  ACCEPTED = 2,
+  REJECTED = 3,
 }
 export const STEPS = {
   INIT: '0',
