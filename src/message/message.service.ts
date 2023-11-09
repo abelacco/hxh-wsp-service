@@ -241,7 +241,8 @@ export class MessageService {
           await axios.patch(`${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`, {
             voucher
           })
-        } catch {
+        } catch (e) {
+          console.log(e)
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
