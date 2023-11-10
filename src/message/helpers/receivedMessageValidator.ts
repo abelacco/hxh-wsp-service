@@ -33,7 +33,11 @@ export const receivedMessageValidator = (
       }
       return false;
     case STEPS.INSERT_DATE:
-      if (infoMessage.type === TEXT) {
+      if (infoMessage.type === TEXT ||
+          (infoMessage.content.id === 'retry_date' ||
+            infoMessage.content.id === 'accpt_date'
+          )
+        ) {
         return true;
       }
       return false;
@@ -41,7 +45,8 @@ export const receivedMessageValidator = (
       if (
         infoMessage.type === INTERACTIVE &&
         (infoMessage.content.title === SELECT_DOCTOR ||
-          infoMessage.content.id === 'accpt_doctor')
+          infoMessage.content.id === 'accpt_doctor' ||
+          infoMessage.content.id === 'retry_doctor')
       ) {
         return true;
       }

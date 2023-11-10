@@ -10,7 +10,7 @@ import {
   receivedMessageValidator,
 } from './helpers/receivedMessageValidator';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { stringToDate } from './helpers/dateParser';
+import { dateToString, stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
@@ -26,7 +26,11 @@ import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
 import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
-import { clientConfirmationTemplate, doctorConfirmationTemplate, doctorTemplate } from './helpers/templates/templatesBuilder';
+import {
+  clientConfirmationTemplate,
+  doctorConfirmationTemplate,
+  doctorTemplate,
+} from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -159,17 +163,45 @@ export class MessageService {
         break;
       case STEPS.INSERT_DATE:
         try {
-          findMessage.step = STEPS.SELECT_DOCTOR;
-          const dateFromChatGpt = await this.chatgtpService.getDateResponse(infoMessage.content);
-          if(dateFromChatGpt.includes('404') || !dateValidator(dateFromChatGpt)) throw new BadRequestException();
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_date'
+          ) {
+            findMessage.step = STEPS.SELECT_DOCTOR;
+            await this.updateMessage(findMessage.id, findMessage);
+            const patientMessage =
+              this.messageBuilder.searchingDoctorTemplateBuilder(
+                infoMessage.clientPhone,
+              );
+            buildedMessages.push(patientMessage);
+            this.notifyDoctors(findMessage);
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_date'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
+          const dateFromChatGpt = await this.chatgtpService.getDateResponse(
+            infoMessage.content,
+          );
+          if (
+            dateFromChatGpt.includes('404') ||
+            !dateValidator(dateFromChatGpt)
+          )
+            throw new BadRequestException();
           findMessage.date = stringToDate(dateFromChatGpt);
-          const patientMessage =
-            this.messageBuilder.searchingDoctorTemplateBuilder(
-              infoMessage.clientPhone,
-            );
-          buildedMessages.push(patientMessage);
           await this.updateMessage(findMessage.id, findMessage);
-          this.notifyDoctors(findMessage);
+          const dateConfirmationMessage =
+            this.messageBuilder.dateConfirmationTemplate(
+              infoMessage.clientPhone,
+              findMessage.date,
+            );
+          buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -194,8 +226,7 @@ export class MessageService {
             infoMessage.content.id &&
             infoMessage.content.id === 'retry_doctor'
           ) {
-            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
-            return buildedMessages;
+            return;
           }
 
           const doctor = await this.doctorService.findById(
@@ -208,7 +239,10 @@ export class MessageService {
           findMessage.appointmentId = appointment._id;
           await this.updateMessage(findMessage.id, findMessage);
           const docConfirmationMessage =
-            this.messageBuilder.doctorConfirmationTemplate(doctor.name, findMessage);
+            this.messageBuilder.doctorConfirmationTemplate(
+              doctor.name,
+              findMessage,
+            );
           buildedMessages.push(docConfirmationMessage);
         } catch {
           const errorResponse = this.errorResponseHandler(
@@ -237,10 +271,16 @@ export class MessageService {
             findMessage,
           );
           buildedMessages.push(waitingMessage);
-          const voucher = await this.sendVoucherImage(infoMessage.content, findMessage);
-          await axios.patch(`${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`, {
-            voucher
-          })
+          const voucher = await this.sendVoucherImage(
+            infoMessage.content,
+            findMessage,
+          );
+          await axios.patch(
+            `${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`,
+            {
+              voucher,
+            },
+          );
         } catch {
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -360,7 +400,9 @@ export class MessageService {
 
   async createStatusNotification(message: Message) {
     const messages = [];
-    const query = await axios.get(`${process.env.API_SERVICE}/appointment/${message.appointmentId}`);
+    const query = await axios.get(
+      `${process.env.API_SERVICE}/appointment/${message.appointmentId}`,
+    );
     const appointment = query.data;
     const date = message.date;
     if (message.status === '2') {

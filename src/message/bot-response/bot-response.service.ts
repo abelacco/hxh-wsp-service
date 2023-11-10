@@ -74,6 +74,11 @@ export class BotResponseService {
     return Templates.doctorConfirmation(phone, docName, fee, stringDate);
   }
 
+  dateConfirmationTemplate(phone:string, date: Date) {
+    const stringDate = dateToString(date);
+    return Templates.dateConfirmation(phone, stringDate);
+  }
+
   buildConfirmationNotification(date: Date, phone: string) {
     /*
       Build confirmation notification template

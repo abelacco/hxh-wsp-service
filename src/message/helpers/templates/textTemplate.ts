@@ -188,7 +188,46 @@ export class Templates {
                 id: 'accpt_doctor',
                 title: 'Confirmar',
               },
-            }
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_doctor',
+                title: 'Elegir otro',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  static dateConfirmation(phone: string, date: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma la fecha y hora: ${date}?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_doctor',
+                title: 'Confirmar',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_doctor',
+                title: 'Elegir otro',
+              },
+            },
           ],
         },
       },
