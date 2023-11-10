@@ -32,6 +32,13 @@ export class Templates {
                 title: 'Ver especialidades',
               },
             },
+            {
+              type: 'reply',
+              reply: {
+                id: 'specialist_button_id',
+                title: 'Soy especialista',
+              },
+            },
           ],
         },
       },
@@ -217,15 +224,15 @@ export class Templates {
             {
               type: 'reply',
               reply: {
-                id: 'accpt_doctor',
+                id: 'accpt_date',
                 title: 'Confirmar',
               },
             },
             {
               type: 'reply',
               reply: {
-                id: 'retry_doctor',
-                title: 'Elegir otro',
+                id: 'retry_date',
+                title: 'Elegir otra',
               },
             },
           ],
