@@ -54,6 +54,14 @@ export class MessageService {
       Verify if it's a doctor response or
       a patient message
     */
+
+      /*
+      Agregar en el if la opcion de que el content del param messageFromWSP
+      contiente una palabra clave que identifique al path de afiliacion
+      if else (messageFromWSP.content === 'const.afiliacionCode') {
+        return afiliacionHandler();
+      }
+    */
     if (!DoctorMessageValidator(messageFromWSP)) {
       const findMessage = await this.findOrCreateMessage(messageFromWSP);
       return await this.patientMessageHandler(messageFromWSP, findMessage);
@@ -65,6 +73,14 @@ export class MessageService {
       return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
     }
   }
+
+    /*
+      Manejador de afiliacion, debe retornar un array de templates
+      afiliacionHandler() {
+        validadores ...
+        switch() {} ...
+      }
+    */
 
   async patientMessageHandler(
     infoMessage: IParsedMessage,
