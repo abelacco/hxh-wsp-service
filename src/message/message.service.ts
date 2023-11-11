@@ -49,32 +49,80 @@ export class MessageService {
       Get required info of the received message
     */
     console.log('mensaje parseado: ', messageFromWSP);
+    const { clientPhone, content } = messageFromWSP;
 
-    /*
-      Verify if it's a doctor response or
-      a patient message
-    */
-
-      /*
-      Agregar en el if la opcion de que el content del param messageFromWSP
-      contiente una palabra clave que identifique al path de afiliacion
-      if else (messageFromWSP.content === 'const.afiliacionCode') {
-        return afiliacionHandler();
-      }
-    */
-    if (!DoctorMessageValidator(messageFromWSP)) {
-      const findMessage = await this.findOrCreateMessage(messageFromWSP);
-      return await this.patientMessageHandler(messageFromWSP, findMessage);
-    } else {
+    if(DoctorMessageValidator(messageFromWSP)) {
       const getMessageResponded = await this.findById(
         messageFromWSP.content.id.split('-')[1],
       );
 
       return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
     }
-  }
+
+    const checkCurrentPath = await this.messageModel.findOne({
+      $and: [
+        {
+          phone: clientPhone,
+        },
+        {
+          status: { $ne: '2' },
+        },
+        {
+          status: { $ne: '3' },
+        },
+      ],
+    });
+
+    if (!checkCurrentPath || checkCurrentPath.step === '0') {
+      try {
+        const iaResponse = await this.cohereService.classyfier(
+          content.title || content,
+        );
+
+        if (iaResponse === 'speciality' && !checkCurrentPath) {
+          const findMessage = await this.findOrCreateMessage(messageFromWSP);
+          findMessage.step = STEPS.SELECT_SPECIALTY;
+          const response = await this.updateAndBuildPatientMessage(findMessage);
+          return [response];
+        }
+        
+        if(iaResponse === 'speciality' && checkCurrentPath){
+          checkCurrentPath.step = STEPS.SELECT_SPECIALTY;
+          const response = await this.updateAndBuildPatientMessage(checkCurrentPath);
+          return [response];
+        }
+
+        if (iaResponse === 'specialist') {
+          const response =
+            this.messageBuilder.specialistLinkTemplate(clientPhone);
+          return [response];
+        }
+
+        return [this.messageBuilder.buildIntroMessage(clientPhone)];
+      } catch (e) {
+        console.log(e);
+        const errorResponse = this.errorResponseHandler(clientPhone);
+        return [errorResponse];
+      }
+    }
+
+    return await this.patientMessageHandler(messageFromWSP, checkCurrentPath);
 
     /*
+      Verify if it's a doctor response or
+      a patient message
+    */
+
+    /*
+      Agregar en el if la opcion de que el content del param messageFromWSP
+      contiente una palabra clave que identifique al path de afiliacion
+      if else (messageFromWSP.content === 'const.afiliacionCode') {
+        return afiliacionHandler();
+      }
+    */
+  }
+
+  /*
       Manejador de afiliacion, debe retornar un array de templates
       afiliacionHandler() {
         validadores ...
@@ -121,24 +169,6 @@ export class MessageService {
         Handle what message template would be returned
         according to the step
       */
-      case STEPS.INIT:
-        try {
-          const iaResponse = await this.cohereService.classyfier(
-            infoMessage.content.title || infoMessage.content,
-          );
-          if (iaResponse.toLowerCase() === 'speciality') {
-            findMessage.step = STEPS.SELECT_SPECIALTY;
-          }
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
-        } catch {
-          const errorResponse = this.errorResponseHandler(
-            infoMessage.clientPhone,
-          );
-          buildedMessages.push(errorResponse);
-        }
-        break;
       case STEPS.SELECT_SPECIALTY:
         try {
           if (
