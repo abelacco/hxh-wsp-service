@@ -103,6 +103,17 @@ export class Templates {
     };
   }
 
+  static specialistsLinkMessage(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Este es el link para registrar especialistas: www.google.com',
+      },
+    };
+  }
+
   static doctorNotification(
     doctorPhone: string,
     messageId: string,
