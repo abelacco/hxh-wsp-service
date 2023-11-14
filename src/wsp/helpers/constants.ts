@@ -7,4 +7,5 @@ export const WSP_MESSAGE_TYPES = {
   TEXT: 'text',
   INTERACTIVE: 'interactive',
   IMAGE: 'image',
+  BUTTON: 'button'
 };
