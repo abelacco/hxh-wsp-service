@@ -13,12 +13,8 @@ export const receivedMessageValidator = (
   infoMessage: IParsedMessage,
 ) => {
   switch (step) {
-    case STEPS.INIT:
-      if (
-        infoMessage.type === TEXT ||
-        (infoMessage.type === INTERACTIVE &&
-          infoMessage.content.title.includes('especialidades'))
-      ) {
+    case STEPS.PUT_DNI:
+      if (infoMessage.type === TEXT) {
         return true;
       }
       return false;

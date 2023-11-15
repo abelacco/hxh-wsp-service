@@ -10,7 +10,7 @@ import {
   receivedMessageValidator,
 } from './helpers/receivedMessageValidator';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { dateToString, stringToDate } from './helpers/dateParser';
+import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
@@ -18,7 +18,6 @@ import { messageErrorHandler } from './helpers/messageErrorHandler';
 import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
 import { SPECIALITIES_LIST } from './helpers/constants';
 import { CohereService } from 'src/cohere/cohere.service';
-import { binaryToBase64 } from './helpers/bufferToBase64';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { NotificationService } from 'src/notification/notification.service';
 import { Logger } from '@nestjs/common';
@@ -29,7 +28,6 @@ import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 import {
   clientConfirmationTemplate,
   doctorConfirmationTemplate,
-  doctorTemplate,
 } from './helpers/templates/templatesBuilder';
 
 @Injectable()
@@ -81,13 +79,13 @@ export class MessageService {
 
         if (iaResponse === 'speciality' && !checkCurrentPath) {
           const findMessage = await this.findOrCreateMessage(messageFromWSP);
-          findMessage.step = STEPS.SELECT_SPECIALTY;
+          findMessage.step = STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(findMessage);
           return [response];
         }
         
         if(iaResponse === 'speciality' && checkCurrentPath){
-          checkCurrentPath.step = STEPS.SELECT_SPECIALTY;
+          checkCurrentPath.step = STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(checkCurrentPath);
           return [response];
         }
@@ -169,6 +167,20 @@ export class MessageService {
         Handle what message template would be returned
         according to the step
       */
+      case STEPS.PUT_DNI:
+        try {
+          await axios.post(`${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`);
+          findMessage.step = STEPS.SELECT_SPECIALTY;
+          buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+        } catch {
+            findMessage.attempts ++;
+            this.updateMessage(findMessage.id, findMessage);
+            const errorMessage = messageErrorHandler(findMessage);
+            buildedMessages.push(...errorMessage);
+        }
+        break;
       case STEPS.SELECT_SPECIALTY:
         try {
           if (
@@ -201,6 +213,8 @@ export class MessageService {
             );
           buildedMessages.push(specialityConfirmationMessage);
         } catch {
+          findMessage.attempts ++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -249,6 +263,8 @@ export class MessageService {
             );
           buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
+          findMessage.attempts ++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -291,6 +307,8 @@ export class MessageService {
             );
           buildedMessages.push(docConfirmationMessage);
         } catch {
+          findMessage.attempts ++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -304,6 +322,8 @@ export class MessageService {
             await this.updateAndBuildPatientMessage(findMessage),
           );
         } catch {
+          findMessage.attempts ++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -328,6 +348,8 @@ export class MessageService {
             },
           );
         } catch {
+          findMessage.attempts ++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );

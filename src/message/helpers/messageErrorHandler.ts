@@ -14,6 +14,9 @@ export const messageErrorHandler = (message: Message) => {
     responses.push(resetQuestionMessage);
   }
   switch (step) {
+    case STEPS.PUT_DNI:
+      responses.push(Templates.askForDniTemplate(patientPhone));
+      break;
     case STEPS.SELECT_SPECIALTY:
       responses.push(Templates.generateSpecialitiesList(patientPhone));
       break;
