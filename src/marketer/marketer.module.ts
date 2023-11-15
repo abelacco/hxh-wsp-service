@@ -4,6 +4,7 @@ import { MarketerController } from './marketer.controller';
 import { Marketer, MarketerSchema } from './entities/marketer.schema';
 import { MarketerService } from './marketer.service';
 import { MetaModule } from 'src/provider/meta.module';
+import { MarketerHandler } from './handler/marketer.handler';
 
 @Module({
     imports: [
@@ -12,7 +13,7 @@ import { MetaModule } from 'src/provider/meta.module';
         ]),
         MetaModule
     ],
-    providers: [MarketerService],
+    providers: [MarketerService, MarketerHandler],
     controllers: [MarketerController],
     exports: [MarketerService]
 })
