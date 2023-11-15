@@ -171,11 +171,11 @@ export class MessageService {
       */
       case STEPS.PUT_DNI:
         try {
-          const dniRequest = await axios.post(
+          const dniRequest = await axios.get(
             `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
           );
           const dniResponse = dniRequest.data;
-          if (dniResponse.success = true) {
+          if (dniResponse.success === true) {
             findMessage.step = STEPS.SELECT_SPECIALTY;
             findMessage.dni = infoMessage.content;
             buildedMessages.push(
