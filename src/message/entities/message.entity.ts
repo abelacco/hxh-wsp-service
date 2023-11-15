@@ -24,6 +24,11 @@ export class Message extends Document {
     @Prop({
         // index: true
     })
+    dni: string;
+
+    @Prop({
+        // index: true
+    })
     doctorId: string;
 
     @Prop({

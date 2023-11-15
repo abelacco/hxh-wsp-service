@@ -23,6 +23,8 @@ export class BotResponseService {
     switch (step) {
       case STEPS.INIT:
         return this.buildIntroMessage(phone);
+        case STEPS.PUT_DNI:
+          return this.dniRequestMessage(phone);
       case STEPS.SELECT_SPECIALTY:
         return Templates.generateSpecialitiesList(phone);
       case STEPS.INSERT_DATE:
@@ -42,6 +44,10 @@ export class BotResponseService {
 
   buildIntroMessage(phone: string) {
     return Templates.botIntroductionTemplate(phone);
+  }
+
+  dniRequestMessage(phone: string) {
+    return Templates.askForDniTemplate(phone);
   }
 
   async buildDoctorNotification(message: Message) {
