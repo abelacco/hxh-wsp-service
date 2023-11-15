@@ -11,6 +11,9 @@ import { DoctorModule } from './doctor/doctor.module';
 import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
+import { MarketerModule } from './marketer/marketer.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MarketerEvents } from './marketer/events/marketer.event';
 
 @Module({
   imports: [
@@ -19,14 +22,16 @@ import { CohereModule } from './cohere/cohere.module';
       validationSchema: JoiValidationSchema
     }),
     MongooseModule.forRoot(process.env.MONGODB),
+    EventEmitterModule.forRoot(),
     WspModule,
     MessageModule,
     DoctorModule,
     NotificationModule,
     ChatgtpModule,
     CohereModule,
+    MarketerModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MarketerEvents],
 })
 export class AppModule {}
