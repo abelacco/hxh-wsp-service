@@ -1,24 +1,14 @@
+import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "../constants/wsp-constants";
+
 export const messageParser = ({ requestBody, currentWABA_ID }) => {
-    if (!requestBody) {
-        // Verifica que venga un objeto body para analizar
-        throw new Error('El "requestBody" es requerido');
-    }
-
-    if (!currentWABA_ID) {
-        // Verifica que venga el wa_id, el cual es el id de nuestra cuenta de business meta
-        throw new Error(
-            'currentWABA_ID es requerido. Es el identificador de empresa que se ha configurado en la cuenta de WhatsApp Business.'
-        );
-    }
-
     let WABA_ID = requestBody.entry[0]?.id; // obtenemos el id del objeto request entrante
 
-    /**
-     * Verificamos que sea un id valido. NOTA: Esta condicion genera
-     * problemas al simular la recepcion de mensajes desde POSTMAN, si se desea, se
-     * puede comentar esta instruccion
-     */
     if (WABA_ID == 0) {
+        /**
+         * Verificamos que sea un id valido. NOTA: Esta condicion genera
+         * problemas al simular la recepcion de mensajes desde POSTMAN, si se desea, se
+         * puede comentar esta instruccion
+         */
         console.log('WABA_ID es 0. Parece que estás probando con la suscripción de prueba de Meta. Esto no es realmente un WABA_ID válido. Te recomiendo que envíes un mensaje real desde un número de cliente de whatsapp real.');
     }
 
@@ -114,25 +104,25 @@ export const messageParser = ({ requestBody, currentWABA_ID }) => {
 
         if (message.type === 'text' && message.referral) { // Mensaje de anuncio con link de referidos
             msgType = 'ad_message';
-        } else if (message.type === 'text') { // Mensaje de tipo TEXT
-            msgType = 'text_message';
+        } else if (message.type === WSP_MESSAGE_TYPES.TEXT) { // Mensaje de tipo TEXT
+            msgType = WSP_MESSAGE_TYPES.TEXT;
         } else if (message.type === 'sticker') { // Mensaje de tipo STICKER
             msgType = 'sticker_message';
-        } else if (message.type === 'image') { // Mensaje de tipo IMAGE
-            msgType = 'media_message';
+        } else if (message.type === WSP_MESSAGE_TYPES.IMAGE) { // Mensaje de tipo IMAGE
+            msgType = WSP_MESSAGE_TYPES.IMAGE;
         } else if (message.location) { // Mensaje de tipo LOCATION
-            msgType = 'location_message';
+            msgType = WSP_MESSAGE_TYPES.LOCATION;
         } else if (message.contacts) { // Mensaje de tipo CONTACT
             msgType = 'contact_message';
         } else if (message.type === 'button') { // Mensaje de tipo BUTTON
             msgType = 'quick_reply_message';
-        } else if (message.type === 'interactive') { // Mensaje de tipo INTERACTIVE
+        } else if (message.type === WSP_MESSAGE_TYPES.INTERACTIVE) { // Mensaje de tipo INTERACTIVE
             // Este puede manejar 2 casos
-            if (message.interactive?.type === 'list_reply') { // Cuando se response una lista LIST_REPLY (RADIOBUTTON)
-                msgType = 'radio_button_message';
+            if (message.interactive?.type === INTERACTIVE_REPLIES_TYPES.LIST_REPLY) { // Cuando se responde a una lista LIST_REPLY (RADIOBUTTON)
+                msgType = INTERACTIVE_REPLIES_TYPES.LIST_REPLY;
                 message['list_reply'] = message.interactive.list_reply;
-            } else if (message.interactive?.type === 'button_reply') { // O cuando se responde a un BUTTON (BUTTON_REPLY)
-                msgType = 'simple_button_message';
+            } else if (message.interactive?.type === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) { // O cuando se responde a un BUTTON (BUTTON_REPLY)
+                msgType = INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY;
                 message['button_reply'] = message.interactive.button_reply;
             }
         } else if (message.type === 'unsupported') { // Manejo de mensajes aun no soportados para esta funcion
