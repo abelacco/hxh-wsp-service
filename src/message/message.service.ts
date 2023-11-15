@@ -49,7 +49,7 @@ export class MessageService {
     console.log('mensaje parseado: ', messageFromWSP);
     const { clientPhone, content } = messageFromWSP;
 
-    if(DoctorMessageValidator(messageFromWSP)) {
+    if (DoctorMessageValidator(messageFromWSP)) {
       const getMessageResponded = await this.findById(
         messageFromWSP.content.id.split('-')[1],
       );
@@ -83,10 +83,12 @@ export class MessageService {
           const response = await this.updateAndBuildPatientMessage(findMessage);
           return [response];
         }
-        
-        if(iaResponse === 'speciality' && checkCurrentPath){
+
+        if (iaResponse === 'speciality' && checkCurrentPath) {
           checkCurrentPath.step = STEPS.PUT_DNI;
-          const response = await this.updateAndBuildPatientMessage(checkCurrentPath);
+          const response = await this.updateAndBuildPatientMessage(
+            checkCurrentPath,
+          );
           return [response];
         }
 
@@ -169,16 +171,24 @@ export class MessageService {
       */
       case STEPS.PUT_DNI:
         try {
-          await axios.post(`${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`);
-          findMessage.step = STEPS.SELECT_SPECIALTY;
-          buildedMessages.push(
+          const dniRequest = await axios.post(
+            `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
+          );
+          const dniResponse = dniRequest.data;
+          if (dniResponse.success = true) {
+            findMessage.step = STEPS.SELECT_SPECIALTY;
+            findMessage.dni = infoMessage.content;
+            buildedMessages.push(
               await this.updateAndBuildPatientMessage(findMessage),
             );
+          } else {
+            throw new BadRequestException();
+          }
         } catch {
-            findMessage.attempts ++;
-            this.updateMessage(findMessage.id, findMessage);
-            const errorMessage = messageErrorHandler(findMessage);
-            buildedMessages.push(...errorMessage);
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
+          const errorMessage = messageErrorHandler(findMessage);
+          buildedMessages.push(...errorMessage);
         }
         break;
       case STEPS.SELECT_SPECIALTY:
@@ -213,7 +223,7 @@ export class MessageService {
             );
           buildedMessages.push(specialityConfirmationMessage);
         } catch {
-          findMessage.attempts ++;
+          findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -263,7 +273,7 @@ export class MessageService {
             );
           buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
-          findMessage.attempts ++;
+          findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -307,7 +317,7 @@ export class MessageService {
             );
           buildedMessages.push(docConfirmationMessage);
         } catch {
-          findMessage.attempts ++;
+          findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -322,7 +332,7 @@ export class MessageService {
             await this.updateAndBuildPatientMessage(findMessage),
           );
         } catch {
-          findMessage.attempts ++;
+          findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
@@ -348,7 +358,7 @@ export class MessageService {
             },
           );
         } catch {
-          findMessage.attempts ++;
+          findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
