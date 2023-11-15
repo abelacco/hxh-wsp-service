@@ -109,7 +109,8 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'Este es el link para registrar especialistas: www.google.com',
+        "preview_url": true,
+        body: 'Este es el link para registrar especialistas: https://wa.me/message/YK3OUKA76IHKN1',
       },
     };
   }
