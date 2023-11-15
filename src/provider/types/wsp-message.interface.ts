@@ -1,5 +1,3 @@
-import { WspNotification } from "./wsp-notification.interface";
-
 export interface WspMessage {
     metadata:              Metadata;
     contacts:              Contacts;
