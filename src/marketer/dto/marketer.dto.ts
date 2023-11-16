@@ -12,9 +12,10 @@ export class MarketerDto {
     @IsEnum(Status)
     status: Status;
 
-    @IsString()
-    @IsOptional()
-    DNI: String;
+    // TODO: Verificar la forma en la que el campo de identificacion se va a guardar
+    // @IsString()
+    // @IsOptional()
+    // DNI: String;
 
     @IsString()
     @IsOptional()
