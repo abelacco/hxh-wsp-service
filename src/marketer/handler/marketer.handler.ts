@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
 import { validateDNI, validateRUC } from '../utils/validation';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Event } from '../enums/event.enum';
@@ -11,10 +12,11 @@ export class MarketerHandler {
         private eventEmitter: EventEmitter2
     ) {}
 
-    public handleTextMessage(data: WspMessage) {
+    public handleTextMessage(req: Request, data: WspMessage) {
         console.log('handler MARKETER_TEXT_MESSAGE');
 
         let message = data.message.text.body;
+        // let message = req.marketerField || 'bot';
 
         if (validateRUC(message) || validateDNI(message)) {
             message = 'RUC/DNI';
@@ -22,8 +24,24 @@ export class MarketerHandler {
 
         switch (message) {
             case 'bot':
-                this.eventEmitter.emit(Event.MARKETER_WELCOME, data);
+                this.eventEmitter.emit(Event.MARKETER_START, data);
                 break;
+            // TODO: Probar estos case en base a los campos del registro marketer
+            // case 'DNI':
+            //     this.eventEmitter.emit(Event.MARKETER_REQUEST_RUC_DNI);
+            //     break;
+            // case 'name':
+            //     this.eventEmitter.emit(Event.MARKETER_REQUEST_BUSINESS_NAME);
+            //     break;
+            // case 'ubication':
+            //     this.eventEmitter.emit(Event.MARKETER_REQUEST_BUSINESS_LOCATION);
+            //     break;
+            // case 'qrCode':
+            //     this.eventEmitter.emit(Event.MARKETER_REQUEST_QR_CODE);
+            //     break;
+            // default:
+            //     this.eventEmitter.emit(Event.MARKETER_SUCCESS_CONFIRM)
+            //     break;
             case 'RUC/DNI':
                 /**
                  * TODO:
@@ -50,7 +68,6 @@ export class MarketerHandler {
 
         switch (button_id) {
             case 'step-1-continuar':
-                console.log('boton CONTINUAR recibido');
                 this.eventEmitter.emit(Event.MARKETER_REQUEST_RUC_DNI, data);
                 break;
             case 'step-1-cancelar':
