@@ -11,7 +11,6 @@ export class MetaProvider {
     private baseUrl = `${process.env.META_BASE_URL}/${process.env.PHONE_ID}`;
 
   parseMessage(requestBody: any) {
-    console.info('metaProvider -> parseMessage');
     return messageParser({ requestBody, currentWABA_ID: this.WABA_ID });
   }
 
