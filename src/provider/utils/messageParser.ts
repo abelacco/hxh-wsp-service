@@ -84,6 +84,7 @@ export const messageParser = ({ requestBody, currentWABA_ID }) => {
     };
 
     if (notificationMessage) {
+        console.log('messageParser -> notification', notificationMessage.status);
         /**
          * En caso de que sea un mensaje de tipo 'notificationMessage', setamos las
          * siguientes propiedades al objeto 'output'
@@ -97,6 +98,7 @@ export const messageParser = ({ requestBody, currentWABA_ID }) => {
         };
         output['notificationMessage'] = notificationMessage; // Asignamos todo el objeto a su propia propiedad en el objeto 'output'
     } else if (message) { // Caso contrario, se trata de un 'message' (Mensaje recivido del cliente)
+        console.log('messagePrser -> incoming message');
         output['isNotificationMessage'] = false; // Mismas propiedades que el 'notificationMessage' pero alternadas
         output['isMessage'] = true;
 
