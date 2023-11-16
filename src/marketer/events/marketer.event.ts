@@ -3,15 +3,17 @@ import { MetaProvider } from '../../provider/meta.provider';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Event } from '../enums/event.enum';
 import { WspMessage } from 'src/provider/types/wsp-message.interface';
+import { MarketerService } from '../marketer.service';
 
 @Injectable()
 export class MarketerEvents {
 
     constructor(
         private metaProvider: MetaProvider,
+        private readonly marketerService: MarketerService
     ) {}
 
-    @OnEvent(Event.MARKETER_WELCOME)
+    @OnEvent(Event.MARKETER_START)
     public async sendWelcome(data: WspMessage) {
         console.log('event MARKETER_WELCOME');
         const { message } = data;
@@ -37,12 +39,24 @@ export class MarketerEvents {
     @OnEvent(Event.MARKETER_REQUEST_RUC_DNI)
     public async requestRUCDNI(data: WspMessage) {
         console.log('event MARKETER_REQUEST_RUC_DNI');
-        const { message } = data;
-        
-        await this.metaProvider.sendText({
-            message: 'Ok. A continacion, enviame el DNI o el RUC de tu negocio',
-            clientPhone: '527731588611'
-        });
+        const { contacts } = data;
+        const { wa_id, profile } = contacts;
+
+        const marketer = await this.marketerService.findByWaId(wa_id);
+
+        if (!marketer) {
+            const response = await this.marketerService.create({
+                clientName: profile.name,
+                waId: wa_id
+            });
+
+            if (response) {
+                await this.metaProvider.sendText({
+                    message: 'Ok. A continacion, enviame el DNI o el RUC de tu negocio por favor',
+                    clientPhone: '527731588611'
+                });
+            }
+        }
     }
 
     @OnEvent(Event.MARKETER_REQUEST_BUSINESS_NAME)
@@ -91,4 +105,6 @@ export class MarketerEvents {
             clientPhone: '527731588611'
         });
     }
+
+
 }
