@@ -15,6 +15,6 @@ import { MarketerHandler } from './handler/marketer.handler';
     ],
     providers: [MarketerService, MarketerHandler],
     controllers: [MarketerController],
-    exports: [MarketerService]
+    exports: [MarketerService, MarketerHandler]
 })
 export class MarketerModule {}
