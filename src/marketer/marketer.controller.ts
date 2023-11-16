@@ -28,7 +28,7 @@ export class MarketerController {
             if (data?.isMessage) {
                 switch (data.message.type) {
                     case WSP_MESSAGE_TYPES.TEXT:
-                        this.marketerHandler.handleTextMessage(data);
+                        this.marketerHandler.handleTextMessage(req, data);
                         break;
                     case INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY:
                         this.marketerHandler.handleButtonReplyMessage(data)
@@ -38,6 +38,7 @@ export class MarketerController {
                         break;
                     default:
                         console.log('Tipo de mensaje no identificado');
+                        break;
                 }
             }
             
