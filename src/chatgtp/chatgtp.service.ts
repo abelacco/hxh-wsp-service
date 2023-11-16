@@ -120,7 +120,7 @@ export class ChatgtpService {
 
   async getDateResponse(userMessage: string): Promise<string> {
     const currentYear = new Date().getFullYear();
-    const systemMessage = `¿Qué dia, mes y hora se infiere en este mensaje: "${userMessage}"? La respuesta solo debe tener la fecha en el formato DD-MM-YY HH:MM siendo el año ${currentYear}, sin ningun texto extra. Si no se puede inferir, responder 404`;
+    const systemMessage = `¿Qué dia, mes y hora se infiere en este mensaje: "${userMessage}" con formato DD MM HH:mm a? La respuesta solo debe tener la fecha en el formato DD-MM-YY HH:MM siendo el año ${currentYear} y redondeando la hora a y 30 o en punto hacia adelante, sin ningun texto extra. Si no se puede inferir, responder 404`;
 
     this.messageHistory.push({ role: 'system', content: systemMessage });
 
