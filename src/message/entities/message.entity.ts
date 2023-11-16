@@ -91,4 +91,4 @@ export class Message extends Document {
     fee: number;
 }
 
- export const prevMessageSchema = SchemaFactory.createForClass(Message);
+ export const MessageSchema = SchemaFactory.createForClass(Message);
