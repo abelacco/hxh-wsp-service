@@ -460,7 +460,7 @@ export class MessageService {
   }
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
-    if (message.step === STEPS.SELECT_DOCTOR) {
+    if (message.step === STEPS.SELECT_DOCTOR && !message.doctorId) {
       const doctor = await this.doctorService.findByPhone(
         infoMessage.clientPhone,
       );
