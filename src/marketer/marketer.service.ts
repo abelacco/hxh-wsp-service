@@ -8,10 +8,10 @@ import { Status } from './enums/status.enum';
 export class MarketerService {
     constructor(@InjectModel(Marketer.name) private readonly marketerModel: Model<Marketer>) {}
 
-    public async create(waId: String, profile: String): Promise<Marketer> {
+    public async create({ waId, clientName}: { waId: String, clientName: String }): Promise<Marketer> {
         const createdMarketer = new this.marketerModel({
             wa_id: waId,
-            profile,
+            clientName,
             status: Status.INCOMPLETE,
             DNI: '',
             RUC: '',
