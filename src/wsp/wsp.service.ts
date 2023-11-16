@@ -12,6 +12,7 @@ export class WspService {
   constructor(private msgService: MessageService) {}
 
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
+    console.log("raw message", messageWSP.entry[0].changes[0].value.contacts)
     const parsedMessage = messageDestructurer(messageWSP);
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);

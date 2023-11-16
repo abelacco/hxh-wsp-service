@@ -22,7 +22,9 @@ export class BotResponseService {
     const fee = messageClient.fee;
     switch (step) {
       case STEPS.INIT:
-        return Templates.botIntroductionTemplate(phone);
+        return this.buildIntroMessage(phone);
+        case STEPS.PUT_DNI:
+          return this.dniRequestMessage(phone);
       case STEPS.SELECT_SPECIALTY:
         return Templates.generateSpecialitiesList(phone);
       case STEPS.INSERT_DATE:
@@ -38,6 +40,14 @@ export class BotResponseService {
       default:
         return Templates.defaultMessageTemplate(phone);
     }
+  }
+
+  buildIntroMessage(phone: string) {
+    return Templates.botIntroductionTemplate(phone);
+  }
+
+  dniRequestMessage(phone: string) {
+    return Templates.askForDniTemplate(phone);
   }
 
   async buildDoctorNotification(message: Message) {
@@ -66,6 +76,10 @@ export class BotResponseService {
 
   specialityConfirmationTemplate(phone: string, speciality: string) {
     return Templates.specialityConfirmation(phone, speciality);
+  }
+
+  specialistLinkTemplate(phone: string) {
+    return Templates.specialistsLinkMessage(phone);
   }
 
   doctorConfirmationTemplate(docName:string, message: Message) {

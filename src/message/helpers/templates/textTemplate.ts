@@ -13,6 +13,17 @@ export class Templates {
     };
   }
 
+  static askForDniTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: 'Coloque su dni, el mismo será verificado en el registro nacional',
+      },
+    };
+  }
+
   static botIntroductionTemplate(phone: string) {
     return {
       messaging_product: 'whatsapp',
@@ -99,6 +110,18 @@ export class Templates {
       type: 'text',
       text: {
         body: 'Estamos contactando especialistas, aguarda mientras responden',
+      },
+    };
+  }
+
+  static specialistsLinkMessage(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        "preview_url": true,
+        body: 'Este es el link para registrar especialistas: https://wa.me/message/YK3OUKA76IHKN1',
       },
     };
   }
