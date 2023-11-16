@@ -13,6 +13,7 @@ export class Message extends Document {
     @Prop({
         // index: true
         unique: true,
+        required: false
     })
     appointmentId: string;
     
@@ -90,6 +91,4 @@ export class Message extends Document {
     fee: number;
 }
 
- const prevMessageSchema = SchemaFactory.createForClass(Message);
- prevMessageSchema.paths.phone.options.unique = false;
- export const MessageSchema = prevMessageSchema;
+ export const prevMessageSchema = SchemaFactory.createForClass(Message);
