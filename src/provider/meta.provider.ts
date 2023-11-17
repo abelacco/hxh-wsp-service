@@ -135,7 +135,6 @@ export class MetaProvider {
   }
 
   private async fetchAssistan({ baseUrl, url, method, headers, body}: FetchAssistantBody) {
-    console.log('metaProvider -> fetchAssitant');
     /**
      * Devolvemos una Promise, ya que esta se resuelve o se rechaza
      * en base a ciertas condiciones dentro de nuestra funcion fetchAssistan

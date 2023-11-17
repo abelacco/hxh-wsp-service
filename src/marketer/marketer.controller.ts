@@ -42,7 +42,7 @@ export class MarketerController {
                 }
             }
             
-            console.log('-------------------------------------');
+            console.log('-----------------------------------------');
             return res.status(200).send('OK');
         } catch (error) {
             console.error(error);
