@@ -1,13 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { STEPS } from '../config/constants';
-import { messageDestructurer } from './helpers/messageDestructurer';
-import { IParsedMessage } from './entities/parsedMessage';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
-import { WspReceivedMessageDto } from './dto/wspReceivedMessage.dto';
 import {
   DoctorMessageValidator,
   receivedMessageValidator,
@@ -16,12 +13,22 @@ import { DoctorService } from 'src/doctor/doctor.service';
 import { stringToDate } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
-import { doctorTemplate } from './helpers/templates/templatesBuilder';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
 import { messageErrorHandler } from './helpers/messageErrorHandler';
 import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
 import { SPECIALITIES_LIST } from './helpers/constants';
 import { CohereService } from 'src/cohere/cohere.service';
+import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
+import { NotificationService } from 'src/notification/notification.service';
+import { Logger } from '@nestjs/common';
+import { dateValidator } from './helpers/dateValidator';
+
+const logger = new Logger('MessageService');
+import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import {
+  clientConfirmationTemplate,
+  doctorConfirmationTemplate,
+} from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -30,32 +37,98 @@ export class MessageService {
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
     private readonly doctorService: DoctorService,
+    private readonly notificationService: NotificationService,
     private readonly chatgtpService: ChatgtpService,
     private readonly cohereService: CohereService,
   ) {}
 
-  async proccessMessage(messageFromWSP: WspReceivedMessageDto) {
+  async proccessMessage(messageFromWSP: IParsedMessage) {
     /*
       Get required info of the received message
     */
-    const infoMessage = messageDestructurer(messageFromWSP);
-    console.log('mensaje parseado: ', infoMessage);
+    console.log('mensaje parseado: ', messageFromWSP);
+    const { clientPhone, content } = messageFromWSP;
+
+    if (DoctorMessageValidator(messageFromWSP)) {
+      const getMessageResponded = await this.findById(
+        messageFromWSP.content.id.split('-')[1],
+      );
+
+      return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
+    }
+
+    const checkCurrentPath = await this.messageModel.findOne({
+      $and: [
+        {
+          phone: clientPhone,
+        },
+        {
+          status: { $ne: '2' },
+        },
+        {
+          status: { $ne: '3' },
+        },
+      ],
+    });
+
+    if (!checkCurrentPath || checkCurrentPath.step === '0') {
+      try {
+        const iaResponse = await this.cohereService.classyfier(
+          content.title || content,
+        );
+
+        if (iaResponse === 'speciality' && !checkCurrentPath) {
+          const findMessage = await this.findOrCreateMessage(messageFromWSP);
+          findMessage.step = STEPS.PUT_DNI;
+          const response = await this.updateAndBuildPatientMessage(findMessage);
+          return [response];
+        }
+
+        if (iaResponse === 'speciality' && checkCurrentPath) {
+          checkCurrentPath.step = STEPS.PUT_DNI;
+          const response = await this.updateAndBuildPatientMessage(
+            checkCurrentPath,
+          );
+          return [response];
+        }
+
+        if (iaResponse === 'specialist') {
+          const response =
+            this.messageBuilder.specialistLinkTemplate(clientPhone);
+          return [response];
+        }
+
+        return [this.messageBuilder.buildIntroMessage(clientPhone)];
+      } catch (e) {
+        console.log(e);
+        const errorResponse = this.errorResponseHandler(clientPhone);
+        return [errorResponse];
+      }
+    }
+
+    return await this.patientMessageHandler(messageFromWSP, checkCurrentPath);
 
     /*
       Verify if it's a doctor response or
       a patient message
     */
-    if (!DoctorMessageValidator(infoMessage)) {
-      const findMessage = await this.findOrCreateMessage(infoMessage);
-      return await this.patientMessageHandler(infoMessage, findMessage);
-    } else {
-      const getMessageResponded = await this.findById(
-        infoMessage.content.id.split('-')[1],
-      );
 
-      return this.doctorMessageHandler(infoMessage, getMessageResponded);
-    }
+    /*
+      Agregar en el if la opcion de que el content del param messageFromWSP
+      contiente una palabra clave que identifique al path de afiliacion
+      if else (messageFromWSP.content === 'const.afiliacionCode') {
+        return afiliacionHandler();
+      }
+    */
   }
+
+  /*
+      Manejador de afiliacion, debe retornar un array de templates
+      afiliacionHandler() {
+        validadores ...
+        switch() {} ...
+      }
+    */
 
   async patientMessageHandler(
     infoMessage: IParsedMessage,
@@ -66,64 +139,92 @@ export class MessageService {
       Reset the information of the patient message
     */
     if (
-      infoMessage.type === 'text' &&
-      infoMessage.content.toUpperCase() === 'RESET'
+      (infoMessage.type === WSP_MESSAGE_TYPES.TEXT &&
+        infoMessage.content.toUpperCase() === 'RESET') ||
+      (infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+        infoMessage.content?.title?.toUpperCase() === 'RESET')
     ) {
-      findMessage.step = STEPS.INIT;
-      findMessage.speciality = '';
-      findMessage.doctorId = '';
-      findMessage.doctorPhone = '';
-      findMessage.date = null;
+      const resetedMessage = this.resetMessage(findMessage);
       buildedMessages.push(
-        await this.updateAndBuildPatientMessage(findMessage),
+        await this.updateAndBuildPatientMessage(resetedMessage),
       );
       return buildedMessages;
     }
-
     const validateStep = receivedMessageValidator(
       findMessage.step,
       infoMessage,
     );
+
     console.log('validacion: ', validateStep);
     if (!validateStep) {
       findMessage.attempts++;
-      console.log(findMessage.attempts);
       await this.updateMessage(findMessage.id, findMessage);
       const errorMessage = messageErrorHandler(findMessage);
       buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
+
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
         according to the step
       */
-      case STEPS.INIT:
+      case STEPS.PUT_DNI:
         try {
-          const iaResponse = await this.cohereService.classyfier(
-            infoMessage.content,
+          const dniRequest = await axios.get(
+            `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
           );
-          if (iaResponse.toLowerCase() === 'speciality') {
+          const dniResponse = dniRequest.data;
+          if (dniResponse.success === true) {
             findMessage.step = STEPS.SELECT_SPECIALTY;
+            findMessage.dni = infoMessage.content;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+          } else {
+            throw new BadRequestException();
           }
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
         } catch {
-          const errorResponse = this.errorResponseHandler(
-            infoMessage.clientPhone,
-          );
-          buildedMessages.push(errorResponse);
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
+          const errorMessage = messageErrorHandler(findMessage);
+          buildedMessages.push(...errorMessage);
         }
         break;
       case STEPS.SELECT_SPECIALTY:
         try {
-          findMessage.step = STEPS.INSERT_DATE;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_speciality'
+          ) {
+            findMessage.step = STEPS.INSERT_DATE;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_speciality'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
           findMessage.speciality = infoMessage.content.title;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const phone = findMessage.phone;
+          const speciality = findMessage.speciality;
+          const specialityConfirmationMessage =
+            this.messageBuilder.specialityConfirmationTemplate(
+              phone,
+              speciality,
+            );
+          buildedMessages.push(specialityConfirmationMessage);
         } catch {
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -132,16 +233,48 @@ export class MessageService {
         break;
       case STEPS.INSERT_DATE:
         try {
-          findMessage.step = STEPS.SELECT_DOCTOR;
-          findMessage.date = stringToDate(infoMessage.content);
-          const patientMessage =
-            this.messageBuilder.searchingDoctorTemplateBuilder(
-              infoMessage.clientPhone,
-            );
-          buildedMessages.push(patientMessage);
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_date'
+          ) {
+            findMessage.step = STEPS.SELECT_DOCTOR;
+            await this.updateMessage(findMessage.id, findMessage);
+            const patientMessage =
+              this.messageBuilder.searchingDoctorTemplateBuilder(
+                infoMessage.clientPhone,
+              );
+            buildedMessages.push(patientMessage);
+            this.notifyDoctors(findMessage);
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_date'
+          ) {
+            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+            return buildedMessages;
+          }
+
+          const dateFromChatGpt = await this.chatgtpService.getDateResponse(
+            infoMessage.content,
+          );
+          if (
+            dateFromChatGpt.includes('404') ||
+            !dateValidator(dateFromChatGpt)
+          )
+            throw new BadRequestException();
+          findMessage.date = stringToDate(dateFromChatGpt);
           await this.updateMessage(findMessage.id, findMessage);
-          this.messageBuilder.buildDoctorNotification(findMessage);
+          const dateConfirmationMessage =
+            this.messageBuilder.dateConfirmationTemplate(
+              infoMessage.clientPhone,
+              findMessage.date,
+            );
+          buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -150,7 +283,24 @@ export class MessageService {
         break;
       case STEPS.SELECT_DOCTOR:
         try {
-          findMessage.step = STEPS.SELECT_PAYMENT;
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'accpt_doctor'
+          ) {
+            findMessage.step = STEPS.SELECT_PAYMENT;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.content.id &&
+            infoMessage.content.id === 'retry_doctor'
+          ) {
+            return;
+          }
+
           const doctor = await this.doctorService.findById(
             infoMessage.content.id,
           );
@@ -159,10 +309,16 @@ export class MessageService {
           findMessage.fee = doctor.fee;
           const appointment = await createAppointment(findMessage);
           findMessage.appointmentId = appointment._id;
-          buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
-          );
+          await this.updateMessage(findMessage.id, findMessage);
+          const docConfirmationMessage =
+            this.messageBuilder.doctorConfirmationTemplate(
+              doctor.name,
+              findMessage,
+            );
+          buildedMessages.push(docConfirmationMessage);
         } catch {
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -176,6 +332,8 @@ export class MessageService {
             await this.updateAndBuildPatientMessage(findMessage),
           );
         } catch {
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -189,8 +347,19 @@ export class MessageService {
             findMessage,
           );
           buildedMessages.push(waitingMessage);
-          await this.sendVoucherImage(infoMessage.content, findMessage);
+          const voucher = await this.sendVoucherImage(
+            infoMessage.content,
+            findMessage,
+          );
+          await axios.patch(
+            `${process.env.API_SERVICE}/appointment/${findMessage.appointmentId}`,
+            {
+              voucher,
+            },
+          );
         } catch {
+          findMessage.attempts++;
+          this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
             infoMessage.clientPhone,
           );
@@ -203,6 +372,24 @@ export class MessageService {
         );
     }
     return buildedMessages;
+  }
+
+  resetMessage(message: Message) {
+    message.step = STEPS.INIT;
+    message.attempts = 0;
+    message.speciality = '';
+    message.doctorId = '';
+    message.doctorPhone = '';
+    message.date = null;
+
+    return message;
+  }
+
+  async notifyDoctors(message: Message) {
+    const messages = await this.messageBuilder.buildDoctorNotification(message);
+    for (const message of messages) {
+      await this.notificationService.sendNotification(message);
+    }
   }
 
   async chatGptHandler(messageInfo, dbMessage) {
@@ -246,40 +433,34 @@ export class MessageService {
     return finalMessages;
   }
 
-  async sendVoucherImage(image: string, message: Message) {
-    const getImage = await fetch(`https://graph.facebook.com/v16.0/${image}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-      },
-    });
-    const imageUrl = await getImage.json();
+  async sendVoucherImage(imageUrl: string, message: Message) {
     try {
-      const imageData = await axios.get(imageUrl.url, {
-        responseType: 'arraybuffer',
-        headers: {
-          Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-        },
-      });
-      const imageBuffer = Buffer.from(imageData.data, 'binary');
-      const mimeType = imageData.headers['content-type'];
-      const base64Image = imageBuffer.toString('base64');
-
+      // const imageData = await axios.get(imageUrl, {
+      //   responseType: 'arraybuffer',
+      //   headers: {
+      //     Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
+      //   },
+      // });
+      // const imageBinary = imageData.data;
+      // const mimeType = imageData.headers['content-type'];
+      // const base64Image = binaryToBase64(imageBinary, mimeType);
       const uploadResponse = await axios.post(
-        `${process.env.API_SERVICE}/cloudinary/uploadbuffer`,
+        `${process.env.API_SERVICE}/cloudinary/uploadurl`,
         {
-          imageBuffer: `data:${mimeType};base64,${base64Image}`,
+          url: imageUrl,
         },
       );
-      message.imageVoucher = uploadResponse.data.imageUrl.secure_url;
+      const response = uploadResponse.data.secure_url;
+      message.imageVoucher = response;
       await this.updateMessage(message.id, message);
+      return response;
     } catch (error) {
       console.error('Error al obtener la imagen:', error);
     }
   }
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
-    if (message.step === STEPS.SELECT_DOCTOR) {
+    if (message.step === STEPS.SELECT_DOCTOR && !message.doctorId) {
       const doctor = await this.doctorService.findByPhone(
         infoMessage.clientPhone,
       );
@@ -295,16 +476,17 @@ export class MessageService {
     return this.messageBuilder.buildDefaultTemplate(phone);
   }
 
-  createStatusNotification(message: Message) {
+  async createStatusNotification(message: Message) {
     const messages = [];
+    const query = await axios.get(
+      `${process.env.API_SERVICE}/appointment/${message.appointmentId}`,
+    );
+    const appointment = query.data;
     const date = message.date;
     if (message.status === '2') {
       messages.push(
-        this.messageBuilder.buildConfirmationNotification(date, message.phone),
-        this.messageBuilder.buildConfirmationNotification(
-          date,
-          message.doctorPhone,
-        ),
+        clientConfirmationTemplate(appointment),
+        doctorConfirmationTemplate(appointment),
       );
       return messages;
     }
@@ -343,17 +525,17 @@ export class MessageService {
     );
     const patient = getPatient.data;
     const message = await this.messageModel.findOne({
-       '$and': [
-          {
-            phone: receivedMessage.clientPhone,
-          },
-          {
-            status: {'$ne': '2'}
-          },
-          {
-            status: {'$ne': '3'}
-          },
-      ]
+      $and: [
+        {
+          phone: receivedMessage.clientPhone,
+        },
+        {
+          status: { $ne: '2' },
+        },
+        {
+          status: { $ne: '3' },
+        },
+      ],
     });
     if (!message) {
       try {
@@ -364,11 +546,9 @@ export class MessageService {
           doctor: '',
         });
         await createMessage.save();
-        console.log("mensaje encontrado", createMessage);
         return createMessage;
-        
       } catch (error) {
-          console.log(error)
+        logger.error(error);
       }
     }
 

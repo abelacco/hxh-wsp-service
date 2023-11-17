@@ -1,22 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Message } from 'src/message/entities/message.entity';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import { WspService } from 'src/wsp/wsp.service';
 
 @Injectable()
 export class NotificationService {
-  // constructor(private readonly messageService: MessageService) {}
+  constructor(@Inject(forwardRef(() => WspService)) private readonly wspService: WspService) {}
   
   async sendNotification(message: any) {
-    fetch(`https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(message),
-    });
-  }
-
-  async statusNotification(message: Message) {
-    
+    this.wspService.sendMessages(message);
   }
 }

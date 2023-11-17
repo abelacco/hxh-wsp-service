@@ -12,7 +12,7 @@ export class Message extends Document {
 
     @Prop({
         // index: true
-        // unique: true,
+        required: false
     })
     appointmentId: string;
     
@@ -20,6 +20,11 @@ export class Message extends Document {
         // index: true
     })
     clientName: string;
+
+    @Prop({
+        // index: true
+    })
+    dni: string;
 
     @Prop({
         // index: true
@@ -85,6 +90,4 @@ export class Message extends Document {
     fee: number;
 }
 
- const prevMessageSchema = SchemaFactory.createForClass(Message);
- prevMessageSchema.paths.phone.options.unique = false;
- export const MessageSchema = prevMessageSchema;
+ export const MessageSchema = SchemaFactory.createForClass(Message);
