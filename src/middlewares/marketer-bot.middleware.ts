@@ -1,4 +1,4 @@
-import { NestMiddleware, Injectable, Req, Res, Next } from "@nestjs/common";
+import { HttpCode, NestMiddleware, Injectable, Req, Res, Next } from "@nestjs/common";
 import { Request, Response, NextFunction } from 'express';
 import { Status } from "src/marketer/enums/status.enum";
 import { MarketerHandler } from "src/marketer/handler/marketer.handler";
@@ -15,6 +15,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
         private marketerService: MarketerService
     ) {}
 
+    @HttpCode(200)
     async use(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
 
         try {
@@ -27,8 +28,12 @@ export class MarketerBotMiddleware implements NestMiddleware {
                  * 2.- En el caso de que si es de tipo POST, ahora verificamos
                  * que sea un mensaje entrante y no una notificacion
                 */
-                if (data?.isMessage) {
-                    console.log('message type -> ', data.message.type);
+                if (data?.isNotificationMessage) {
+                    console.log('wsp-notification -> ', data.notificationType);
+                    console.log('-----------------------------------------');
+                    return res.status(200).send('OK');
+                } else if (data?.isMessage) {
+                    console.log('midleware message type -> ', data.message.type);
                     const { message, contacts } = data;
                     const { wa_id } = contacts;
 
@@ -44,6 +49,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
                     const marketer: any = await this.marketerService.findByWaId(wa_id);
 
                     if (marketer && marketer.status === Status.INCOMPLETE) {
+                        console.log('middleware marketer found');
                         const keys = Object.keys(marketer._doc).filter(key => !key.startsWith('$'));
                         req.marketerField = keys.find((key) => marketer._doc[key] === "");
 
