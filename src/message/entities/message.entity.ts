@@ -12,7 +12,7 @@ export class Message extends Document {
 
     @Prop({
         // index: true
-        unique: true,
+        // unique: true,
     })
     appointmentId: string;
     

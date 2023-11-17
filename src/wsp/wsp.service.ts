@@ -60,7 +60,7 @@ export class WspService {
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
       await axios.post(
-        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,messageClient,
+        `https://graph.facebook.com/v18.0/${process.env.PHONE_ID}/messages`,messageClient,
         {
           headers: {
             'Content-Type': 'application/json',
