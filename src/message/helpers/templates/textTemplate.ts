@@ -168,6 +168,38 @@ export class Templates {
     };
   }
 
+  static dniConfirmationTemplate(phone: string, dniName: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma ser ${dniName}?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_speciality',
+                title: 'Confirmar',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_speciality',
+                title: 'Seleccionar otra',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
   static specialityConfirmation(phone: string, speciality: string) {
     return {
       messaging_product: 'whatsapp',

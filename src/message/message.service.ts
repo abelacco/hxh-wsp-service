@@ -171,15 +171,40 @@ export class MessageService {
       */
       case STEPS.PUT_DNI:
         try {
+          if (
+            infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+            infoMessage.content.id === 'accpt_dni'
+          ) {
+            findMessage.step = STEPS.SELECT_SPECIALTY;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+            infoMessage.content.id === 'retry_dni'
+          ) {
+            buildedMessages.push(
+              this.messageBuilder.buildMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
           const dniRequest = await axios.get(
             `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
           );
           const dniResponse = dniRequest.data;
           if (dniResponse.success === true) {
-            findMessage.step = STEPS.SELECT_SPECIALTY;
+            const dniName = `${dniResponse.nombres} ${dniResponse.apellidoPaterno} ${dniResponse.apellidoMaterno}`;
             findMessage.dni = infoMessage.content;
+            await this.updateMessage(findMessage.id, findMessage);
             buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
+              this.messageBuilder.buildDniConfirmationMessage(
+                infoMessage.clientPhone,
+                dniName
+              ),
             );
           } else {
             throw new BadRequestException();
@@ -187,8 +212,13 @@ export class MessageService {
         } catch {
           findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
-          const errorMessage = messageErrorHandler(findMessage);
-          buildedMessages.push(...errorMessage);
+          if(infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE) {
+            const errorMessage = this.messageBuilder.buildDefaultTemplate(infoMessage.clientPhone);
+            buildedMessages.push(errorMessage);
+          } else {
+            const errorMessage = messageErrorHandler(findMessage);
+            buildedMessages.push(...errorMessage);
+          }
         }
         break;
       case STEPS.SELECT_SPECIALTY:

@@ -42,6 +42,10 @@ export class BotResponseService {
     }
   }
 
+  buildDniConfirmationMessage(phone: string, dniName: string) {
+    return Templates.dniConfirmationTemplate(phone, dniName);
+  }
+
   buildIntroMessage(phone: string) {
     return Templates.botIntroductionTemplate(phone);
   }
