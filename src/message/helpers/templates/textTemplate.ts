@@ -183,15 +183,15 @@ export class Templates {
             {
               type: 'reply',
               reply: {
-                id: 'accpt_speciality',
+                id: 'accpt_dni',
                 title: 'Confirmar',
               },
             },
             {
               type: 'reply',
               reply: {
-                id: 'retry_speciality',
-                title: 'Seleccionar otra',
+                id: 'retry_dni',
+                title: 'Volver a intentar',
               },
             },
           ],
