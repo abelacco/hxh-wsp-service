@@ -497,7 +497,7 @@ export class Templates {
   //   };
   // }
 
-  static generateInfoDoctor(phone: string, docId: string, date: string, fee: number) {
+  static generateInfoDoctor(phone: string, docId: string, date: string, fee: number, imageUrl: string) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -507,7 +507,7 @@ export class Templates {
         header: {
           type: 'image',
           image: {
-            link: 'https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427010/doctorPresentacion2_b9o0vw.jpg',
+            link: imageUrl,
           },
         },
         body: {

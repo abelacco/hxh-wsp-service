@@ -491,13 +491,7 @@ export class MessageService {
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
     if (message.step === STEPS.SELECT_DOCTOR && !message.doctorId) {
-      const doctor = await this.doctorService.findByPhone(
-        infoMessage.clientPhone,
-      );
-      message.doctorPhone = doctor[0].phone;
-      message.doctorId = doctor[0]._id;
-      message.fee = doctor[0].fee;
-      return [this.messageBuilder.buildMessage(message)];
+      return [await this.messageBuilder.buildDoctorCard(infoMessage.clientPhone, message)];
     }
     return false;
   }
