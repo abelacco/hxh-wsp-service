@@ -31,4 +31,37 @@ export class MarketerService {
 
         return marketer;
     }
+
+    public async update({ waId, field, value }: { waId: string, field: string, value: any }) {
+        try {
+            const updateFields: Record<string, any> = {};
+            updateFields[field] = value;
+
+            const markter = await this.marketerModel.updateOne(
+                { wa_id: { $eq: waId }},
+                {
+                    $set: updateFields
+                }
+            );
+
+            return markter;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    public async completeRegister({ waId, updateFields }: { waId: string, updateFields: Record<string, any>}) {
+        try {
+            const marketer = await this.marketerModel.updateOne(
+                { wa_id: { $eq: waId } },
+                { $set: updateFields }
+            );
+
+            return marketer;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 }
