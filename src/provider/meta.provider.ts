@@ -119,19 +119,20 @@ export class MetaProvider {
     return response;
   }
 
-  public async getWhatsappMediaUrl(imageId: string) {
-    console.info('metaProvider -> getWhatsappMediaUrl');
+  public async getWhatsappMediaUrl({ imageId }: { imageId: string }) {
     const getImage = await axios.get(
-      `https://graph.facebook.com/v16.0/${imageId}`,
+      `${process.env.META_BASE_URL}/${imageId}`,
       {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.CURRENT_ACCESS_TOKEN}`,
         },
       },
-    );
-    const imageUrl = await getImage.data.url;
-    return imageUrl;
+    )
+    .then((res) => res.data)
+    .catch((error) => console.error(error));
+    
+    return getImage.url;
   }
 
   private async fetchAssistan({ baseUrl, url, method, headers, body}: FetchAssistantBody) {
