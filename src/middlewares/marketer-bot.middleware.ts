@@ -17,6 +17,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
     @HttpCode(200)
     async use(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
+        const marketerController = '/marketer-bot';
 
         try {
             /**
@@ -51,9 +52,9 @@ export class MarketerBotMiddleware implements NestMiddleware {
                     if (marketer && marketer.status === Status.INCOMPLETE) {
                         console.log('middleware marketer found');
                         const keys = Object.keys(marketer._doc).filter(key => !key.startsWith('$'));
-                        req.marketerField = keys.find((key) => marketer._doc[key] === "");
 
-                        req.url = '/marketer-bot';
+                        req.marketerField = keys.find((key) => marketer._doc[key] === "");
+                        req.url = marketerController;
                     } else  if (message.type === WSP_MESSAGE_TYPES.TEXT) {
                         /**
                          * 3.1.- El segundo caso para redirigir el flujo es cuando el
@@ -62,7 +63,8 @@ export class MarketerBotMiddleware implements NestMiddleware {
                         const { body } = message.text;
 
                         if (body === 'bot') {
-                            req.url = '/marketer-bot';
+                            req.marketerField = 'bot';
+                            req.url = marketerController;
                         }
                     } else if(message.type == INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
                         /**
@@ -72,12 +74,13 @@ export class MarketerBotMiddleware implements NestMiddleware {
                         const button_id = data.message.button_reply.id;
 
                         if (button_id === 'step-1-continuar') {
-                            this.marketerHandler.handleButtonReplyMessage(data);
-                            console.log('-----------------------------------------');
-                            return res.status(200).send('OK'); 
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        } else if (button_id === 'step-1-cancelar') {
+                            req.marketerField = button_id;
+                            req.url = marketerController;
                         }
                     }
-            
                 }
             }
         } catch (error) {
