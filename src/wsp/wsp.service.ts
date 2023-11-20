@@ -12,7 +12,7 @@ export class WspService {
   constructor(private msgService: MessageService) {}
 
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
-    console.log("raw message", messageWSP.entry[0].changes[0].value.contacts)
+    console.log("raw message", messageWSP.entry[0].changes[0].value)
     const parsedMessage = messageDestructurer(messageWSP);
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
@@ -62,8 +62,7 @@ export class WspService {
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
       await axios.post(
-        `https://graph.facebook.com/v16.0/${process.env.PHONE_ID}/messages`,
-        messageClient,
+        `https://graph.facebook.com/v18.0/${process.env.PHONE_ID}/messages`,messageClient,
         {
           headers: {
             'Content-Type': 'application/json',

@@ -168,6 +168,38 @@ export class Templates {
     };
   }
 
+  static dniConfirmationTemplate(phone: string, dniName: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: {
+          text: `¿Confirma ser ${dniName}?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: 'reply',
+              reply: {
+                id: 'accpt_dni',
+                title: 'Confirmar',
+              },
+            },
+            {
+              type: 'reply',
+              reply: {
+                id: 'retry_dni',
+                title: 'Volver a intentar',
+              },
+            },
+          ],
+        },
+      },
+    };
+  }
+
   static specialityConfirmation(phone: string, speciality: string) {
     return {
       messaging_product: 'whatsapp',
@@ -264,14 +296,46 @@ export class Templates {
     };
   }
 
-  static confirmationPayment(phone: string, date: Date) {
+  static patientConfirmationPayment(appointment: any) {
+    const {code, date, fee, patientId, doctorId} = appointment;
+    const {name: docName, speciality, phone: doctorPhone} = doctorId;
+    const {phone: patientPhone, name: patientName} = patientId;
     const dateString = dateToString(date);
     return {
       messaging_product: 'whatsapp',
-      to: phone,
+      to: patientPhone,
       type: 'text',
       text: {
-        body: `Su cita del día ${dateString} fue agendada exitosamente`,
+        body: `¡Gracias por reservar con el Dr(a) ${docName}! A continuación, los datos de tu cita:
+        Paciente: ${patientName}
+        Especialidad: ${speciality}
+        Fecha y Hora de la cita: ${dateString}
+        Cosultorio: Centro médico
+        Link de la Cita: -
+        Costo de la cita: ${fee}
+        Celular: ${doctorPhone}
+        Identificación: ${code}`,
+      },
+    };
+  }
+
+  static doctorConfirmationPayment(appointment: any) {
+    const {code, date, fee, patientId, doctorId} = appointment;
+    const {phone: doctorPhone} = doctorId;
+    const {phone: patientPhone, name: patientName} = patientId;
+    const dateString = dateToString(date);
+    return {
+      messaging_product: 'whatsapp',
+      to: doctorPhone,
+      type: 'text',
+      text: {
+        body: `¡Tienes una nueva cita! A continuación, los datos de tu cita:
+        Paciente: ${patientName}
+        Contacto: ${patientPhone}
+        Fecha y Hora de la cita: ${dateString}
+        Link de la Cita: -
+        Costo de la cita: ${fee}
+        Identificación: ${code}`,
       },
     };
   }
@@ -465,7 +529,7 @@ export class Templates {
   //   };
   // }
 
-  static generateInfoDoctor(phone: string, docId: string, date: string, fee: number) {
+  static generateInfoDoctor(phone: string, docId: string, date: string, fee: number, imageUrl: string) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -475,7 +539,7 @@ export class Templates {
         header: {
           type: 'image',
           image: {
-            link: 'https://res.cloudinary.com/dbq85fwfz/image/upload/v1696427010/doctorPresentacion2_b9o0vw.jpg',
+            link: imageUrl,
           },
         },
         body: {

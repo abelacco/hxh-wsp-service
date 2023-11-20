@@ -25,10 +25,6 @@ import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
 import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
-import {
-  clientConfirmationTemplate,
-  doctorConfirmationTemplate,
-} from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -79,13 +75,19 @@ export class MessageService {
 
         if (iaResponse === 'speciality' && !checkCurrentPath) {
           const findMessage = await this.findOrCreateMessage(messageFromWSP);
-          findMessage.step = STEPS.PUT_DNI;
+          const findDni = await this.messageModel.findOne({
+            phone: clientPhone,
+          });
+          findMessage.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(findMessage);
           return [response];
         }
 
         if (iaResponse === 'speciality' && checkCurrentPath) {
-          checkCurrentPath.step = STEPS.PUT_DNI;
+          const findDni = await this.messageModel.findOne({
+            phone: clientPhone,
+          });
+          checkCurrentPath.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(
             checkCurrentPath,
           );
@@ -171,15 +173,40 @@ export class MessageService {
       */
       case STEPS.PUT_DNI:
         try {
+          if (
+            infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+            infoMessage.content.id === 'accpt_dni'
+          ) {
+            findMessage.step = STEPS.SELECT_SPECIALTY;
+            buildedMessages.push(
+              await this.updateAndBuildPatientMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
+          if (
+            infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
+            infoMessage.content.id === 'retry_dni'
+          ) {
+            buildedMessages.push(
+              this.messageBuilder.buildMessage(findMessage),
+            );
+            return buildedMessages;
+          }
+
           const dniRequest = await axios.get(
             `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
           );
           const dniResponse = dniRequest.data;
           if (dniResponse.success === true) {
-            findMessage.step = STEPS.SELECT_SPECIALTY;
+            const dniName = `${dniResponse.nombres} ${dniResponse.apellidoPaterno} ${dniResponse.apellidoMaterno}`;
             findMessage.dni = infoMessage.content;
+            await this.updateMessage(findMessage.id, findMessage);
             buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
+              this.messageBuilder.buildDniConfirmationMessage(
+                infoMessage.clientPhone,
+                dniName
+              ),
             );
           } else {
             throw new BadRequestException();
@@ -187,8 +214,13 @@ export class MessageService {
         } catch {
           findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
-          const errorMessage = messageErrorHandler(findMessage);
-          buildedMessages.push(...errorMessage);
+          if(infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE) {
+            const errorMessage = this.messageBuilder.buildDefaultTemplate(infoMessage.clientPhone);
+            buildedMessages.push(errorMessage);
+          } else {
+            const errorMessage = messageErrorHandler(findMessage);
+            buildedMessages.push(...errorMessage);
+          }
         }
         break;
       case STEPS.SELECT_SPECIALTY:
@@ -461,13 +493,7 @@ export class MessageService {
 
   async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
     if (message.step === STEPS.SELECT_DOCTOR && !message.doctorId) {
-      const doctor = await this.doctorService.findByPhone(
-        infoMessage.clientPhone,
-      );
-      message.doctorPhone = doctor[0].phone;
-      message.doctorId = doctor[0]._id;
-      message.fee = doctor[0].fee;
-      return [this.messageBuilder.buildMessage(message)];
+      return [await this.messageBuilder.buildDoctorCard(infoMessage.clientPhone, message)];
     }
     return false;
   }
@@ -485,8 +511,7 @@ export class MessageService {
     const date = message.date;
     if (message.status === '2') {
       messages.push(
-        clientConfirmationTemplate(appointment),
-        doctorConfirmationTemplate(appointment),
+        ...this.messageBuilder.buildConfirmationTemplates(appointment),
       );
       return messages;
     }

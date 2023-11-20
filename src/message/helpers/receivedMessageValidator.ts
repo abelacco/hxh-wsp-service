@@ -14,7 +14,10 @@ export const receivedMessageValidator = (
 ) => {
   switch (step) {
     case STEPS.PUT_DNI:
-      if (infoMessage.type === TEXT) {
+      if (infoMessage.type === TEXT || (infoMessage.type === INTERACTIVE && (
+        infoMessage.content.id === 'accpt_dni' ||
+        infoMessage.content.id === 'retry_dni'
+      ))) {
         return true;
       }
       return false;

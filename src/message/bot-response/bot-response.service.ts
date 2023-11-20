@@ -29,8 +29,6 @@ export class BotResponseService {
         return Templates.generateSpecialitiesList(phone);
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
-      case STEPS.SELECT_DOCTOR:
-        return Templates.generateInfoDoctor(phone, doctor, stringDate, fee);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:
@@ -40,6 +38,22 @@ export class BotResponseService {
       default:
         return Templates.defaultMessageTemplate(phone);
     }
+  }
+
+  async buildDoctorCard(docPhone: string, message: Message) {
+    const doctor = await this.doctorService.findByPhone(
+      docPhone,
+    );
+    const patientPhone = message.phone;
+    const doctorId = doctor[0]._id;
+    const fee = doctor[0].fee;
+    const stringDate = dateToString(message.date)
+    const imageUrl = doctor[0].imageUrl;
+    return Templates.generateInfoDoctor(patientPhone, doctorId, stringDate, fee, imageUrl);
+  }
+
+  buildDniConfirmationMessage(phone: string, dniName: string) {
+    return Templates.dniConfirmationTemplate(phone, dniName);
   }
 
   buildIntroMessage(phone: string) {
@@ -93,11 +107,11 @@ export class BotResponseService {
     return Templates.dateConfirmation(phone, stringDate);
   }
 
-  buildConfirmationNotification(date: Date, phone: string) {
+  buildConfirmationTemplates(appointment: any) {
     /*
       Build confirmation notification template
     */
-    return Templates.confirmationPayment(phone, date);
+    return [Templates.doctorConfirmationPayment(appointment), Templates.patientConfirmationPayment(appointment)];
   }
 
   buildRejectionNotification(date: Date, phone: string) {
