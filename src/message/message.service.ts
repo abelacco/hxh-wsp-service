@@ -75,13 +75,19 @@ export class MessageService {
 
         if (iaResponse === 'speciality' && !checkCurrentPath) {
           const findMessage = await this.findOrCreateMessage(messageFromWSP);
-          findMessage.step = STEPS.PUT_DNI;
+          const findDni = await this.messageModel.findOne({
+            phone: clientPhone,
+          });
+          findMessage.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(findMessage);
           return [response];
         }
 
         if (iaResponse === 'speciality' && checkCurrentPath) {
-          checkCurrentPath.step = STEPS.PUT_DNI;
+          const findDni = await this.messageModel.findOne({
+            phone: clientPhone,
+          });
+          checkCurrentPath.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
           const response = await this.updateAndBuildPatientMessage(
             checkCurrentPath,
           );
