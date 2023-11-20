@@ -12,8 +12,6 @@ import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
 import { MarketerModule } from './marketer/marketer.module';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { MarketerEvents } from './marketer/events/marketer.event';
 
 @Module({
   imports: [
@@ -22,7 +20,6 @@ import { MarketerEvents } from './marketer/events/marketer.event';
       validationSchema: JoiValidationSchema
     }),
     MongooseModule.forRoot(process.env.MONGODB),
-    EventEmitterModule.forRoot(),
     WspModule,
     MessageModule,
     DoctorModule,
@@ -32,6 +29,6 @@ import { MarketerEvents } from './marketer/events/marketer.event';
     MarketerModule
   ],
   controllers: [AppController],
-  providers: [AppService, MarketerEvents],
+  providers: [AppService],
 })
 export class AppModule {}
