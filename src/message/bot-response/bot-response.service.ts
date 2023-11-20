@@ -107,11 +107,11 @@ export class BotResponseService {
     return Templates.dateConfirmation(phone, stringDate);
   }
 
-  buildConfirmationNotification(date: Date, phone: string) {
+  buildConfirmationTemplates(appointment: any) {
     /*
       Build confirmation notification template
     */
-    return Templates.confirmationPayment(phone, date);
+    return [Templates.doctorConfirmationPayment(appointment), Templates.patientConfirmationPayment(appointment)];
   }
 
   buildRejectionNotification(date: Date, phone: string) {

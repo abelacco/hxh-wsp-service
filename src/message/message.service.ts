@@ -25,10 +25,6 @@ import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
 import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
-import {
-  clientConfirmationTemplate,
-  doctorConfirmationTemplate,
-} from './helpers/templates/templatesBuilder';
 
 @Injectable()
 export class MessageService {
@@ -509,8 +505,7 @@ export class MessageService {
     const date = message.date;
     if (message.status === '2') {
       messages.push(
-        clientConfirmationTemplate(appointment),
-        doctorConfirmationTemplate(appointment),
+        ...this.messageBuilder.buildConfirmationTemplates(appointment),
       );
       return messages;
     }
