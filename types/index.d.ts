@@ -5,12 +5,15 @@
  */
 declare namespace NodeJS {
     interface ProcessEnv {
-        OPENAI_API_KEY: string;
-        MONGODB: string;
-        PHONE_ID: string;
-        META_WA_wabaId: string;
-        MY_VERIFY_TOKEN: string;
+        API_SERVICE: string;
+        COHERE_API_KEY: string;
         CURRENT_ACCESS_TOKEN: string;
+        MONGODB: string;
+        MY_VERIFY_TOKEN: string;
+        OPENAI_API_KEY: string;
+        PHONE_ID: string;
+
+        META_WA_wabaId: string;
         META_BASE_URL: string;
     }
 }
