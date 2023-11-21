@@ -1,6 +1,7 @@
 import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "../constants/wsp-constants";
 
-export const messageParser = ({ requestBody, currentWABA_ID }) => {
+// export const messageParser = ({ requestBody, currentWABA_ID }) => {
+    export const messageParser = ({ requestBody }) => {
     let WABA_ID = requestBody.entry[0]?.id; // obtenemos el id del objeto request entrante
 
     if (WABA_ID == 0) {
@@ -12,7 +13,8 @@ export const messageParser = ({ requestBody, currentWABA_ID }) => {
         console.log('WABA_ID es 0. Parece que estás probando con la suscripción de prueba de Meta. Esto no es realmente un WABA_ID válido. Te recomiendo que envíes un mensaje real desde un número de cliente de whatsapp real.');
     }
 
-    if (!WABA_ID || WABA_ID !== currentWABA_ID) { 
+    // if (!WABA_ID || WABA_ID !== currentWABA_ID) { 
+        if (!WABA_ID) { 
         /**
          * Verifica que el mensaje fue enviado por el servicio de Meta
          * validando que sea un id correcto de este servicio
