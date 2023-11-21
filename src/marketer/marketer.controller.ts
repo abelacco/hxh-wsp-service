@@ -8,7 +8,6 @@ import { Res, Req } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { MetaProvider } from 'src/provider/meta.provider';
 import { WspMessage } from 'src/provider/types/wsp-message.interface';
-import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from '../provider/constants/wsp-constants';
 import { MarketerHandler } from './handler/marketer.handler';
 
 @Controller('marketer-bot')
@@ -27,20 +26,6 @@ export class MarketerController {
 
             if (data?.isMessage) {
                 this.marketerHandler.handleTextMessage(req, data);
-                // switch (data.message.type) {
-                //     case WSP_MESSAGE_TYPES.TEXT:
-                //         this.marketerHandler.handleTextMessage(req, data);
-                //         break;
-                //     case INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY:
-                //         this.marketerHandler.handleButtonReplyMessage(data)
-                //         break;
-                //     case WSP_MESSAGE_TYPES.LOCATION:
-                //         this.marketerHandler.handleLocationMessage(data);
-                //         break;
-                //     default:
-                //         console.log('Tipo de mensaje no identificado');
-                //         break;
-                // }
             }
             
             console.log('-----------------------------------------');
