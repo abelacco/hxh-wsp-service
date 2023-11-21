@@ -22,3 +22,10 @@ export function validateLatitudeAndLongitude(latitude: string, longitude: string
 
     return regexLatitude.test(latitude) && regexLongitude.test(longitude);
 }
+
+export function validatePhoneBusiness(phoneBusiness: string): boolean {
+    const regexPeruPhone = /^(\51|0051|51)?[9]\d{8}$/;
+    const regexMexicoPhone = /^(\52|0052|52)?(1)?[0-9]{10}$/;
+
+    return regexPeruPhone.test(phoneBusiness) || regexMexicoPhone.test(phoneBusiness);
+}
