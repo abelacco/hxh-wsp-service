@@ -120,7 +120,7 @@ export class ChatgtpService {
 
   async getDateResponse(userMessage: string): Promise<string> {
     const currentYear = new Date().getFullYear();
-    const systemMessage = `¿Qué dia, mes y hora se infiere en este mensaje: "${userMessage}" con formato DD MM HH:mm a? La respuesta solo debe tener la fecha en el formato DD-MM-YY HH:MM siendo el año ${currentYear} y redondeando la hora a y 30 o en punto hacia adelante, sin ningun texto extra. Si no se puede inferir, responder 404`;
+    const systemMessage = `Dada la entrada "${userMessage}", infiere la fecha y hora más probables dentro del rango de las 8:00 AM a las 8:00 PM, en formato de 12 o 24 horas. Formatea la respuesta en DD-MM-YY HH:MM a, siendo el año ${currentYear}. Si la hora necesita redondeo, redondéala a la próxima media hora o hora en punto. Si no es posible determinar una fecha y hora exactas, proporciona la mejor estimación posible basada en la información disponible, sin devolver 404. Considera que el usuario puede escribir la hora con o sin minutos exactos y en formato de 12 horas (con am/pm) o 24 horas.`;
 
     this.messageHistory.push({ role: 'system', content: systemMessage });
 
