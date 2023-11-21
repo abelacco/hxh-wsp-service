@@ -3,18 +3,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Marketer } from './entities/marketer.schema';
 import { Model } from 'mongoose';
 import { Status } from './enums/status.enum';
+import axios from 'axios';
 
 @Injectable()
 export class MarketerService {
     constructor(@InjectModel(Marketer.name) private readonly marketerModel: Model<Marketer>) {}
 
-    public async create({ waId, clientName}: { waId: String, clientName: String }): Promise<Marketer> {
+    public async create({ waId }: { waId: String }): Promise<Marketer> {
         const createdMarketer = new this.marketerModel({
             wa_id: waId,
-            clientName,
             status: Status.INCOMPLETE,
-            DNI: '',
-            RUC: '',
+            idNumber: '',
             name: '',
             image: '',
             ubication: '',
@@ -59,6 +58,36 @@ export class MarketerService {
             );
 
             return marketer;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    public async sendMarketer({ waId }: { waId: string }) {
+        try {
+            const marketer = await this.findByWaId(waId);
+
+            if (marketer) {
+                const marketerBody = {
+                    documentId: marketer.idNumber,
+                    fullname: marketer.name,
+                    phone: marketer.wa_id,
+                    imageUrl: marketer.image,
+                    codeQr: marketer.qrCode,
+                    lat: marketer.ubication.latitude,
+                    long: marketer.ubication.longitude,
+                    affiliater: marketer.wa_id
+                };
+    
+                const response = await axios.post(`${process.env.API_SERVICE}/store`, marketerBody)
+                    .then((response) => response.data)
+                    .catch((error) => console.error(error));
+            
+                return response;
+            }
+
+            return null;
         } catch (error) {
             console.error(error);
             throw error;
