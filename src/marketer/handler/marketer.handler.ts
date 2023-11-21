@@ -25,23 +25,26 @@ export class MarketerHandler {
             case 'step-1-cancelar':
                 await this.marketerEvents.cancelRegister(data);
                 break;
-            case 'idNumber':
+            case 'documentId':
                 await this.marketerEvents.validateRUCDNI(data);
                 break;
-            case 'name':
+            case 'fullname':
                 await this.marketerEvents.validateName(data);
+                break;
+            case 'phoneBusiness':
+                await this.marketerEvents.validatePhoneBusiness(data);
                 break;
             case 'ubication':
                 await this.marketerEvents.validateUbication(data);
                 break;
-            case 'image':
+            case 'imageUrl':
                 await this.marketerEvents.validateImage(data);
                 break;
             case 'qrCode':
                 await this.marketerEvents.validateQrCode(data);
                 break;
             default:
-                this.marketerEvents.sendError(data);
+                this.marketerEvents.sendError(data, '------ case no controlado ------');
                 console.log('marketer field -> ', req.marketerField);
                 console.log('case no controlado -> ', data);
                 break;
