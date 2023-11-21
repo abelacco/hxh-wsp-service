@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MetaProvider } from '../../provider/meta.provider';
 import { MarketerService } from '../marketer.service';
-import { validateDNI, validateRUC } from '../utils/validation';
+import { validateDNI, validateRUC, validatePhoneBusiness } from '../utils/validation';
 import { WSP_MESSAGE_TYPES } from 'src/provider/constants/wsp-constants';
 import { Status } from '../enums/status.enum';
 import axios from 'axios';
@@ -14,6 +14,7 @@ export class MarketerEvents {
         private readonly marketerService: MarketerService
     ) {}
 
+    // TODO: Definir el tipoado del WspMessage para reemplazar los any
     public async sendWelcome(data: any) {
         console.log('event MARKETER_START');
         const { message } = data;
@@ -39,10 +40,11 @@ export class MarketerEvents {
         });
     }
 
-    public async sendError(data: any) {
+    public async sendError(data: any, error: any) {
         const { phone } = data.message.from.phone;
         const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
 
+        console.error(error);
         await this.metaProvider.sendText({
             clientPhone,
             message: '⚠️ Eso no es lo que esperaba, por favor, intentalo de nuevo'
@@ -89,7 +91,7 @@ export class MarketerEvents {
                 });
             }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
             await this.sendWelcome(data);
         }
     }
@@ -110,7 +112,7 @@ export class MarketerEvents {
             if (validateDNI(rucOrDni) || validateRUC(rucOrDni)) {
                 await axios.get(`${process.env.API_SERVICE}/apiperu?idNumber=${rucOrDni}`)
                     .then(async (response) => {
-                        if (response.data.message !== 'No se encontraron resultados.') {
+                        if (response.data.ruc || response.data.dni) {
                             await this.metaProvider.sendText({
                                 clientPhone,
                                 message: '✅ El RUC/DNI es valido!'
@@ -118,7 +120,7 @@ export class MarketerEvents {
 
                             await this.marketerService.update({
                                 waId: wa_id,
-                                field: 'idNumber',
+                                field: 'documentId',
                                 value: rucOrDni
                             })
                             .then(async (response) => {
@@ -126,6 +128,11 @@ export class MarketerEvents {
                                     await this.metaProvider.sendText({
                                         clientPhone,
                                         message: 'Ahora, por favor, ¿Puedes decirme cual es el nombre de tu negocio?'
+                                    });
+                                } else {
+                                    await this.metaProvider.sendText({
+                                        clientPhone,
+                                        message: '⛔ El RUC/DNI no se pudo actualizar, por favor, intentalo de nuevo.'
                                     });
                                 }
                             })
@@ -149,7 +156,7 @@ export class MarketerEvents {
                 });
             }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
         }
     }
 
@@ -164,14 +171,14 @@ export class MarketerEvents {
             if (businessName) {
                 await this.marketerService.update({
                     waId: wa_id,
-                    field: 'name',
+                    field: 'fullname',
                     value: businessName
                 })
                 .then(async (response) => {
                     if (response.modifiedCount === 1) {
                         await this.metaProvider.sendText({
                             clientPhone,
-                            message: 'Excelente. Ahora necesito que me compartas la ubicacion GPS de tu negocio.'
+                            message: 'Excelente. Ahora necesito que me compartas el numero telefonico del dueño del negocio. No olvides incluir la lada. Ejemplo: 51912123456.'
                         });
                     }
                 })
@@ -190,7 +197,56 @@ export class MarketerEvents {
                 });
             }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
+        }
+    }
+
+    public async validatePhoneBusiness(data: any) {
+        try {
+            const { message, contacts } = data;
+            const { wa_id } = contacts;
+            const { phone } = message.from.phone;
+            const { body } = message.text;
+            const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+
+            await this.metaProvider.sendText({
+                clientPhone,
+                message: '⌛ Validando numero telefonico, espera un momento...'
+            });
+
+            if (validatePhoneBusiness(body)) {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '✅ Numero valido!'
+                });
+
+                await this.marketerService.update({
+                    waId: wa_id,
+                    field: 'phoneBusiness',
+                    value: body
+                })
+                .then(async (response) => {
+                    if (response.modifiedCount === 1) {
+                        await this.metaProvider.sendText({
+                            clientPhone,
+                            message: 'Lo siguiente es que me compartas la ubicacion GPS de tu negocio.'
+                        });
+                    }
+                })
+                .catch(async () => {
+                    await this.metaProvider.sendText({
+                        clientPhone,
+                        message: '⛔ Ocurrio un error al intentar actualizar el telefono del negocio, por favor, intentalo de nuevo.'
+                    });
+                });
+            } else {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '⚠️ El numero que compartiste no pertenece a un numero telefonico valido para el territorio de Perú, por favor intentalo de nuevo.'
+                });
+            }
+        } catch (error) {
+            await this.sendError(data, error);
         }
     }
 
@@ -250,7 +306,7 @@ export class MarketerEvents {
                 });
             }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
         }
     }
 
@@ -278,7 +334,7 @@ export class MarketerEvents {
                 if (imageUrl) {
                     await this.marketerService.update({
                         waId: wa_id,
-                        field: 'image',
+                        field: 'imageUrl',
                         value: imageUrl
                     })
                     .then(async() => {                
@@ -301,7 +357,7 @@ export class MarketerEvents {
             });
         }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
         }
     }
 
@@ -318,7 +374,7 @@ export class MarketerEvents {
                 message: '⌛ Validando codigo QR, espera un momento...',
             });
 
-            // TODO: Investigar si hay validaciones espeficifcas para los QR de afiliacion
+            // TODO: Modificar cuando se tenga la instruccion de como se validan los codigos QR
             if (body === '12345') {
                 await this.metaProvider.sendText({
                     clientPhone,
@@ -333,21 +389,7 @@ export class MarketerEvents {
                     }
                 })
                 .then(async () => {
-                    // TODO: Verificar si los datos recuperados son los mismos que se almacenan en la API de qali-services
-                    // const response = await this.marketerService.sendMarketer({ waId: wa_id });
-
-                    // if (response) {
-                        await this.metaProvider.sendText({
-                            clientPhone,
-                            message: '✅ Todos los datos se han completado, el mercadista se ha registrado con exito!'
-                        });
-                        // TODO: Investigar los numeros a los cuales debo notificar la creacion del mercadista asi como el tipo de mensaje que se tiene que envia, ya sea texto, plantilla, etc.
-                    // } else {
-                        await this.metaProvider.sendText({
-                            clientPhone,
-                            message: '⛔ Ocurrio un problema al intentar guardar el registro del mercadista, por favor, intentalo de nuevo.'
-                        });
-                    // }
+                    await this.completeMarketerRegister(data);
                 })
                 .catch(async (error) => {
                     await this.metaProvider.sendText({
@@ -364,7 +406,44 @@ export class MarketerEvents {
                 });
             }
         } catch (error) {
-            await this.sendError(data);
+            await this.sendError(data, error);
+        }
+    }
+
+    public async completeMarketerRegister(data: any) {
+        const { contacts } = data;
+        const { wa_id } = contacts;
+        const { phone } = data.message.from.phone;
+        const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+
+        const response = await this.marketerService.sendMarketer({ waId: wa_id });
+
+        if (response) {
+            const businessPhone = response.phone.startsWith('52') ? response.phone.replace('521', '52') : response.phone;
+            
+            const { documentId, fullname, phone, affiliateId } = response;
+            const affiliater = await this.marketerService.findAffiliater({ affiliateId });
+
+            const marketerBody = `Estos son los datos del mercadista registrado: \n Numero de identificacion: ${documentId} \n Nombre: ${fullname} \n Telefono: ${phone} \n Afiliado por: ${affiliater.fullname}`;
+            
+            await this.metaProvider.sendText({
+                clientPhone,
+                message: '✅ Todos los datos se han completado, el mercadista se ha registrado con exito!'
+            });
+
+            await this.metaProvider.sendText({
+                clientPhone: businessPhone,
+                message: '✅ Mercadista registrado con exito!'
+            });
+            await this.metaProvider.sendText({
+                clientPhone: businessPhone,
+                message: marketerBody
+            });
+        } else {
+            await this.metaProvider.sendText({
+                clientPhone,
+                message: '⛔ Ocurrio un problema al intentar guardar el registro del mercadista, por favor, intentalo de nuevo.'
+            });
         }
     }
 }
