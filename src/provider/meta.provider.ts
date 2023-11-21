@@ -6,12 +6,13 @@ import { WspButton } from './types/wsp-button.interface';
 
 @Injectable()
 export class MetaProvider {
-    private WABA_ID = process.env.META_WA_wabaId;
+    // private WABA_ID = process.env.META_WA_wabaId;
     private accessToken = process.env.CURRENT_ACCESS_TOKEN;
-    private baseUrl = `${process.env.META_BASE_URL}/${process.env.PHONE_ID}`;
+    // private baseUrl = `${process.env.META_BASE_URL}/${process.env.PHONE_ID}`;
+    private baseUrl = `https://graph.facebook.com/v18.0/${process.env.PHONE_ID}`;
 
   parseMessage(requestBody: any) {
-    return messageParser({ requestBody, currentWABA_ID: this.WABA_ID });
+    return messageParser({ requestBody });
   }
 
   public async sendText({ message, clientPhone}) {
