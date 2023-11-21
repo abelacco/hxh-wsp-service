@@ -13,9 +13,10 @@ export class MarketerService {
         const createdMarketer = new this.marketerModel({
             wa_id: waId,
             status: Status.INCOMPLETE,
-            idNumber: '',
-            name: '',
-            image: '',
+            documentId: '',
+            fullname: '',
+            phoneBusiness: '',
+            imageUrl: '',
             ubication: '',
             qrCode: ''
         });
@@ -67,17 +68,20 @@ export class MarketerService {
     public async sendMarketer({ waId }: { waId: string }) {
         try {
             const marketer = await this.findByWaId(waId);
+            const affiliater = await axios.get(`${process.env.API_SERVICE}/affiliate/filter?phone=${marketer.wa_id}`)
+                .then((response) => response.data)
+                .catch((error) => console.error(error));
 
             if (marketer) {
                 const marketerBody = {
-                    documentId: marketer.idNumber,
-                    fullname: marketer.name,
-                    phone: marketer.wa_id,
-                    imageUrl: marketer.image,
+                    documentId: marketer.documentId,
+                    fullname: marketer.fullname,
+                    phone: marketer.phoneBusiness,
+                    imageUrl: marketer.imageUrl,
                     codeQr: marketer.qrCode,
                     lat: marketer.ubication.latitude,
                     long: marketer.ubication.longitude,
-                    affiliater: marketer.wa_id
+                    affiliateId: affiliater._id
                 };
     
                 const response = await axios.post(`${process.env.API_SERVICE}/store`, marketerBody)
@@ -88,6 +92,19 @@ export class MarketerService {
             }
 
             return null;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    public async findAffiliater({ affiliateId }: { affiliateId: string }) {
+        try {
+            const affiliater = await axios.get(`${process.env.API_SERVICE}/affiliate/${affiliateId}`)
+                .then((response) => response.data)
+                .catch((error) => console.error(error));
+
+            return affiliater;
         } catch (error) {
             console.error(error);
             throw error;
