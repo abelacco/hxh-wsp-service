@@ -32,13 +32,14 @@ export class Marketer {
     })
     status: Status = Status.INCOMPLETE; // Propiedad para mantener el bucle de las peticiones el Hunter
 
-    @Prop({
-        required: false
-    })
-    idNumber: String; // Propiedad que almacena el RUC o el DNI.
+    @Prop()
+    documentId: String; // Propiedad que almacena el RUC o el DNI.
 
     @Prop()
-    name: String; // Nombre del negocio
+    fullname: String; // Nombre del negocio
+
+    @Prop()
+    phoneBusiness: String; // Telefono del negocio
 
     @Prop({
         type: Ubication,
@@ -47,7 +48,7 @@ export class Marketer {
     ubication: Ubication; // Ubicacion GPS del negocio
     
     @Prop()
-    image: String; // Foto de la parte del negocio donde se pego el codigo QR
+    imageUrl: String; // Foto de la parte del negocio donde se pego el codigo QR
 
     @Prop()
     qrCode: String; // Codigo del QR de afiliacion
