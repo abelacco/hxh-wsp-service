@@ -25,7 +25,7 @@ export class MarketerHandler {
             case 'step-1-cancelar':
                 await this.marketerEvents.cancelRegister(data);
                 break;
-            case 'RUC':
+            case 'idNumber':
                 await this.marketerEvents.validateRUCDNI(data);
                 break;
             case 'name':
@@ -42,7 +42,7 @@ export class MarketerHandler {
                 break;
             default:
                 this.marketerEvents.sendError(data);
-                console.log('case field -> ', req.marketerField);
+                console.log('marketer field -> ', req.marketerField);
                 console.log('case no controlado -> ', data);
                 break;
         }
