@@ -11,7 +11,6 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
     constructor (
         private metaProvider: MetaProvider,
-        private marketerHandler: MarketerHandler,
         private marketerService: MarketerService
     ) {}
 
@@ -49,7 +48,20 @@ export class MarketerBotMiddleware implements NestMiddleware {
                      */
                     const marketer: any = await this.marketerService.findByWaId(wa_id);
 
-                    if (marketer && marketer.status === Status.INCOMPLETE) {
+                    if (message.type === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
+                        const button_id = data.message.button_reply.id;
+
+                        if (button_id === 'step-1-cancelar-afiliacion'){
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        } else if (button_id === 'step-1-continuar') {
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        } else if (button_id === 'step-1-cancelar') {
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        }
+                    } else if (marketer && marketer.status === Status.INCOMPLETE) {
                         console.log('middleware marketer found');
                         const keys = Object.keys(marketer._doc).filter(key => !key.startsWith('$'));
 
@@ -64,20 +76,6 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
                         if (body === 'bot') {
                             req.marketerField = 'bot';
-                            req.url = marketerController;
-                        }
-                    } else if(message.type == INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
-                        /**
-                         * 3.2.- Y el ultimo caso es cuando se dio click al boton CONTINUAR
-                         * donde preguntamos si desea agregar un nuevo registro
-                         */
-                        const button_id = data.message.button_reply.id;
-
-                        if (button_id === 'step-1-continuar') {
-                            req.marketerField = button_id;
-                            req.url = marketerController;
-                        } else if (button_id === 'step-1-cancelar') {
-                            req.marketerField = button_id;
                             req.url = marketerController;
                         }
                     }
