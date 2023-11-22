@@ -201,6 +201,7 @@ export class MessageService {
           if (dniResponse.success === true) {
             const dniName = `${dniResponse.nombres} ${dniResponse.apellidoPaterno} ${dniResponse.apellidoMaterno}`;
             findMessage.dni = infoMessage.content;
+            findMessage.clientName = dniName;
             await this.updateMessage(findMessage.id, findMessage);
             buildedMessages.push(
               this.messageBuilder.buildDniConfirmationMessage(
@@ -567,7 +568,6 @@ export class MessageService {
         const createMessage = new this.messageModel({
           clientId: patient._id,
           phone: receivedMessage.clientPhone,
-          clientName: patient.name,
           doctor: '',
         });
         await createMessage.save();
