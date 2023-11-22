@@ -10,26 +10,36 @@ export class MarketerService {
     constructor(@InjectModel(Marketer.name) private readonly marketerModel: Model<Marketer>) {}
 
     public async create({ waId }: { waId: String }): Promise<Marketer> {
-        const createdMarketer = new this.marketerModel({
-            wa_id: waId,
-            status: Status.INCOMPLETE,
-            documentId: '',
-            fullname: '',
-            phoneBusiness: '',
-            imageUrl: '',
-            ubication: '',
-            qrCode: ''
-        });
-        
-        return await createdMarketer.save();
+        try {
+            const createdMarketer = new this.marketerModel({
+                wa_id: waId,
+                status: Status.INCOMPLETE,
+                documentId: '',
+                fullname: '',
+                phoneBusiness: '',
+                imageUrl: '',
+                ubication: '',
+                qrCode: ''
+            });
+            
+            return await createdMarketer.save();
+        } catch (error) {
+            console.error('MarketerService -> create ->', error.code);
+            throw error;
+        }
     }
 
     public async findByWaId(waId: String): Promise<Marketer> {
-        const marketer = await this.marketerModel.findOne({
-            wa_id: { $eq: waId }
-        });
-
-        return marketer;
+        try {
+            const marketer = await this.marketerModel.findOne({
+                wa_id: { $eq: waId }
+            });
+    
+            return marketer;
+        } catch (error) {
+            console.error('MarketerService -> findByWaId ->', error.code);
+            throw error;
+        }
     }
 
     public async update({ waId, field, value }: { waId: string, field: string, value: any }) {
@@ -46,7 +56,20 @@ export class MarketerService {
 
             return markter;
         } catch (error) {
-            console.error(error);
+            console.error('MarketerService -> update ->', error.code);
+            throw error;
+        }
+    }
+
+    public async deleteOne({ waId }: { waId: string }) {
+        try {
+            const response = await this.marketerModel.deleteOne({
+                wa_id: { $eq: waId }
+            });
+
+            return response;
+        } catch (error) {
+            console.error('MarketerService -> deleteOne ->', error.code);
             throw error;
         }
     }
@@ -60,7 +83,7 @@ export class MarketerService {
 
             return marketer;
         } catch (error) {
-            console.error(error);
+            console.error('MarketerService -> completeRegister ->', error.code);
             throw error;
         }
     }
@@ -68,11 +91,9 @@ export class MarketerService {
     public async sendMarketer({ waId }: { waId: string }) {
         try {
             const marketer = await this.findByWaId(waId);
-            const affiliater = await axios.get(`${process.env.API_SERVICE}/affiliate/filter?phone=${marketer.wa_id}`)
-                .then((response) => response.data)
-                .catch((error) => console.error(error));
+            const affiliater = await this.existsAffiliater({ waId: marketer.wa_id });
 
-            if (marketer) {
+            if (marketer && affiliater) {
                 const marketerBody = {
                     documentId: marketer.documentId,
                     fullname: marketer.fullname,
@@ -86,14 +107,14 @@ export class MarketerService {
     
                 const response = await axios.post(`${process.env.API_SERVICE}/store`, marketerBody)
                     .then((response) => response.data)
-                    .catch((error) => console.error(error));
+                    .catch((error) => console.error('sendMarketer -> axios-post', error.code));
             
                 return response;
             }
 
             return null;
         } catch (error) {
-            console.error(error);
+            console.error('MarketerService -> sendMarketer ->', error.code);
             throw error;
         }
     }
@@ -102,11 +123,50 @@ export class MarketerService {
         try {
             const affiliater = await axios.get(`${process.env.API_SERVICE}/affiliate/${affiliateId}`)
                 .then((response) => response.data)
-                .catch((error) => console.error(error));
+                .catch((error) => console.error('MarketerService -> axios-get -> findAffiliater ->', error));
 
             return affiliater;
         } catch (error) {
-            console.error(error);
+            console.error('MarketerService -> findAffiliater ->', error.code);
+            throw error;
+        }
+    }
+
+    public async existsAffiliater({ waId }: { waId: String }) {
+        try {
+            const affiliater = await axios.get(`${process.env.API_SERVICE}/affiliate/filter?phone=${waId}`)
+                .then((response) => response.data)
+                .catch((error) => console.error('existsAffiliater -> axios-get:', error.code));
+
+            return affiliater;
+        } catch (error) {
+            console.error('MarketerService -> existsAffiliater:', error.code);
+            throw error;
+        }
+    }
+
+    public async existsStore({ documentId }: { documentId: string }) {
+        try {
+            const store = await axios.get(`${process.env.API_SERVICE}/store/${documentId}`)
+                .then((response) => response.data)
+                .catch((error) => console.error('axios-get -> existsStore ->', error.code));
+
+            return store;
+        } catch (error) {
+            console.error('MarketerService -> existsStore -> ', error.code);
+            throw error;
+        }
+    }
+
+    public async numberIsAffiliate({ phoneBusiness }: { phoneBusiness: string }) {
+        try {
+            const store = await axios.get(`${process.env.API_SERVICE}/store/filter?phone=${phoneBusiness}`)
+                .then((response) => response.data)
+                .catch((error) => console.error('MarketerService -> axios-get -> numberIsAffiliate ->', error.code));
+
+            return store[0] || undefined;
+        } catch (error) {
+            console.error('MarketerService -> numberIsAffiliate ->', error.code);
             throw error;
         }
     }
