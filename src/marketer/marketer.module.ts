@@ -16,6 +16,6 @@ import { MarketerEvents } from './events/marketer.event';
     ],
     providers: [MarketerService, MarketerHandler, MarketerEvents],
     controllers: [MarketerController],
-    exports: [MarketerService, MarketerHandler]
+    exports: [MarketerService]
 })
 export class MarketerModule {}
