@@ -17,38 +17,97 @@ export class MarketerEvents {
     // TODO: Definir el tipoado del WspMessage para reemplazar los any
     public async sendWelcome(data: any) {
         console.log('event MARKETER_START');
+        try {
+            const { message, contacts } = data;
+            const { wa_id } = contacts;
+            // TODO: Modificar el formato del mensaje parseado para que 'phone' no venga anidado
+            //? NOTA: La linea que modifica la lada del numero es solo para poder hacer pruebas en produccion desde México
+            const { phone } = message.from.phone;
+            const clientName = message.from.name
+            const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+
+            const affiliateExists = await this.marketerService.existsAffiliater({ waId: wa_id });
+
+            if (affiliateExists) {
+                await this.metaProvider.sendSimpleButtons({
+                    message: `Hola ${clientName}, Bienvenido(a) al sistema de registro de mercadistas. ¿Deseas registrar un nuevo afiliado?`,
+                    clientPhone,
+                    listOfButtons: [
+                        {
+                            title: '✅ CONTINUAR',
+                            id: 'step-1-continuar'
+                        },
+                        {
+                            title: '❌ CANCELAR',
+                            id: 'step-1-cancelar'
+                        }
+                    ]
+                });
+            } else {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '⛔ Lo siento, este telefono no esta registrado como un Hunter de Qali por lo que no tienes permitido afiliar mercadistas.'
+                });
+            }
+        } catch (error) {
+            console.error('MarketerEvent -> sendWelcome:', error.code);
+            await this.sendError(data);
+        }
+
+    }
+
+    public async sendError(data: any) {
+        const { phone } = data.message.from.phone;
+        const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+
+        await this.metaProvider.sendText({
+            clientPhone,
+            message: '⚠️ Eso no es lo que esperaba, por favor, intentalo de nuevo'
+        });
+
+        await this.sendCancelAffiliate(data);
+    }
+
+    public async sendCancelAffiliate(data: any) {
         const { message } = data;
-        // TODO: Modificar el formato del mensaje parseado para que 'phone' no venga anidado
-        //? NOTA: La linea que modifica la lada del numero es solo para poder hacer pruebas en produccion desde México
         const { phone } = message.from.phone;
-        const clientName = message.from.name
         const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
 
         await this.metaProvider.sendSimpleButtons({
-            message: `Hola ${clientName}, Bienvenido(a) al sistema de registro de mercadistas. ¿Deseas registrar un nuevo afiliado?`,
+            message: 'O si lo deseas, puedes cancelar todo el proceso dando click aqui.',
             clientPhone,
             listOfButtons: [
                 {
-                    title: '✅ CONTINUAR',
-                    id: 'step-1-continuar'
-                },
-                {
-                    title: '❌ CANCELAR',
-                    id: 'step-1-cancelar'
+                    title: '❌CANCELAR AFILIACION',
+                    id: 'step-1-cancelar-afiliacion'
                 }
             ]
         });
     }
 
-    public async sendError(data: any, error: any) {
-        const { phone } = data.message.from.phone;
-        const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+    public async cancelAffiliate(data: any) {
+        try {
+            const { message, contacts } = data;
+            const { wa_id } = contacts;
+            const { phone } = message.from.phone;
+            const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
 
-        console.error(error);
-        await this.metaProvider.sendText({
-            clientPhone,
-            message: '⚠️ Eso no es lo que esperaba, por favor, intentalo de nuevo'
-        });
+            const result = await this.marketerService.deleteOne({ waId: wa_id });
+
+            if (result.deletedCount === 1) {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '❌ Afiliacion cancelada'
+                });
+            } else {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '⛔ Ocurrio un error al intentar cancelar la afiliacion, por favor, intentalo mas tarde.'
+                });
+            }
+        } catch (error) {
+            console.error('MarketerEvent -> cancelAffiliate ->', error.code);
+        }
     }
 
     public async cancelRegister(data: any) {
@@ -61,11 +120,74 @@ export class MarketerEvents {
         });
     }
 
+    public async validateExistsStore(waId: string, clientPhone: string, rucOrDni: string, data?: any): Promise<boolean> {
+        try {
+            const store = await this.marketerService.existsStore({ documentId: rucOrDni });
+
+            if (store === undefined) return false;
+
+            const { documentId, fullname, phone, affiliateId } = store;
+            const affiliater = await this.marketerService.findAffiliater({ affiliateId });
+
+            const marketerBody = `⛔ El mercadista ya se encuentra afiliado con los datos: \n Numero de identificacion: ${documentId} \n Nombre: ${fullname} \n Telefono: ${phone} \n Afiliado por: ${affiliater.fullname}`;
+
+            await this.metaProvider.sendText({
+                clientPhone,
+                message: marketerBody
+            });
+
+            const response = await this.marketerService.deleteOne({ waId });
+
+            if (response.deletedCount === 1) {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '❌ Proceso cancelado.'
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('MarketerEvent -> validateExistsStore ->', error.code);
+        }
+    }
+
+    public async validateNumberIsAffiliate(waId: string, clientPhone: string, phoneBusiness: string, data?:any): Promise<boolean> {
+        try {
+            const response = await this.marketerService.numberIsAffiliate({ phoneBusiness });
+
+            if (response === undefined) return false;
+
+            const { documentId, fullname, phone, affiliateId } = response;
+            console.log('affiliateId:', affiliateId);
+            const affiliater = await this.marketerService.findAffiliater({ affiliateId });
+
+            const marketerBody = `⛔ Este numero ya se encuentra afiliado con los siguientes datos: \n Numero de identificacion: ${documentId} \n Nombre: ${fullname} \n Telefono: ${phone} \n Afiliado por: ${affiliater.fullname}`;
+
+            await this.metaProvider.sendText({
+                clientPhone,
+                message: marketerBody
+            });
+
+            const result = await this.marketerService.deleteOne({ waId });
+
+            if (result.deletedCount === 1) {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '❌ Proceso cancelado.'
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('MarketerEvent -> validateNumberIsAffiliate ->', error.code);
+        }
+    }
+
     public async requestRUCDNI(data: any) {
         console.log('event MARKETER_REQUEST_RUC_DNI');
         try {
             const { contacts } = data;
-            const { wa_id, profile } = contacts;
+            const { wa_id } = contacts;
             const { phone } = data.message.from.phone;
             const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
 
@@ -87,11 +209,15 @@ export class MarketerEvents {
                         message: '⛔ Ocurrio un error al iniciar el proceso de registro, por favor, intentalo de nuevo.'
                     });
 
-                    console.error(error);
+                    await this.sendCancelAffiliate(data);
+                    throw error;
                 });
+            } else {
+                console.log('MarketerEvent -> requestRUCDNI -> Ya existe un registro en memoria');
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> requestRUCDNI ->', error.code);
+            await this.sendError(data);
             await this.sendWelcome(data);
         }
     }
@@ -108,6 +234,8 @@ export class MarketerEvents {
                 clientPhone,
                 message: '⌛ Validando el RUC/DNI, espera un momento...'
             });
+
+            if (await this.validateExistsStore(wa_id, clientPhone, rucOrDni)) return;
 
             if (validateDNI(rucOrDni) || validateRUC(rucOrDni)) {
                 await axios.get(`${process.env.API_SERVICE}/apiperu?idNumber=${rucOrDni}`)
@@ -134,6 +262,8 @@ export class MarketerEvents {
                                         clientPhone,
                                         message: '⛔ El RUC/DNI no se pudo actualizar, por favor, intentalo de nuevo.'
                                     });
+
+                                    await this.sendCancelAffiliate(data);
                                 }
                             })
                             .catch(async (error) => {
@@ -141,12 +271,16 @@ export class MarketerEvents {
                                     clientPhone,
                                     message: '⛔ Ocurrio un error al guardar el RUC/DNI, por favor, intentalo de nuevo :('
                                 });
+
+                                await this.sendCancelAffiliate(data);
                             });
                         } else {
                             await this.metaProvider.sendText({
                                 clientPhone,
                                 message: '⚠️ No se encontro ningun registro asociado al RUC/DNI proporcionado, por favor, intentalo de nuevo.'
                             });
+
+                            await this.sendCancelAffiliate(data);
                         }
                     })
             } else {
@@ -154,9 +288,12 @@ export class MarketerEvents {
                     clientPhone,
                     message: '⚠️ El RUC/DNI no es valido, por favor, intentalo de nuevo.'
                 });
+
+                await this.sendCancelAffiliate(data);
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validateRUCDNI ->', error.code);
+            await this.sendError(data);
         }
     }
 
@@ -188,16 +325,19 @@ export class MarketerEvents {
                         message: '⛔ Ocurrio un error al intentar actualizar el nombre del negocio, por favor, intentalo de nuevo :('
                     });
 
-                    console.error(error);
+                    await this.sendCancelAffiliate(data);
                 });
             } else {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '⚠️ El nombre proporcionado no es valido, por favor, intentalo de nuevo.'
                 });
+
+                await this.sendCancelAffiliate(data);
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validateName ->', error.code);
+            await this.sendError(data);
         }
     }
 
@@ -213,6 +353,8 @@ export class MarketerEvents {
                 clientPhone,
                 message: '⌛ Validando numero telefonico, espera un momento...'
             });
+
+            if (await this.validateNumberIsAffiliate(wa_id, clientPhone, body)) return;
 
             if (validatePhoneBusiness(body)) {
                 await this.metaProvider.sendText({
@@ -238,15 +380,20 @@ export class MarketerEvents {
                         clientPhone,
                         message: '⛔ Ocurrio un error al intentar actualizar el telefono del negocio, por favor, intentalo de nuevo.'
                     });
+
+                    await this.sendCancelAffiliate(data);
                 });
             } else {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '⚠️ El numero que compartiste no pertenece a un numero telefonico valido para el territorio de Perú, por favor intentalo de nuevo.'
                 });
+
+                await this.sendCancelAffiliate(data);
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validatePhoneBusiness ->', error.code);
+            await this.sendError(data);
         }
     }
 
@@ -297,16 +444,19 @@ export class MarketerEvents {
                         message: '⛔ Ocurrio un error al intentar actualizar la ubicacion del negocio, por favor, intentalo de nuevo :('
                     });
 
-                    console.error(error);
+                    await this.sendCancelAffiliate(data);
                 });
             } else {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '⚠️ Lo siento, la ubicacion que compartiste no es valida, por favor, intenta de nuevo.'
                 });
+
+                await this.sendCancelAffiliate(data);
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validateUbication ->', error.code);
+            await this.sendError(data);
         }
     }
 
@@ -348,6 +498,8 @@ export class MarketerEvents {
                             clientPhone,
                             message: '⛔ Ocurrio un error al intentar guardar la imagen, intentalo de nuevo :('
                         });
+
+                        await this.sendCancelAffiliate(data);
                     });
                 }
         } else {
@@ -355,9 +507,12 @@ export class MarketerEvents {
                 clientPhone,
                 message: '⚠️ La imagen que compartiste no es valida, por favor, intentalo de nuevo.'
             });
+
+            await this.sendCancelAffiliate(data);
         }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validateImage ->', error.code);
+            await this.sendError(data);
         }
     }
 
@@ -397,53 +552,68 @@ export class MarketerEvents {
                         message: '⛔ Ocurrio un problema al intentar actualizar el codigo QR del mercadista, por favor, intentalo de nuevo :('
                     });
 
-                    console.error(error);
+                    await this.sendCancelAffiliate(data);
                 });
             } else {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '⚠️ El codigo QR no es valido, por favor, intentalo de nuevo.'
                 });
+
+                await this.sendCancelAffiliate(data);
             }
         } catch (error) {
-            await this.sendError(data, error);
+            console.error('MarketerEvent -> validateQrCode ->', error.code);
+            await this.sendError(data);
         }
     }
 
     public async completeMarketerRegister(data: any) {
-        const { contacts } = data;
-        const { wa_id } = contacts;
-        const { phone } = data.message.from.phone;
-        const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
+        try {
+            const { contacts } = data;
+            const { wa_id } = contacts;
+            const { phone } = data.message.from.phone;
+            const clientPhone = phone.startsWith('52') ? phone.replace('521', '52') : phone;
 
-        const response = await this.marketerService.sendMarketer({ waId: wa_id });
+            const response = await this.marketerService.sendMarketer({ waId: wa_id });
 
-        if (response) {
-            const businessPhone = response.phone.startsWith('52') ? response.phone.replace('521', '52') : response.phone;
+            if (response) {
+                const businessPhone = response.phone.startsWith('52') ? response.phone.replace('521', '52') : response.phone;
             
-            const { documentId, fullname, phone, affiliateId } = response;
-            const affiliater = await this.marketerService.findAffiliater({ affiliateId });
+                const { documentId, fullname, phone, affiliateId } = response;
+                const affiliater = await this.marketerService.findAffiliater({ affiliateId });
 
-            const marketerBody = `Estos son los datos del mercadista registrado: \n Numero de identificacion: ${documentId} \n Nombre: ${fullname} \n Telefono: ${phone} \n Afiliado por: ${affiliater.fullname}`;
+                const marketerBody = `Estos son los datos del mercadista registrado: \n Numero de identificacion: ${documentId} \n Nombre: ${fullname} \n Telefono: ${phone} \n Afiliado por: ${affiliater.fullname}`;
             
-            await this.metaProvider.sendText({
-                clientPhone,
-                message: '✅ Todos los datos se han completado, el mercadista se ha registrado con exito!'
-            });
+                const result = await this.marketerService.deleteOne({ waId: wa_id });
 
-            await this.metaProvider.sendText({
-                clientPhone: businessPhone,
-                message: '✅ Mercadista registrado con exito!'
-            });
-            await this.metaProvider.sendText({
-                clientPhone: businessPhone,
-                message: marketerBody
-            });
-        } else {
-            await this.metaProvider.sendText({
-                clientPhone,
-                message: '⛔ Ocurrio un problema al intentar guardar el registro del mercadista, por favor, intentalo de nuevo.'
-            });
+                if (result.deletedCount === 1) {
+                    console.log('MarketerEvent -> completeMarketerRegister -> Registro en memoria eliminado');
+                }
+
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '✅ Todos los datos se han completado, el mercadista se ha registrado con exito!'
+                });
+
+                await this.metaProvider.sendText({
+                    clientPhone: businessPhone,
+                    message: '✅ Mercadista registrado con exito!'
+                });
+                await this.metaProvider.sendText({
+                    clientPhone: businessPhone,
+                    message: marketerBody
+                });
+            } else {
+                await this.metaProvider.sendText({
+                    clientPhone,
+                    message: '⛔ Ocurrio un problema al intentar guardar el registro del mercadista, por favor, intentalo de nuevo.'
+                });
+
+                await this.sendCancelAffiliate(data);
+            }
+        } catch (error) {
+            console.error('MarketerEvent -> completeMarketerRegister ->', error.code);
         }
     }
 }
