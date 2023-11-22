@@ -11,6 +11,7 @@ import { DoctorModule } from './doctor/doctor.module';
 import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
+import { MarketerModule } from './marketer/marketer.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CohereModule } from './cohere/cohere.module';
     NotificationModule,
     ChatgtpModule,
     CohereModule,
+    MarketerModule
   ],
   controllers: [AppController],
   providers: [AppService],
