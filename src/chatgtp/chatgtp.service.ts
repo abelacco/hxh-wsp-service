@@ -139,6 +139,7 @@ export class ChatgtpService {
     
     Aplica estas reglas para interpretar la entrada actual "${userMessage}".`;
 
+    if(this.messageHistory.length === 0) 
     this.messageHistory.push({ role: 'system', content: systemMessage });
 
     const chatGptAnswer = await this.askOpenAI();
