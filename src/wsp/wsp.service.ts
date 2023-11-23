@@ -18,6 +18,7 @@ export class WspService {
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
     
     const response = await this.msgService.proccessMessage(parsedMessage);
+    console.log('response', response);
     if (!response) {
       return false;
     }

@@ -309,8 +309,10 @@ export class MessageService {
               infoMessage.clientPhone,
               findMessage.date,
             );
+          console.log('dateConfirmationMessage', dateConfirmationMessage);
           buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
+          console.log("error",error);
           findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
