@@ -17,7 +17,7 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     parsedMessage.clientName = contact.profile.name;
     parsedMessage.clientPhone = contact.wa_id;
     parsedMessage.type = message.type;
-
+console.log('message.type', message.type);
     switch (message.type) {
       case INTERACTIVE:
         const interactiveType = message.interactive.type;
