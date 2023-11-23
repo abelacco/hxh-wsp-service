@@ -17,6 +17,7 @@ export class WspService {
     console.log('parsed message', parsedMessage);
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
+    
     console.log('parsed message2', parsedMessage);
     const response = await this.msgService.proccessMessage(parsedMessage);
     console.log('response', response);

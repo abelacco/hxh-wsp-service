@@ -26,6 +26,7 @@ console.log('message.type', message.type);
             title: message.interactive[BUTTON_REPLY].title,
             id: message.interactive[BUTTON_REPLY].id,
           };
+          console.log('parsedMessage in Replyt', parsedMessage)
           break;
         } else if (interactiveType === LIST_REPLY) {
           parsedMessage.content = {
