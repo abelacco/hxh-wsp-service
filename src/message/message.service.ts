@@ -296,10 +296,10 @@ export class MessageService {
           infoMessage.content,
           );
           console.log('dateFromChatGpt', dateFromChatGpt);
-          console.log('dateFromChatGpt2', dateFromChatGpt.includes('0') ||
+          console.log('dateFromChatGpt2', dateFromChatGpt.includes('NO_DATE') ||
           !dateValidator(dateFromChatGpt));
           if (
-            dateFromChatGpt.includes('404') ||
+            dateFromChatGpt.includes('NO_DATE') ||
             !dateValidator(dateFromChatGpt)
           )
           {

@@ -25,7 +25,7 @@ export const parseDateInput = (input) => {
 
     // Si la fecha y hora no son válidas, devolver "0"
     if (!fechaHora.isValid()) {
-        return '404';
+        return 'NO_DATE';
     }
 
     // Asumir AM/PM si no se especifica, basado en el horario de atención
