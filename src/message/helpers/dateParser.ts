@@ -22,7 +22,7 @@ export const dateToString = (date: Date) => {
 export const parseDateInput = (input) => {
     // Intentar interpretar la entrada con los diferentes formatos
     let fechaHora = moment(input, inputFormat, true);
-
+    console.log('fechaHora', fechaHora);
     // Si la fecha y hora no son válidas, devolver "0"
     if (!fechaHora.isValid()) {
         return 'NO_DATE';
