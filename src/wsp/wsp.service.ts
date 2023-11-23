@@ -20,7 +20,7 @@ export class WspService {
     if (!response) {
       return false;
     }
-
+    console.log('entrando a envianr mensajes!!!!', response);
     for (const message of response) {
       await this.sendMessages(message);
     }
