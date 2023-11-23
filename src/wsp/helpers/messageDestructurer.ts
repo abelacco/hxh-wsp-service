@@ -44,6 +44,6 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
       default:
         return;
     }
-
+    console.log('parsedMessageindestrcuturer', parsedMessage);
     return parsedMessage;
 };
