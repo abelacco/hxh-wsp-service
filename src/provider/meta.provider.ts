@@ -122,7 +122,7 @@ export class MetaProvider {
 
   public async getWhatsappMediaUrl({ imageId }: { imageId: string }) {
     const getImage = await axios.get(
-      `${process.env.META_BASE_URL}/${imageId}`,
+      `https://graph.facebook.com/v18.0/${imageId}`,
       {
         headers: {
           'Content-Type': 'application/json',
