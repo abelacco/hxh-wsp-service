@@ -10,7 +10,7 @@ import {
   receivedMessageValidator,
 } from './helpers/receivedMessageValidator';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { stringToDate } from './helpers/dateParser';
+import { stringToDate , parseDateInput } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
@@ -289,11 +289,14 @@ export class MessageService {
             return buildedMessages;
           }
 
-          const dateFromChatGpt = await this.chatgtpService.getDateResponse(
-            infoMessage.content,
+          // const dateFromChatGpt = await this.chatgtpService.getDateResponse(
+          //   infoMessage.content,
+          // );
+          const dateFromChatGpt = parseDateInput(
+          infoMessage.content,
           );
           if (
-            dateFromChatGpt.includes('404') ||
+            dateFromChatGpt.includes('0') ||
             !dateValidator(dateFromChatGpt)
           )
             throw new BadRequestException();
