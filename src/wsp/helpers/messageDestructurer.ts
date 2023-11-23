@@ -20,6 +20,7 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
 console.log('message.type', message.type);
     switch (message.type) {
       case INTERACTIVE:
+        console.log('message.interactive', message.interactive.type , BUTTON_REPLY);
         const interactiveType = message.interactive.type;
         if (interactiveType === BUTTON_REPLY) {
           parsedMessage.content = {
