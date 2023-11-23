@@ -144,7 +144,8 @@ import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "../constants/wsp-c
          * y ademas los datos del contacto que nos envio el mensaje. Todo esto va
          * al objeto 'message'
          */
-        message['type'] = msgType;
+        // message['type'] = msgType;
+        message['messageType'] = msgType;
         message['from'] = {
             name: contacts.profile.name,
             phone: message?.from,

@@ -13,23 +13,20 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     const {TEXT, INTERACTIVE, IMAGE} = WSP_MESSAGE_TYPES
     const contact = messageDto.entry[0].changes[0].value.contacts[0];
     const message = messageDto.entry[0].changes[0].value.messages[0];
-console.log('message', message);
-    parsedMessage.clientName = contact.profile.name;
-    parsedMessage.clientPhone = contact.wa_id;
-    parsedMessage.type = message.type;
-console.log('message.type', message.type);
-console.log('message.INTERACTIVE', INTERACTIVE);
 
+    parsedMessage.clientName = contact.profile.name;
+    parsedMessage.clientPhone = contact.wa_id.startsWith('52') ? contact.wa_id.replace('521', '52') : contact.wa_id;
+    parsedMessage.type = message.type;
+    
     switch (message.type) {
-      case BUTTON_REPLY || LIST_REPLY:
-        console.log('message.interactive', message.interactive.type , BUTTON_REPLY);
+      case INTERACTIVE:
         const interactiveType = message.interactive.type;
         if (interactiveType === BUTTON_REPLY) {
           parsedMessage.content = {
             title: message.interactive[BUTTON_REPLY].title,
             id: message.interactive[BUTTON_REPLY].id,
           };
-          console.log('parsedMessage in Replyt', parsedMessage)
+          
           break;
         } else if (interactiveType === LIST_REPLY) {
           parsedMessage.content = {
@@ -48,6 +45,6 @@ console.log('message.INTERACTIVE', INTERACTIVE);
       default:
         return;
     }
-    console.log('parsedMessageindestrcuturer', parsedMessage);
+
     return parsedMessage;
 };
