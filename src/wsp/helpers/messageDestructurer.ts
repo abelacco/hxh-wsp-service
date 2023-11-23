@@ -21,7 +21,7 @@ console.log('message.type', message.type);
 console.log('message.INTERACTIVE', INTERACTIVE);
 
     switch (message.type) {
-      case INTERACTIVE:
+      case BUTTON_REPLY || LIST_REPLY:
         console.log('message.interactive', message.interactive.type , BUTTON_REPLY);
         const interactiveType = message.interactive.type;
         if (interactiveType === BUTTON_REPLY) {
