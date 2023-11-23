@@ -295,6 +295,7 @@ export class MessageService {
           const dateFromChatGpt = parseDateInput(
           infoMessage.content,
           );
+          console.log('dateFromChatGpt', dateFromChatGpt);  
           if (
             dateFromChatGpt.includes('0') ||
             !dateValidator(dateFromChatGpt)
