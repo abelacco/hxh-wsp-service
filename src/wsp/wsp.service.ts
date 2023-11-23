@@ -14,13 +14,17 @@ export class WspService {
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
     console.log("raw message", messageWSP.entry[0].changes[0].value)
     const parsedMessage = messageDestructurer(messageWSP);
+    console.log('parsed message', parsedMessage);
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
+    
+    console.log('parsed message2', parsedMessage);
     const response = await this.msgService.proccessMessage(parsedMessage);
+    console.log('response', response);
     if (!response) {
       return false;
     }
-
+    console.log('entrando a envianr mensajes!!!!', response);
     for (const message of response) {
       await this.sendMessages(message);
     }
@@ -61,7 +65,7 @@ export class WspService {
     console.log('enviando mensaje, body: ', messageClient);
     // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
-      await axios.post(
+      const prueba = await axios.post(
         `https://graph.facebook.com/v18.0/${process.env.PHONE_ID}/messages`,messageClient,
         {
           headers: {
@@ -70,6 +74,8 @@ export class WspService {
           },
         },
       );
+      console.log('prueba', prueba.data);
+    
     } catch (error) {
       console.log(error);
     }
