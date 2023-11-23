@@ -16,7 +16,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
     @HttpCode(200)
     async use(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-        const marketerController = '/marketer-bot';
+        const marketerController = '/api/v1/marketer-bot';
 
         try {
             /**
@@ -90,6 +90,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
          * se redirige hacia el marketer-bot, de lo contrario continua su trayecto normal
          * hacia el wsp controller
          */
+        console.log('req.url ->', req.url);
         next();
     }
 }
