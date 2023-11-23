@@ -13,6 +13,7 @@ export const stringToDate = (date: string) => {
 export const dateToString = (date: Date) => {
   const momentDate = moment(date);
   const dateString = momentDate.format(format);
+  console.log('dateString', dateString);
   return dateString;
 };
 
