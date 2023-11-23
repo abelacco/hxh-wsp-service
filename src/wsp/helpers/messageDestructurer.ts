@@ -13,7 +13,7 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     const {TEXT, INTERACTIVE, IMAGE} = WSP_MESSAGE_TYPES
     const contact = messageDto.entry[0].changes[0].value.contacts[0];
     const message = messageDto.entry[0].changes[0].value.messages[0];
-
+console.log('message', message);
     parsedMessage.clientName = contact.profile.name;
     parsedMessage.clientPhone = contact.wa_id;
     parsedMessage.type = message.type;
