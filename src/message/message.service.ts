@@ -296,12 +296,17 @@ export class MessageService {
           infoMessage.content,
           );
           console.log('dateFromChatGpt', dateFromChatGpt);
-          console.log('dateFromChatGpt2', dateValidator(dateFromChatGpt));
+          console.log('dateFromChatGpt2', dateFromChatGpt.includes('0') ||
+          !dateValidator(dateFromChatGpt));
           if (
             dateFromChatGpt.includes('0') ||
             !dateValidator(dateFromChatGpt)
           )
+          {
             throw new BadRequestException();
+
+          }
+          
           findMessage.date = stringToDate(dateFromChatGpt);
           await this.updateMessage(findMessage.id, findMessage);
           const dateConfirmationMessage =
