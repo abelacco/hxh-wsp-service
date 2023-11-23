@@ -419,7 +419,7 @@ export class MarketerEvents {
                 message: '⌛ Validando ubicacion, espera un momento...'
             });
 
-            if (message.type === WSP_MESSAGE_TYPES.LOCATION) {
+            if (message.messageType === WSP_MESSAGE_TYPES.LOCATION) {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '✅ Ubicacion valida!.'
@@ -473,7 +473,7 @@ export class MarketerEvents {
                 message: '⌛ Validando imagen, espera un momento...'
             });
 
-            if (message.type === WSP_MESSAGE_TYPES.IMAGE) {
+            if (message.messageType === WSP_MESSAGE_TYPES.IMAGE) {
                 await this.metaProvider.sendText({
                     clientPhone,
                     message: '✅ Imagen valida!'
