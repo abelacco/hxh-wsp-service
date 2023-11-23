@@ -299,10 +299,11 @@ export class MessageService {
           console.log('dateFromChatGpt2', dateFromChatGpt.includes('0') ||
           !dateValidator(dateFromChatGpt));
           if (
-            dateFromChatGpt.includes('0') ||
+            dateFromChatGpt.includes('404') ||
             !dateValidator(dateFromChatGpt)
           )
           {
+            console.log('entro al if');
             throw new BadRequestException();
 
           }
