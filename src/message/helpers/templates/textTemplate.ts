@@ -301,7 +301,7 @@ export class Templates {
 
   static patientConfirmationPayment(appointment: any) {
     const {code, date, fee, patientId, doctorId} = appointment;
-    const {name: docName, speciality, phone: doctorPhone} = doctorId;
+    const {name: docName, speciality, phone: doctorPhone, office } = doctorId;
     const {phone: patientPhone, name: patientName} = patientId;
     const dateString = dateToString(date);
     return {
@@ -313,7 +313,7 @@ export class Templates {
         Paciente: ${patientName}
         Especialidad: ${speciality}
         Fecha y Hora de la cita: ${dateString}
-        Cosultorio: Centro médico
+        Cosultorio: ${office}
         Costo de la cita: S/${fee}
         Celular Doctor: ${doctorPhone}
         Identificación: ${code} \n\nMuchas gracias por contar con Doctor Qali, comparte este cupón SRTC7286, logra que usen Doctor Qali y gana 10 créditos💰 para canjearlos en tu próxima cita (1 crédito = 1 sol) 💯`,
