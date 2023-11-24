@@ -309,7 +309,7 @@ export class Templates {
       to: patientPhone,
       type: 'text',
       text: {
-        body: `✅ ¡Gracias por reservar con el Dr. ${docName}! 🧑‍⚕️ \n\nA continuación, los datos de tu cita 🙌
+        body: `✅ ¡Gracias por reservar con el Dr. ${docName}! 🧑‍⚕️ \n\nA continuación, los datos de tu cita. 🙌
         Paciente: ${patientName}
         Especialidad: ${speciality}
         Fecha y Hora de la cita: ${dateString}
