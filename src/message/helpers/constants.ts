@@ -1,6 +1,6 @@
 export const WSP_REPLIES = {
   GREETING: ['Hola', 'Necesito ayuda'],
-  SELECT_DOCTOR: 'Reservar cita',
+  SELECT_DOCTOR: 'Reservar cita 🛒',
   ACCEPT_APPOINTMENT: 'Aceptar',
   PAYMENTS_OPTIONS: ['Tarjeta', 'Yape/Plin'],
   SUBMIT_VOUCHER: 'Listo',

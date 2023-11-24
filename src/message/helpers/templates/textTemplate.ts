@@ -547,7 +547,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: docId,
-                title: 'Reservar cita 🛒',
+                title: WSP_REPLIES.SELECT_DOCTOR,
               },
             },
             // {
