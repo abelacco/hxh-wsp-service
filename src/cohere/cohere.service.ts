@@ -18,7 +18,7 @@ export class CohereService {
         { text: 'Necesito ayuda', label: 'greetings' },
         { text: 'Como funciona', label: 'greetings' },
         { text: 'Que debo hacer', label: 'greetings' },
-        { text: 'Ver especialidades', label: 'speciality' },
+        { text: 'Agendar una cita', label: 'speciality' },
         { text: 'Necesito un doctor', label: 'speciality' },
         { text: 'Quiero un especialista', label: 'speciality' },
         { text: 'Necesito psicólogo', label: 'speciality' },
