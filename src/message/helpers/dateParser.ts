@@ -3,8 +3,13 @@ import * as moment from 'moment';
 const format = 'DD-MM-YY hh:mm a';
 const inputFormat = [
   'D M H', 'D M H:mm', 'D M HHmm', 'D M H A', 'D M H:mm A', 
-  'D M HHmm A', 'D M Hmma', 'D M Hmm A'
+  'D M HHmm A', 'D M Hmma', 'D M Hmm A',
+  'D.M.H', 'D-M-H:mm', 'D.M.HH:mm', 'D-M-H A',
+  'D M HH', 'D M HH:mm',
+  'D M H am', 'D M H:mm pm', 'D M H an', 'D M H:mm pn',
+  'D.M HHmm', 'D-M-HH:mm A'
 ];
+
 export const stringToDate = (date: string) => {
 
   const result = moment(date, format);
