@@ -463,16 +463,16 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'UNIQUE_BUTTON_ID_1',
-                title: 'Yape/Plin 📱',
+                title: WSP_REPLIES.PAYMENTS_OPTIONS[1],
               },
             },
-            {
-              type: 'reply',
-              reply: {
-                id: 'UNIQUE_BUTTON_ID_2',
-                title: 'Tarjeta 💳',
-              },
-            },
+            // {
+            //   type: 'reply',
+            //   reply: {
+            //     id: 'UNIQUE_BUTTON_ID_2',
+            //     title: 'Tarjeta 💳',
+            //   },
+            // },
             // {
             //     "type": "reply",
             //     "reply": {
