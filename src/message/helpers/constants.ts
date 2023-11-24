@@ -4,7 +4,7 @@ export const WSP_REPLIES = {
   ACCEPT_APPOINTMENT: 'Aceptar',
   PAYMENTS_OPTIONS: ['Tarjeta', 'Yape/Plin'],
   SUBMIT_VOUCHER: 'Listo',
-  DOCTOR_ACCEPT: 'Aceptar',
+  DOCTOR_ACCEPT: 'Aceptar ✅',
 };
 
 export const SPECIALITIES = [

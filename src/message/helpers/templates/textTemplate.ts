@@ -1,4 +1,4 @@
-import { SPECIALITIES_LIST } from "../constants";
+import { SPECIALITIES_LIST, WSP_REPLIES } from "../constants";
 import { dateToString } from "../dateParser";
 
 export class Templates {
@@ -151,7 +151,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: `accptcta-${messageId}`,
-                title: 'Aceptar ✅',
+                title: WSP_REPLIES.DOCTOR_ACCEPT,
               },
             },
           ],
