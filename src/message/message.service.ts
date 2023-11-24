@@ -559,8 +559,9 @@ export class MessageService {
       Find or create a new message
       Receive a parsed message
     */
+      const encodedName = encodeURIComponent(receivedMessage.clientName);
     const getPatient = await axios.get(
-      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`,
+      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
     );
     const patient = getPatient.data;
     const message = await this.messageModel.findOne({
