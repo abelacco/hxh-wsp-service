@@ -31,4 +31,10 @@ export class MessageController {
   remove(@Param('id') id: string) {
     return this.messageService.remove(+id);
   }
+
+  @Post('testdate')
+  testDate(@Body() body) {
+    console.log('body', body);
+    return this.messageService.testDate(body.date);
+  }
 }

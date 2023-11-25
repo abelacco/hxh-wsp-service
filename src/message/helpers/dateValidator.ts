@@ -1,20 +1,27 @@
 import * as moment from 'moment/moment';
+import 'moment-timezone';
 
 export const dateValidator = (receivedDate: string) => {
   console.log('receivedDate', receivedDate);
-  if(!receivedDate) return false;
-  const fecha1 = moment(receivedDate, 'DD-MM-YY HH:mm');
+  if (!receivedDate) return false;
 
-  
-  if(!fecha1.isValid()) return false;
+  // Interpretar la fecha y hora en la zona horaria deseada y luego convertirla a UTC
+  const zonaHoraria = 'America/Lima'; // Ejemplo de zona horaria (UTC-5)
+  const fecha1 = moment.tz(receivedDate, 'DD-MM-YY HH:mm a', zonaHoraria).utc();
 
-  const fechaActual = moment();
+  console.log("fecha1 (UTC)", fecha1.format());
+  if (!fecha1.isValid()) {
+    console.log("Fecha no válida");
+    return false;
+  }
 
-  if(!(fechaActual.isBefore(fecha1))) return false;
+  const fechaActual = moment.utc();
+  console.log("fechaActual (UTC)", fechaActual.format());
 
-  const diferenciaEnAños = fecha1.diff(fechaActual, 'years');
-  
-  if(diferenciaEnAños > 1) return false;
+  if (fechaActual.isSameOrAfter(fecha1)) {
+    console.log("La fecha y hora ya pasaron");
+    return false;
+  }
 
   return true;
 };

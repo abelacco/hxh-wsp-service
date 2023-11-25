@@ -292,23 +292,19 @@ export class MessageService {
           // const dateFromChatGpt = await this.chatgtpService.getDateResponse(
           //   infoMessage.content,
           // );
-          const dateFromChatGpt = parseDateInput(
-          infoMessage.content,
+          const dateParsed = parseDateInput(
+            infoMessage.content,
           );
-          console.log('dateFromChatGpt', dateFromChatGpt);
-          console.log('dateFromChatGpt2', dateFromChatGpt.includes('NO_DATE') ||
-          !dateValidator(dateFromChatGpt));
           if (
-            dateFromChatGpt.includes('NO_DATE') ||
-            !dateValidator(dateFromChatGpt)
+            dateParsed.includes('NO_DATE') ||
+            !dateValidator(dateParsed)
           )
           {
-            console.log('entro al if');
+            console.log('FECHA NO VÁLIDA');
             throw new BadRequestException();
-
+      
           }
-          
-          findMessage.date = stringToDate(dateFromChatGpt);
+          findMessage.date = stringToDate(dateParsed);
           await this.updateMessage(findMessage.id, findMessage);
           const dateConfirmationMessage =
             this.messageBuilder.dateConfirmationTemplate(
@@ -623,5 +619,20 @@ export class MessageService {
 
   remove(id: number) {
     return `This action removes a #${id} message`;
+  }
+
+  async testDate(date: string) {
+    const dateParsed = parseDateInput(date);
+    console.log('VALIDANDO FECHA NO DATE', dateParsed.includes('NO_DATE'));
+    if (
+      dateParsed.includes('NO_DATE') ||
+      !dateValidator(dateParsed)
+    )
+    {
+      console.log('ES NO VALIDO');
+      throw new BadRequestException();
+
+    }
+    return dateParsed;
   }
 }
