@@ -1,6 +1,5 @@
 import { STEPS } from 'src/config/constants';
 import { WSP_REPLIES, SPECIALITIES, REPLIES_IDs } from './constants';
-import { dateValidator } from './dateValidator';
 import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 
