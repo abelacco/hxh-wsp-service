@@ -292,23 +292,22 @@ export class MessageService {
           // const dateFromChatGpt = await this.chatgtpService.getDateResponse(
           //   infoMessage.content,
           // );
-          const dateFromChatGpt = parseDateInput(
+          const dateParsed = parseDateInput(
           infoMessage.content,
           );
-          console.log('dateFromChatGpt', dateFromChatGpt);
-          console.log('dateFromChatGpt2', dateFromChatGpt.includes('NO_DATE') ||
-          !dateValidator(dateFromChatGpt));
+          console.log('VALIDANDO FECHA NO DATE', dateParsed.includes('NO_DATE'));
+          console.log('VALIDANDO FECHA CON FUNCION VALIDADORA DEL DIA', !dateValidator(dateParsed));
           if (
-            dateFromChatGpt.includes('NO_DATE') ||
-            !dateValidator(dateFromChatGpt)
+            dateParsed.includes('NO_DATE') ||
+            !dateValidator(dateParsed)
           )
           {
-            console.log('entro al if');
+            console.log('ES NO VALIDO');
             throw new BadRequestException();
 
           }
           
-          findMessage.date = stringToDate(dateFromChatGpt);
+          findMessage.date = stringToDate(dateParsed);
           await this.updateMessage(findMessage.id, findMessage);
           const dateConfirmationMessage =
             this.messageBuilder.dateConfirmationTemplate(
