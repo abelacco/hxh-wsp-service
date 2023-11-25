@@ -26,7 +26,7 @@ export const dateToString = (date: Date) => {
 
 
 
-export const parseDateInput = (input) => {
+export const parseDateInput = (input: any) => {
     // Intentar interpretar la entrada con los diferentes formatos
     let fechaHora = moment(input, inputFormat, true);
     console.log('fechaHora a parsear', fechaHora);

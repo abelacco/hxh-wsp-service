@@ -293,20 +293,17 @@ export class MessageService {
           //   infoMessage.content,
           // );
           const dateParsed = parseDateInput(
-          infoMessage.content,
+            infoMessage.content,
           );
-          console.log('VALIDANDO FECHA NO DATE', dateParsed.includes('NO_DATE'));
-          console.log('VALIDANDO FECHA CON FUNCION VALIDADORA DEL DIA', !dateValidator(dateParsed));
           if (
             dateParsed.includes('NO_DATE') ||
             !dateValidator(dateParsed)
           )
           {
-            console.log('ES NO VALIDO');
+            console.log('FECHA NO VÁLIDA');
             throw new BadRequestException();
-
+      
           }
-          
           findMessage.date = stringToDate(dateParsed);
           await this.updateMessage(findMessage.id, findMessage);
           const dateConfirmationMessage =
@@ -622,5 +619,20 @@ export class MessageService {
 
   remove(id: number) {
     return `This action removes a #${id} message`;
+  }
+
+  async testDate(date: string) {
+    const dateParsed = parseDateInput(date);
+    console.log('VALIDANDO FECHA NO DATE', dateParsed.includes('NO_DATE'));
+    if (
+      dateParsed.includes('NO_DATE') ||
+      !dateValidator(dateParsed)
+    )
+    {
+      console.log('ES NO VALIDO');
+      throw new BadRequestException();
+
+    }
+    return dateParsed;
   }
 }
