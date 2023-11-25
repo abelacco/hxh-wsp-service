@@ -10,7 +10,7 @@ import {
   receivedMessageValidator,
 } from './helpers/receivedMessageValidator';
 import { DoctorService } from 'src/doctor/doctor.service';
-import { stringToDate } from './helpers/dateParser';
+import { stringToDate , parseDateInput } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
 import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
@@ -289,14 +289,25 @@ export class MessageService {
             return buildedMessages;
           }
 
-          const dateFromChatGpt = await this.chatgtpService.getDateResponse(
-            infoMessage.content,
+          // const dateFromChatGpt = await this.chatgtpService.getDateResponse(
+          //   infoMessage.content,
+          // );
+          const dateFromChatGpt = parseDateInput(
+          infoMessage.content,
           );
+          console.log('dateFromChatGpt', dateFromChatGpt);
+          console.log('dateFromChatGpt2', dateFromChatGpt.includes('NO_DATE') ||
+          !dateValidator(dateFromChatGpt));
           if (
-            dateFromChatGpt.includes('404') ||
+            dateFromChatGpt.includes('NO_DATE') ||
             !dateValidator(dateFromChatGpt)
           )
+          {
+            console.log('entro al if');
             throw new BadRequestException();
+
+          }
+          
           findMessage.date = stringToDate(dateFromChatGpt);
           await this.updateMessage(findMessage.id, findMessage);
           const dateConfirmationMessage =
@@ -304,8 +315,10 @@ export class MessageService {
               infoMessage.clientPhone,
               findMessage.date,
             );
+          console.log('dateConfirmationMessage', dateConfirmationMessage);
           buildedMessages.push(dateConfirmationMessage);
         } catch (error) {
+          console.log("error",error);
           findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
           const errorResponse = this.errorResponseHandler(
@@ -546,8 +559,9 @@ export class MessageService {
       Find or create a new message
       Receive a parsed message
     */
+      const encodedName = encodeURIComponent(receivedMessage.clientName);
     const getPatient = await axios.get(
-      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${receivedMessage.clientName}`,
+      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
     );
     const patient = getPatient.data;
     const message = await this.messageModel.findOne({

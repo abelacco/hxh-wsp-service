@@ -15,9 +15,9 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
     const message = messageDto.entry[0].changes[0].value.messages[0];
 
     parsedMessage.clientName = contact.profile.name;
-    parsedMessage.clientPhone = contact.wa_id;
+    parsedMessage.clientPhone = contact.wa_id.startsWith('52') ? contact.wa_id.replace('521', '52') : contact.wa_id;
     parsedMessage.type = message.type;
-
+    
     switch (message.type) {
       case INTERACTIVE:
         const interactiveType = message.interactive.type;
@@ -26,6 +26,7 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
             title: message.interactive[BUTTON_REPLY].title,
             id: message.interactive[BUTTON_REPLY].id,
           };
+          
           break;
         } else if (interactiveType === LIST_REPLY) {
           parsedMessage.content = {

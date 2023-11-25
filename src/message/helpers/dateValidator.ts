@@ -1,6 +1,7 @@
 import * as moment from 'moment/moment';
 
 export const dateValidator = (receivedDate: string) => {
+  console.log('receivedDate', receivedDate);
   if(!receivedDate) return false;
   const fecha1 = moment(receivedDate, 'DD-MM-YY HH:mm');
 

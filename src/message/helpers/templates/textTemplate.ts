@@ -1,4 +1,4 @@
-import { SPECIALITIES_LIST } from "../constants";
+import { SPECIALITIES_LIST, WSP_REPLIES } from "../constants";
 import { dateToString } from "../dateParser";
 
 export class Templates {
@@ -8,7 +8,8 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'A continuación ingresa la fecha y hora de tu cita en el siguiente formato: dd mm h.m am/pm.\nEjemplo: 6 11 3.40 pm',
+        body: `Listo 🙌 \n\nIngresa la fecha y hora de tu cita 🕜 (DIA MES HORA MINUTOS AM/PM) \n\nEjemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
+        `,
       },
     };
   }
@@ -19,7 +20,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'Coloque su dni, el mismo será verificado en el registro nacional',
+        body: '¡Genial! Por favor, ingresa tu DNI para registrarte ✅',
       },
     };
   }
@@ -32,7 +33,8 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: 'Hola!, soy un asistente virtual que te ayudará a conseguir una cita con el especialista que desees, ¿En que puedo ayudarte?',
+          text: `¡Bienvenid@ a Doctor Qali! 🌟 \n\nTu camino hacia una atención médica instantánea y de calidad comienza aquí 👩‍⚕️🚀 \n\n¿Cómo podemos ayudarte hoy?
+          `,
         },
         action: {
           buttons: [
@@ -40,14 +42,14 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'see_specialities_button_id',
-                title: 'Ver especialidades',
+                title: '📆 Agendar una cita',
               },
             },
             {
               type: 'reply',
               reply: {
                 id: 'specialist_button_id',
-                title: 'Soy especialista',
+                title: '⚕️ Soy doctor',
               },
             },
           ],
@@ -62,7 +64,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'No es lo que esperaba, vuelve a intentar',
+        body: '⛔ No es lo que esperaba, vuelve a intentar',
       },
     };
   }
@@ -98,7 +100,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'Estamos verificando su comprobante de pago',
+        body: 'Estamos verificando tu comprobante de pago, un minuto por favor! 🙌',
       },
     };
   }
@@ -109,7 +111,8 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'Estamos contactando especialistas, aguarda mientras responden',
+        body: `Ahora mismo estamos contactando especialistas 🧑‍⚕️ \n Aguarda unos minutos, recibirás los perfiles disponibles para continuar! ✅
+        `,
       },
     };
   }
@@ -140,7 +143,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `${patientName} requiere de una consulta el día ${date}`,
+          text: `Paciente: ${patientName} \nTurno: ${date}`,
         },
         action: {
           buttons: [
@@ -148,7 +151,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: `accptcta-${messageId}`,
-                title: 'Aceptar',
+                title: WSP_REPLIES.DOCTOR_ACCEPT,
               },
             },
           ],
@@ -163,7 +166,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: 'Puede realizar el yape al 947308823 a nombre de DoctorQali SRL, por favor enviar el voucher de pago.',
+        body: '☝️ Para terminar, por favor realizar el yape al 947308823 a nombre de Doctor Qali SRL y enviar el boucher de pago en este chat.',
       },
     };
   }
@@ -176,7 +179,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `¿Confirma ser ${dniName}?`,
+          text: `¿Eres ${dniName}?`,
         },
         action: {
           buttons: [
@@ -184,14 +187,14 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'accpt_dni',
-                title: 'Confirmar',
+                title: 'Confirmar ✅',
               },
             },
             {
               type: 'reply',
               reply: {
                 id: 'retry_dni',
-                title: 'Volver a intentar',
+                title: 'Volver a intentar 👀',
               },
             },
           ],
@@ -216,14 +219,14 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'accpt_speciality',
-                title: 'Confirmar',
+                title: 'Confirmar ✅',
               },
             },
             {
               type: 'reply',
               reply: {
                 id: 'retry_speciality',
-                title: 'Seleccionar otra',
+                title: 'Elegir Otro 🔄',
               },
             },
           ],
@@ -240,7 +243,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `¿Confirma su cita con el doctor ${docName}, el dia y hora ${date} por un precio de S/ ${fee} soles?`,
+          text: `Por favor, confirma tu cita: \n\nDoctor: ${docName} \nTurno: ${date} \nCosto: S/ ${fee}`,
         },
         action: {
           buttons: [
@@ -248,14 +251,14 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'accpt_doctor',
-                title: 'Confirmar',
+                title: 'Confirmar ✅',
               },
             },
             {
               type: 'reply',
               reply: {
                 id: 'retry_doctor',
-                title: 'Elegir otro',
+                title: 'Elegir Otro 🔄',
               },
             },
           ],
@@ -272,7 +275,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `¿Confirma la fecha y hora: ${date}?`,
+          text: `¿Confirma la fecha y hora: ${date}? 👀`,
         },
         action: {
           buttons: [
@@ -280,14 +283,14 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'accpt_date',
-                title: 'Confirmar',
+                title: 'Confirmar ✅',
               },
             },
             {
               type: 'reply',
               reply: {
                 id: 'retry_date',
-                title: 'Elegir otra',
+                title: 'Elegir otra 🤔',
               },
             },
           ],
@@ -298,7 +301,7 @@ export class Templates {
 
   static patientConfirmationPayment(appointment: any) {
     const {code, date, fee, patientId, doctorId} = appointment;
-    const {name: docName, speciality, phone: doctorPhone} = doctorId;
+    const {name: docName, speciality, phone: doctorPhone, office } = doctorId;
     const {phone: patientPhone, name: patientName} = patientId;
     const dateString = dateToString(date);
     return {
@@ -306,15 +309,14 @@ export class Templates {
       to: patientPhone,
       type: 'text',
       text: {
-        body: `¡Gracias por reservar con el Dr(a) ${docName}! A continuación, los datos de tu cita:
+        body: `✅ ¡Gracias por reservar con el Dr. ${docName}! 🧑‍⚕️ \n\nA continuación, los datos de tu cita. 🙌
         Paciente: ${patientName}
         Especialidad: ${speciality}
         Fecha y Hora de la cita: ${dateString}
-        Cosultorio: Centro médico
-        Link de la Cita: -
-        Costo de la cita: ${fee}
-        Celular: ${doctorPhone}
-        Identificación: ${code}`,
+        Cosultorio: ${office}
+        Costo de la cita: S/${fee}
+        Celular Doctor: ${doctorPhone}
+        Identificación: ${code} \n\nMuchas gracias por contar con Doctor Qali, comparte este cupón SRTC7286, logra que usen Doctor Qali y gana 10 créditos💰 para canjearlos en tu próxima cita (1 crédito = 1 sol) 💯`,
       },
     };
   }
@@ -329,13 +331,7 @@ export class Templates {
       to: doctorPhone,
       type: 'text',
       text: {
-        body: `¡Tienes una nueva cita! A continuación, los datos de tu cita:
-        Paciente: ${patientName}
-        Contacto: ${patientPhone}
-        Fecha y Hora de la cita: ${dateString}
-        Link de la Cita: -
-        Costo de la cita: ${fee}
-        Identificación: ${code}`,
+        body: `¡Tienes una cita! ✅🧑‍⚕️🙌 \n\nPaciente: ${patientName} \nFecha y Hora de la cita: ${dateString} \nCelular Paciente: ${patientPhone} \nIdentificación: ${code}`,
       },
     };
   }
@@ -347,7 +343,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: `Su cita del día ${dateString} no pudo ser agendada`,
+        body: `⛔️ Ups!, al parecer no es el comprobante que esperamos, por favor reenvía nuevamente el boucher de pago.`,
       },
     };
   }
@@ -361,16 +357,16 @@ export class Templates {
         type: 'list',
         header: {
           type: 'text',
-          text: 'Lista de especialidades',
+          text: 'Lista de especialidades 📋',
         },
         body: {
-          text: 'Bienvenido a DoctorQali, te ayudaremos a encontrar el especialista que necesitas.',
+          text: 'Te ayudaremos a encontrar la especialidad que buscas',
         },
         footer: {
           text: 'DoctorQali te cuida',
         },
         action: {
-          button: 'Ver especialidades',
+          button: 'Ver especialidades 🔎',
           sections: [
             {
               title: 'Especialidades',
@@ -459,7 +455,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: 'Escoger medio de pago',
+          text: 'Y ya para terminar, escoge tu medio de pago 🙌',
         },
         action: {
           buttons: [
@@ -467,16 +463,16 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: 'UNIQUE_BUTTON_ID_1',
-                title: 'Yape/Plin',
+                title: WSP_REPLIES.PAYMENTS_OPTIONS[1],
               },
             },
-            {
-              type: 'reply',
-              reply: {
-                id: 'UNIQUE_BUTTON_ID_2',
-                title: 'Tarjeta',
-              },
-            },
+            // {
+            //   type: 'reply',
+            //   reply: {
+            //     id: 'UNIQUE_BUTTON_ID_2',
+            //     title: 'Tarjeta 💳',
+            //   },
+            // },
             // {
             //     "type": "reply",
             //     "reply": {
@@ -543,7 +539,7 @@ export class Templates {
           },
         },
         body: {
-          text: `Turno disponible para el día ${date}, el costo de la consulta es de S/ ${fee} soles.`,
+          text: `Turno: ${date} \nCosto: S/ ${fee}`,
         },
         action: {
           buttons: [
@@ -551,7 +547,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: docId,
-                title: 'Reservar cita',
+                title: WSP_REPLIES.SELECT_DOCTOR,
               },
             },
             // {

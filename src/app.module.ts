@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -12,6 +12,7 @@ import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
 import { MarketerModule } from './marketer/marketer.module';
+import { MarketerBotMiddleware } from './middlewares/marketer-bot.middleware';
 
 @Module({
   imports: [
@@ -31,4 +32,10 @@ import { MarketerModule } from './marketer/marketer.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(MarketerBotMiddleware)
+      .forRoutes({ path: 'wsp/webHook', method: RequestMethod.ALL });
+  }
+}

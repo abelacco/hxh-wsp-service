@@ -16,7 +16,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
     @HttpCode(200)
     async use(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-        const marketerController = '/marketer-bot';
+        const marketerController = '/api/v1/marketer-bot';
 
         try {
             /**
@@ -33,7 +33,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
                     console.log('-----------------------------------------');
                     return res.status(200).send('OK');
                 } else if (data?.isMessage) {
-                    console.log('midleware message type -> ', data.message.type);
+                    console.log('midleware message type -> ', data.message.messageType);
                     const { message, contacts } = data;
                     const { wa_id } = contacts;
 
@@ -48,7 +48,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
                      */
                     const marketer: any = await this.marketerService.findByWaId(wa_id);
 
-                    if (message.type === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
+                    if (message.messageType === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
                         const button_id = data.message.button_reply.id;
 
                         if (button_id === 'step-1-cancelar-afiliacion'){
@@ -67,7 +67,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
 
                         req.marketerField = keys.find((key) => marketer._doc[key] === "");
                         req.url = marketerController;
-                    } else  if (message.type === WSP_MESSAGE_TYPES.TEXT) {
+                    } else  if (message.messageType === WSP_MESSAGE_TYPES.TEXT) {
                         /**
                          * 3.1.- El segundo caso para redirigir el flujo es cuando el
                          * mensaje es la clave para acceder al marketer-bot
@@ -90,6 +90,7 @@ export class MarketerBotMiddleware implements NestMiddleware {
          * se redirige hacia el marketer-bot, de lo contrario continua su trayecto normal
          * hacia el wsp controller
          */
+        console.log('req.url ->', req.url);
         next();
     }
 }
