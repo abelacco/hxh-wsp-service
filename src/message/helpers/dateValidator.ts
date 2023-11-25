@@ -4,23 +4,22 @@ export const dateValidator = (receivedDate: string) => {
   console.log('receivedDate', receivedDate);
   if (!receivedDate) return false;
 
-  // Parsear la fecha recibida y convertirla a UTC
-  const fecha1 = moment.utc(receivedDate, 'DD-MM-YY HH:mm a');
+  // Interpretar la fecha y hora en la zona horaria local y luego convertirla a UTC
+  const fecha1 = moment(receivedDate, 'DD-MM-YY HH:mm a').utc();
+
+  console.log("fecha1 (UTC)", fecha1.format());
   if (!fecha1.isValid()) {
     console.log("Fecha no válida");
     return false;
   }
-  console.log("dateValidator 1 -> Si es fecha con formato valido");
 
-  // Obtener la fecha y hora actuales en UTC
   const fechaActual = moment.utc();
+  console.log("fechaActual (UTC)", fechaActual.format());
 
-  // Comprobar si la fecha y hora recibidas ya pasaron
   if (fechaActual.isSameOrAfter(fecha1)) {
-    console.log("dateValidator 1 -> La fecha y hora ya pasaron");
+    console.log("La fecha y hora ya pasaron");
     return false;
   }
-  console.log("dateValidator 1 -> Fecha valida y futura");
 
   return true;
 };
