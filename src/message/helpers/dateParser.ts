@@ -29,7 +29,7 @@ export const dateToString = (date: Date) => {
 export const parseDateInput = (input: any) => {
     // Intentar interpretar la entrada con los diferentes formatos
     let fechaHora = moment(input, inputFormat, true);
-    console.log('fechaHora a parsear', fechaHora);
+    console.log('fechaHora a parseada 1', fechaHora);
     // Si la fecha y hora no son válidas, devolver "0"
     if (!fechaHora.isValid()) {
         console.log('fechaHora no valida', fechaHora)
@@ -53,6 +53,6 @@ export const parseDateInput = (input: any) => {
     } else {
         fechaHora.add(1, 'hour').minute(0);
     }
-    console.log('fechaHora parseada', fechaHora);
+    console.log('fechaHora parseada despues de redondear', fechaHora);
     return fechaHora.format(format);
 };
