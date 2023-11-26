@@ -45,6 +45,7 @@ export class MessageService {
     console.log('mensaje parseado: ', messageFromWSP);
     const { clientPhone, content } = messageFromWSP;
 
+    // Validar si es un mensaje del bot para el doctor
     if (DoctorMessageValidator(messageFromWSP)) {
       const getMessageResponded = await this.findById(
         messageFromWSP.content.id.split('-')[1],
@@ -52,29 +53,35 @@ export class MessageService {
 
       return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
     }
-
+    // Si no es un mensaje del bot para el doctor, se procesa como un mensaje del paciente
+    // Esta pendiente crear la capa para hacer consultar a la base de datos de messages
+    // Verificar si ya existe un mensaje del cliente y para determinar si necesitas el dni
+    // Determina si en el carrito de compras(mensaje) existe un mensaje con el mismo número de telefono y que no tenga status SELECT_SPECIALTY Y INSERT_DATE
     const checkCurrentPath = await this.messageModel.findOne({
       $and: [
         {
           phone: clientPhone,
         },
         {
-          status: { $ne: '2' },
+          status: { $ne: STEPS.SELECT_SPECIALTY },
         },
         {
-          status: { $ne: '3' },
+          status: { $ne: STEPS.INSERT_DATE },
         },
       ],
     });
-
+// Esta es una validacion para saber si no existe un mensaje en el carrito de compras o si te encuentras en el paso 0( ya empezaste a pedir una cita una vez)
     if (!checkCurrentPath || checkCurrentPath.step === '0') {
       try {
+        // La IA determina si el primer mensaje es un saludo o un mensaje pidiendo ya una especialidad
         const iaResponse = await this.cohereService.classyfier(
           content.title || content,
         );
-
+        //Si la IA determina que el topico es especialidad y ademas no existe ningun mensaje(carrito de compras) en la base de datos
         if (iaResponse === 'speciality' && !checkCurrentPath) {
+          //busca o crear el mensaje (carrito de compras)
           const findMessage = await this.findOrCreateMessage(messageFromWSP);
+          //Busca mensaje por número de cliente 
           const findDni = await this.messageModel.findOne({
             phone: clientPhone,
           });
@@ -82,12 +89,16 @@ export class MessageService {
           const response = await this.updateAndBuildPatientMessage(findMessage);
           return [response];
         }
-
+        //Si la IA determina que el topico es especialidad y ademas existe un mensaje(carrito de compras) en la base de datos en el paso 0
         if (iaResponse === 'speciality' && checkCurrentPath) {
           const findDni = await this.messageModel.findOne({
             phone: clientPhone,
           });
+          // Antes debemos validar si tenemos su dni 
+          // Si lo tenemos entonces debemos actualizar al paso de enviar template de especialidades
+          // Si no lo tenemos entonces debemos actualizar al paso de pedir dni
           checkCurrentPath.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
+          // Construye el mensaje de respuesta a partir del paso actual del mensaje
           const response = await this.updateAndBuildPatientMessage(
             checkCurrentPath,
           );
@@ -107,7 +118,7 @@ export class MessageService {
         return [errorResponse];
       }
     }
-
+    // Envio al handler de pacients el mensaje de Wsp y el paso actual del mensaje
     return await this.patientMessageHandler(messageFromWSP, checkCurrentPath);
 
     /*
@@ -132,6 +143,7 @@ export class MessageService {
       }
     */
 
+  // Recibes el mensaje deestructurado y el mensaje de la base de datos con el step actual
   async patientMessageHandler(
     infoMessage: IParsedMessage,
     findMessage: Message,
@@ -152,11 +164,13 @@ export class MessageService {
       );
       return buildedMessages;
     }
+    // Valida que el contenido que llega respone al step actual del mensaje
     const validateStep = receivedMessageValidator(
       findMessage.step,
       infoMessage,
     );
-
+    // Si el contenido no responde al step actual del mensaje entonces se aumenta el contador de intentos
+    // y se envia un mensaje de error
     console.log('validacion: ', validateStep);
     if (!validateStep) {
       findMessage.attempts++;
@@ -165,7 +179,8 @@ export class MessageService {
       buildedMessages.push(...errorMessage);
       return buildedMessages;
     }
-
+    // Si el contenido responder al step actual del mensaje entonces se procede a realizar validaciones internas
+    // se actualizar el paso del mensaje y se construye el mensaje de respuesta
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
@@ -173,17 +188,24 @@ export class MessageService {
       */
       case STEPS.PUT_DNI:
         try {
+          // Acepta que nombre y apellido coinciden con el dni
           if (
             infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
             infoMessage.content.id === 'accpt_dni'
           ) {
+            // Actualiza el paso del mensaje
             findMessage.step = STEPS.SELECT_SPECIALTY;
+            // Actualizas el name y el dni en la base de datos de pacientes
+            const updatePatientInfo = await axios.patch(
+              `${process.env.API_SERVICE}/patient/${findMessage.phone}`,{dni: findMessage.dni, name: findMessage.clientName},
+            );
+            // Actualizas el mensaje en la base de datos y ademas construyes el mensaje de respuesta
             buildedMessages.push(
               await this.updateAndBuildPatientMessage(findMessage),
             );
             return buildedMessages;
           }
-
+          // Rechaza que nombre y apellido no coinciden con el dni
           if (
             infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
             infoMessage.content.id === 'retry_dni'
@@ -193,7 +215,7 @@ export class MessageService {
             );
             return buildedMessages;
           }
-
+          // Cuando ingresan el dni se hace una consulta a la api de perú
           const dniRequest = await axios.get(
             `${process.env.API_SERVICE}/apiperu?idNumber=${infoMessage.content}`,
           );
@@ -534,7 +556,9 @@ export class MessageService {
   }
 
   async updateAndBuildPatientMessage(message: Message) {
+    // Actualiza el mensaje en la base de datos con el nuevo paso
     await this.updateMessage(message.id, message);
+    // Construye el mensaje que corresponde segun el nuevo paso actualizado
     return this.messageBuilder.buildMessage(message);
   }
 
