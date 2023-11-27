@@ -199,7 +199,6 @@ export class MessageService {
             await axios.patch(
               `${process.env.API_SERVICE}/patient/${findMessage.clientId}`,{dni: findMessage.dni, name: findMessage.clientName},
             );
-            console.log("updatePatientInfo", updatePatientInfo);
             // Actualizas el mensaje en la base de datos y ademas construyes el mensaje de respuesta
             buildedMessages.push(
               await this.updateAndBuildPatientMessage(findMessage),
