@@ -196,8 +196,8 @@ export class MessageService {
             // Actualiza el paso del mensaje
             findMessage.step = STEPS.SELECT_SPECIALTY;
             // Actualizas el name y el dni en la base de datos de pacientes
-            const updatePatientInfo = await axios.patch(
-              `${process.env.API_SERVICE}/patient/${findMessage.phone}`,{dni: findMessage.dni, name: findMessage.clientName},
+            await axios.patch(
+              `${process.env.API_SERVICE}/patient/${findMessage.clientId}`,{dni: findMessage.dni, name: findMessage.clientName},
             );
             // Actualizas el mensaje en la base de datos y ademas construyes el mensaje de respuesta
             buildedMessages.push(
