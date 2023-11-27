@@ -181,6 +181,7 @@ export class MessageService {
     }
     // Si el contenido responder al step actual del mensaje entonces se procede a realizar validaciones internas
     // se actualizar el paso del mensaje y se construye el mensaje de respuesta
+    console.log("findMessage.step", findMessage.step);
     switch (findMessage.step) {
       /*
         Handle what message template would be returned
