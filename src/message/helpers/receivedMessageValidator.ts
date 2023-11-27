@@ -11,6 +11,7 @@ export const receivedMessageValidator = (
   step: string,
   infoMessage: IParsedMessage,
 ) => {
+  console.log("infoMessage", step,infoMessage)
   switch (step) {
     case STEPS.PUT_DNI:
       if (infoMessage.type === TEXT || (infoMessage.type === INTERACTIVE && (
