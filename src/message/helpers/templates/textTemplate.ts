@@ -8,7 +8,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: `Listo 🙌 \n\nIngresa la fecha y hora de tu cita 🕜 (DIA MES HORA MINUTOS AM/PM) \n\nEjemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
+        body: `Listo 🙌 \n\nIngresa la fecha y hora que deseas tener tu CITA🕜 (DIA MES HORA MINUTOS AM/PM) \n\n Ejemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
         `,
       },
     };
@@ -33,7 +33,9 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `¡Bienvenid@ a Doctor Qali! 🌟 \n\nTu camino hacia una atención médica instantánea y de calidad comienza aquí 👩‍⚕️🚀 \n\n¿Cómo podemos ayudarte hoy?
+          // text: `¡Bienvenid@ a Doctor Qali! 🌟 \n\nTu camino hacia una atención médica instantánea y de calidad comienza aquí 👩‍⚕️🚀 \n\n¿Cómo podemos ayudarte hoy?
+          // `,
+          text: `¡Bienvenid@ a Doctor Qali! 🌟 \n\n Encuentra un médico en solo unos minutos👩‍⚕️🚀 \n\n*ESTO ES UN BOT DE PRUEBA* \n\n¿Cómo podemos ayudarte hoy?
           `,
         },
         action: {
@@ -124,7 +126,7 @@ export class Templates {
       type: 'text',
       text: {
         "preview_url": true,
-        body: 'Este es el link para registrar especialistas: https://wa.me/message/YK3OUKA76IHKN1',
+        body: 'Si eres médico y quieres formar parte de la red Qali , dar click al siguiente enlace y un asesor personalizado lo atenderá: https://wa.me/message/YK3OUKA76IHKN1',
       },
     };
   }
@@ -166,7 +168,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: '☝️ Para terminar, por favor realizar el yape al 947308823 a nombre de Doctor Qali SRL y enviar el boucher de pago en este chat.',
+        body: '☝️ Para terminar, por favor realizar el yape al 947308823 a nombre de Doctor Qali SRL y enviar el boucher de pago en este chat. \n\n*ESTE ES UN BOT DE PRUEBA* \n\n*SUBIR CUALQUIER FOTO*',
       },
     };
   }
@@ -363,7 +365,7 @@ export class Templates {
           text: 'Te ayudaremos a encontrar la especialidad que buscas',
         },
         footer: {
-          text: 'DoctorQali te cuida',
+          text: 'DoctorQali te ayuda a encontrar la especialidad que buscas',
         },
         action: {
           button: 'Ver especialidades 🔎',

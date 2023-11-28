@@ -18,10 +18,12 @@ import { errorHandler } from 'src/common/hepers/errorHandler';
 export class WspController {
   constructor(private readonly wspService: WspService) {}
 
+  // Entrada de mensajes desde WhatsApp
   @Post('/webHook')
   @HttpCode(200)
   async proccess(@Body() messageWSP: WspReceivedMessageDto) {
     try {
+      // llamamos al servicio para procesar el mensaje y retornamos OK al servidor de WSP para que no siga enviando el mensaje
       await this.wspService.proccessMessage(messageWSP);
       return 'OK';
     } catch (error) {

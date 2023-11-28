@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { WspQueriesDto } from './dto/queries-webhook';
 import { MessageService } from 'src/message/message.service';
 import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
@@ -11,17 +11,31 @@ import { WSP_MESSAGE_TYPES } from './helpers/constants';
 export class WspService {
   constructor(private msgService: MessageService) {}
 
+  // Este metodo debe servir como handler de los mensajes que llegan desde WhatsApp
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
+    // Deberia queda 3 pasos
+    // paso 1 deestructurar el mensaje
+    // paso 2 enviar el mensaje al servicio de mensajeria
+    // paso 3 enviar la respuesta al cliente
+    Logger.log('Iniciando proceso de mensaje', 'WSP INIT');
+    Logger.log(messageWSP.entry[0].changes[0].value, 'RAW MESSAGE');
     console.log("raw message", messageWSP.entry[0].changes[0].value)
+
+    // Deestructurar mensaje
     const parsedMessage = messageDestructurer(messageWSP);
+    //Valida si es una imagen
+    // Esta validacion debería estar dentro del servicio de proccesMessage
+    // Obtener link de wasap
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
-    
+    // Envia el mensaje parseado al servicio de mensajeria
     const response = await this.msgService.proccessMessage(parsedMessage);
-    console.log('response', response);
+    Logger.log('Respuesta del bot')
+    console.log('Resp', response);
     if (!response) {
       return false;
     }
+    //Enviar respuesta a cliente 
     for (const message of response) {
       await this.sendMessages(message);
     }

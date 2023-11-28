@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
@@ -18,6 +18,7 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('/api/v1');
+  app.useLogger(new Logger());
   await app.listen(process.env.PORT);
 }
 bootstrap();
