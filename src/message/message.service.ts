@@ -39,6 +39,9 @@ export class MessageService {
   ) {}
 
   async proccessMessage(messageFromWSP: IParsedMessage) {
+    // Valida si es una mensaje del doctor para el paciente
+    //Valida el paso actual del mensaje
+
     /*
       Get required info of the received message
     */

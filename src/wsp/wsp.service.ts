@@ -13,6 +13,10 @@ export class WspService {
 
   // Este metodo debe servir como handler de los mensajes que llegan desde WhatsApp
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
+    // Deberia queda 3 pasos
+    // paso 1 deestructurar el mensaje
+    // paso 2 enviar el mensaje al servicio de mensajeria
+    // paso 3 enviar la respuesta al cliente
     Logger.log('Iniciando proceso de mensaje', 'WSP INIT');
     Logger.log(messageWSP.entry[0].changes[0].value, 'RAW MESSAGE');
     console.log("raw message", messageWSP.entry[0].changes[0].value)
@@ -21,6 +25,7 @@ export class WspService {
     const parsedMessage = messageDestructurer(messageWSP);
     //Valida si es una imagen
     // Esta validacion debería estar dentro del servicio de proccesMessage
+    // Obtener link de wasap
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
     // Envia el mensaje parseado al servicio de mensajeria
