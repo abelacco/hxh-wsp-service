@@ -2,7 +2,7 @@ import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "../constants/wsp-c
 
 // export const messageParser = ({ requestBody, currentWABA_ID }) => {
     export const messageParser = ({ requestBody }) => {
-        console.log('requestBody', requestBody);
+        // console.log('requestBody', requestBody);
     let WABA_ID = requestBody.entry[0]?.id; // obtenemos el id del objeto request entrante
 
     if (WABA_ID == 0) {

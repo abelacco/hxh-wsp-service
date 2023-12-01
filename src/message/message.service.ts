@@ -80,6 +80,17 @@ export class MessageService {
         const iaResponse = await this.cohereService.classyfier(
           content.title || content,
         );
+        if (iaResponse === 'greetings' && !checkCurrentPath) {
+          //busca o crear el mensaje (carrito de compras)
+          const findMessage = await this.findOrCreateMessage(messageFromWSP);
+          //Busca mensaje por número de cliente 
+          const findDni = await this.messageModel.findOne({
+            phone: clientPhone,
+          });
+          findMessage.step = findDni.dni ? STEPS.INSERT_DATE : STEPS.PUT_DNI;
+          const response = await this.updateAndBuildClientMessage(findMessage);
+          return [response];
+        }
 
         if (iaResponse === 'provider') {
           const response =
@@ -536,7 +547,7 @@ export class MessageService {
     */
       const encodedName = encodeURIComponent(receivedMessage.clientName);
     const getClient = await axios.get(
-      `${process.env.API_SERVICE}/client/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
+      `${process.env.API_SERVICE}client/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
     );
     const client = getClient.data;
     const message = await this.messageModel.findOne({
