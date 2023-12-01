@@ -5,4 +5,4 @@ import { ProviderService } from './provider.service';
     exports: [ProviderService],
     providers: [ProviderService],
 })
-export class DoctorModule {}
+export class ProviderModule {}

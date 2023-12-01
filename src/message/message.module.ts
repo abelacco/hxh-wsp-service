@@ -5,7 +5,7 @@ import { MessageController } from './message.controller';
 import { Message, MessageSchema } from './entities/message.entity';
 import { BotResponseService } from './bot-response/bot-response.service';
 import { NotificationModule } from 'src/notification/notification.module';
-import { DoctorModule } from 'src/providers/doctor.module';
+import { ProviderModule } from 'src/providers/provider.module';
 import { ChatgtpModule } from 'src/chatgtp/chatgtp.module';
 import { CohereModule } from 'src/cohere/cohere.module';
 
@@ -20,7 +20,7 @@ import { CohereModule } from 'src/cohere/cohere.module';
       },
     ]),
     NotificationModule,
-    DoctorModule,
+    ProviderModule,
     ChatgtpModule,
     CohereModule
   ],

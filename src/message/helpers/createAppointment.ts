@@ -5,7 +5,7 @@ import { Message } from "../entities/message.entity"
 export const createAppointment = async (message: Message) => {
     const appointment = new CreateAppointmentDto(
         message.clientId,
-        message.doctorId,
+        message.providerId,
         message.fee,
         message.date,
         message.imageVoucher

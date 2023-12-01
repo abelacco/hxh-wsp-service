@@ -7,7 +7,7 @@ import { EnvConfiguration } from './config/app.config';
 import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
-import { DoctorModule } from './providers/provider.module';
+import { ProviderModule } from './providers/provider.module';
 import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
@@ -23,7 +23,7 @@ import { MarketerBotMiddleware } from './middlewares/marketer-bot.middleware';
     MongooseModule.forRoot(process.env.MONGODB),
     WspModule,
     MessageModule,
-    DoctorModule,
+    ProviderModule,
     NotificationModule,
     ChatgtpModule,
     CohereModule,

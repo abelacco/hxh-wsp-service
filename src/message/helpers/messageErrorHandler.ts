@@ -14,9 +14,9 @@ export const messageErrorHandler = (message: Message) => {
     responses.push(resetQuestionMessage);
   }
   switch (step) {
-    case STEPS.SELECT_SPECIALTY:
-      responses.push(Templates.generateSpecialitiesList(patientPhone));
-      break;
+    // case STEPS.SELECT_SPECIALTY:
+    //   responses.push(Templates.generateSpecialitiesList(patientPhone));
+    //   break;
     case STEPS.INSERT_DATE:
       responses.push(Templates.dateStepTemplateMessage(patientPhone));
       break;
