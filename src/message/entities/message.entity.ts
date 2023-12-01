@@ -29,12 +29,12 @@ export class Message extends Document {
     @Prop({
         // index: true
     })
-    doctorId: string;
+    providerId: string;
 
-    @Prop({
-        // index: true
-    })
-    speciality: string;
+    // @Prop({
+    //     // index: true
+    // })
+    // speciality: string;
 
     @Prop({
         // required: true,
@@ -45,7 +45,7 @@ export class Message extends Document {
     @Prop({
         // index: true
     })
-    doctorPhone: string;
+    providerPhone: string;
 
    @Prop({
         // required: true,

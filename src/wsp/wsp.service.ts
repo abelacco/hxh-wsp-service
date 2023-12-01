@@ -18,8 +18,7 @@ export class WspService {
     // paso 2 enviar el mensaje al servicio de mensajeria
     // paso 3 enviar la respuesta al cliente
     Logger.log('Iniciando proceso de mensaje', 'WSP INIT');
-    Logger.log(messageWSP.entry[0].changes[0].value, 'RAW MESSAGE');
-    console.log("raw message", messageWSP.entry[0].changes[0].value)
+    Logger.log('RAW MESSAGE',messageWSP.entry[0].changes[0].value, );
 
     // Deestructurar mensaje
     const parsedMessage = messageDestructurer(messageWSP);

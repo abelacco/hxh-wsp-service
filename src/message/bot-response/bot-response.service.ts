@@ -2,33 +2,33 @@ import { Injectable } from '@nestjs/common';
 import { Templates } from '../helpers/templates/textTemplate';
 import { STEPS } from 'src/config/constants';
 import { Message } from '../entities/message.entity';
-import { DoctorService } from 'src/doctor/doctor.service';
+import { ProviderService } from 'src/providers/provider.service';
 import { dateToString } from '../helpers/dateParser';
 
 @Injectable()
 export class BotResponseService {
   constructor(
-    private readonly doctorService: DoctorService,
-  ) {}
+    private readonly providerService: ProviderService,
+  ) { }
   buildMessage(messageClient: Message) {
     /*
       Create a template according to the step
     */
-
+    // Aca ya recive que paso toca contestar
     const step = messageClient.step;
     const phone = messageClient.phone;
-    const doctor = messageClient.doctorId;
+    const provider = messageClient.providerId;
     const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
     switch (step) {
       case STEPS.INIT:
         return this.buildIntroMessage(phone);
-        case STEPS.PUT_DNI:
-          return this.dniRequestMessage(phone);
-      case STEPS.SELECT_SPECIALTY:
-        return Templates.generateSpecialitiesList(phone);
+      case STEPS.PUT_DNI:
+        return this.dniRequestMessage(phone);
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
+      // case STEPS.SELECT_PROVIDER:
+      //   return Templates.generateSpecialitiesList(phone);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:
@@ -40,16 +40,16 @@ export class BotResponseService {
     }
   }
 
-  async buildDoctorCard(docPhone: string, message: Message) {
-    const doctor = await this.doctorService.findByPhone(
-      docPhone,
+  async buildProviderCard(providerPhone: string, message: Message) {
+    const provider = await this.providerService.findByPhone(
+      providerPhone,
     );
-    const patientPhone = message.phone;
-    const doctorId = doctor[0]._id;
-    const fee = doctor[0].fee;
+    const clientPhone = message.phone;
+    const providerId = provider[0]._id;
+    const fee = provider[0].fee;
     const stringDate = dateToString(message.date)
-    const imageUrl = doctor[0].imageUrl;
-    return Templates.generateInfoDoctor(patientPhone, doctorId, stringDate, fee, imageUrl);
+    const imageUrl = provider[0].imageUrl;
+    return Templates.generateInfoProvider(clientPhone, providerId, stringDate, fee, imageUrl);
   }
 
   buildDniConfirmationMessage(phone: string, dniName: string) {
@@ -64,17 +64,17 @@ export class BotResponseService {
     return Templates.askForDniTemplate(phone);
   }
 
-  async buildDoctorNotification(message: Message) {
+  async buildProviderNotification(message: Message) {
     /*
-      Build a doctor response template
+      Build a Provider response template
     */
-    const { id, clientName, date, speciality } = message;
+    const { id, clientName, date } = message;
     const stringDate = dateToString(date);
-    const doctors = await this.doctorService.getDoctors(speciality);
+    const providers = await this.providerService.getAllProviders();
     const notifications = [];
-    for (const doc of doctors) {
-      const notification = Templates.doctorNotification(
-        doc.phone,
+    for (const pro of providers) {
+      const notification = Templates.providerNotification(
+        pro.phone,
         id,
         clientName,
         stringDate,
@@ -84,25 +84,25 @@ export class BotResponseService {
     return notifications;
   }
 
-  searchingDoctorTemplateBuilder(phone: string) {
-    return Templates.notifyingDoctorsTemplate(phone);
+  searchingProviderTemplateBuilder(phone: string) {
+    return Templates.notifyingProviderTemplate(phone);
   }
 
-  specialityConfirmationTemplate(phone: string, speciality: string) {
-    return Templates.specialityConfirmation(phone, speciality);
+  // providerConfirmationTemplate(phone: string, speciality: string) {
+  //   return Templates.providerConfirmation(phone, speciality);
+  // }
+
+  providerLinkTemplate(phone: string) {
+    return Templates.providersLinkMessage(phone);
   }
 
-  specialistLinkTemplate(phone: string) {
-    return Templates.specialistsLinkMessage(phone);
-  }
-
-  doctorConfirmationTemplate(docName:string, message: Message) {
-    const {fee, date, phone} = message;
+  providerConfirmationTemplate(docName: string, message: Message) {
+    const { fee, date, phone } = message;
     const stringDate = dateToString(date);
-    return Templates.doctorConfirmation(phone, docName, fee, stringDate);
+    return Templates.providerConfirmation(phone, docName, fee, stringDate);
   }
 
-  dateConfirmationTemplate(phone:string, date: Date) {
+  dateConfirmationTemplate(phone: string, date: Date) {
     const stringDate = dateToString(date);
     return Templates.dateConfirmation(phone, stringDate);
   }
@@ -111,7 +111,7 @@ export class BotResponseService {
     /*
       Build confirmation notification template
     */
-    return [Templates.doctorConfirmationPayment(appointment), Templates.patientConfirmationPayment(appointment)];
+    return [Templates.providerConfirmationPayment(appointment), Templates.clientConfirmationPayment(appointment)];
   }
 
   buildRejectionNotification(date: Date, phone: string) {
@@ -127,15 +127,15 @@ export class BotResponseService {
     return Templates.defaultMessageTemplate(phone);
   }
 
-  buildMessageChatGTP(message: string, phone: string , specialistSelected?: string) {
-    /*
-      Build confirmation notification template
-    */
-   if(specialistSelected) {
-    return Templates.generateChatGPToptions(message, phone, specialistSelected);
-   }
-    return Templates.generateTextChatGTP(message, phone);
-  
-  }
+  // buildMessageChatGTP(message: string, phone: string, specialistSelected?: string) {
+  //   /*
+  //     Build confirmation notification template
+  //   */
+  //   if (specialistSelected) {
+  //     return Templates.generateChatGPToptions(message, phone, specialistSelected);
+  //   }
+  //   return Templates.generateTextChatGTP(message, phone);
+
+  // }
 
 }

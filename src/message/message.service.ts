@@ -6,10 +6,10 @@ import { STEPS } from '../config/constants';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
 import {
-  DoctorMessageValidator,
+  ProviderMessageValidator,
   receivedMessageValidator,
 } from './helpers/receivedMessageValidator';
-import { DoctorService } from 'src/doctor/doctor.service';
+import { ProviderService } from 'src/providers/provider.service';
 import { stringToDate , parseDateInput } from './helpers/dateParser';
 import { createAppointment } from './helpers/createAppointment';
 import axios from 'axios';
@@ -24,7 +24,7 @@ import { Logger } from '@nestjs/common';
 import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
-import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import { ID, SPECIAL_WORDS, WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 
 @Injectable()
 export class MessageService {
@@ -32,14 +32,14 @@ export class MessageService {
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
-    private readonly doctorService: DoctorService,
+    private readonly providerService: ProviderService,
     private readonly notificationService: NotificationService,
     private readonly chatgtpService: ChatgtpService,
     private readonly cohereService: CohereService,
   ) {}
 
   async proccessMessage(messageFromWSP: IParsedMessage) {
-    // Valida si es una mensaje del doctor para el paciente
+    // Valida si es una mensaje del proveedor para el paciente
     //Valida el paso actual del mensaje
 
     /*
@@ -48,15 +48,15 @@ export class MessageService {
     console.log('mensaje parseado: ', messageFromWSP);
     const { clientPhone, content } = messageFromWSP;
 
-    // Validar si es un mensaje del bot para el doctor
-    if (DoctorMessageValidator(messageFromWSP)) {
+    // Validar si es un mensaje del bot para el proveedor
+    if (ProviderMessageValidator(messageFromWSP)) {
       const getMessageResponded = await this.findById(
         messageFromWSP.content.id.split('-')[1],
       );
 
-      return this.doctorMessageHandler(messageFromWSP, getMessageResponded);
+      return this.providerMessageHandler(messageFromWSP, getMessageResponded);
     }
-    // Si no es un mensaje del bot para el doctor, se procesa como un mensaje del paciente
+    // Si no es un mensaje del bot para el proveedor, se procesa como un mensaje del paciente
     // Esta pendiente crear la capa para hacer consultar a la base de datos de messages
     // Verificar si ya existe un mensaje del cliente y para determinar si necesitas el dni
     // Determina si en el carrito de compras(mensaje) existe un mensaje con el mismo número de telefono y que no tenga status SELECT_SPECIALTY Y INSERT_DATE
@@ -65,9 +65,9 @@ export class MessageService {
         {
           phone: clientPhone,
         },
-        {
-          status: { $ne: STEPS.SELECT_SPECIALTY },
-        },
+        // {
+        //   status: { $ne: STEPS.SELECT_SPECIALTY },
+        // },
         {
           status: { $ne: STEPS.INSERT_DATE },
         },
@@ -80,37 +80,10 @@ export class MessageService {
         const iaResponse = await this.cohereService.classyfier(
           content.title || content,
         );
-        //Si la IA determina que el topico es especialidad y ademas no existe ningun mensaje(carrito de compras) en la base de datos
-        if (iaResponse === 'speciality' && !checkCurrentPath) {
-          //busca o crear el mensaje (carrito de compras)
-          const findMessage = await this.findOrCreateMessage(messageFromWSP);
-          //Busca mensaje por número de cliente 
-          const findDni = await this.messageModel.findOne({
-            phone: clientPhone,
-          });
-          findMessage.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
-          const response = await this.updateAndBuildPatientMessage(findMessage);
-          return [response];
-        }
-        //Si la IA determina que el topico es especialidad y ademas existe un mensaje(carrito de compras) en la base de datos en el paso 0
-        if (iaResponse === 'speciality' && checkCurrentPath) {
-          const findDni = await this.messageModel.findOne({
-            phone: clientPhone,
-          });
-          // Antes debemos validar si tenemos su dni 
-          // Si lo tenemos entonces debemos actualizar al paso de enviar template de especialidades
-          // Si no lo tenemos entonces debemos actualizar al paso de pedir dni
-          checkCurrentPath.step = findDni.dni ? STEPS.SELECT_SPECIALTY : STEPS.PUT_DNI;
-          // Construye el mensaje de respuesta a partir del paso actual del mensaje
-          const response = await this.updateAndBuildPatientMessage(
-            checkCurrentPath,
-          );
-          return [response];
-        }
 
-        if (iaResponse === 'specialist') {
+        if (iaResponse === 'provider') {
           const response =
-            this.messageBuilder.specialistLinkTemplate(clientPhone);
+            this.messageBuilder.providerLinkTemplate(clientPhone);
           return [response];
         }
 
@@ -122,48 +95,27 @@ export class MessageService {
       }
     }
     // Envio al handler de pacients el mensaje de Wsp y el paso actual del mensaje
-    return await this.patientMessageHandler(messageFromWSP, checkCurrentPath);
-
-    /*
-      Verify if it's a doctor response or
-      a patient message
-    */
-
-    /*
-      Agregar en el if la opcion de que el content del param messageFromWSP
-      contiente una palabra clave que identifique al path de afiliacion
-      if else (messageFromWSP.content === 'const.afiliacionCode') {
-        return afiliacionHandler();
-      }
-    */
+    return await this.clientMessageHandler(messageFromWSP, checkCurrentPath);
   }
 
-  /*
-      Manejador de afiliacion, debe retornar un array de templates
-      afiliacionHandler() {
-        validadores ...
-        switch() {} ...
-      }
-    */
-
   // Recibes el mensaje deestructurado y el mensaje de la base de datos con el step actual
-  async patientMessageHandler(
+  async clientMessageHandler(
     infoMessage: IParsedMessage,
     findMessage: Message,
   ) {
     const buildedMessages = [];
     /*
-      Reset the information of the patient message
+      Reset the information of the client message
     */
     if (
       (infoMessage.type === WSP_MESSAGE_TYPES.TEXT &&
-        infoMessage.content.toUpperCase() === 'RESET') ||
+        infoMessage.content.toUpperCase() === SPECIAL_WORDS.RESET) ||
       (infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
-        infoMessage.content?.title?.toUpperCase() === 'RESET')
+        infoMessage.content?.title?.toUpperCase() === SPECIAL_WORDS.RESET)
     ) {
       const resetedMessage = this.resetMessage(findMessage);
       buildedMessages.push(
-        await this.updateAndBuildPatientMessage(resetedMessage),
+        await this.updateAndBuildClientMessage(resetedMessage),
       );
       return buildedMessages;
     }
@@ -198,21 +150,21 @@ export class MessageService {
             infoMessage.content.id === 'accpt_dni'
           ) {
             // Actualiza el paso del mensaje
-            findMessage.step = STEPS.SELECT_SPECIALTY;
+            findMessage.step = STEPS.SELECT_PROVIDER;
             // Actualizas el name y el dni en la base de datos de pacientes
             await axios.patch(
-              `${process.env.API_SERVICE}/patient/${findMessage.clientId}`,{dni: findMessage.dni, name: findMessage.clientName},
+              `${process.env.API_SERVICE}/client/${findMessage.clientId}`,{dni: findMessage.dni, name: findMessage.clientName},
             );
             // Actualizas el mensaje en la base de datos y ademas construyes el mensaje de respuesta
             buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
+              await this.updateAndBuildClientMessage(findMessage),
             );
             return buildedMessages;
           }
           // Rechaza que nombre y apellido no coinciden con el dni
           if (
             infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE &&
-            infoMessage.content.id === 'retry_dni'
+            infoMessage.content.id === ID.RETRY_DNI
           ) {
             buildedMessages.push(
               this.messageBuilder.buildMessage(findMessage),
@@ -250,60 +202,60 @@ export class MessageService {
           }
         }
         break;
-      case STEPS.SELECT_SPECIALTY:
-        try {
-          if (
-            infoMessage.content.id &&
-            infoMessage.content.id === 'accpt_speciality'
-          ) {
-            findMessage.step = STEPS.INSERT_DATE;
-            buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
-            );
-            return buildedMessages;
-          }
+      // case STEPS.SELECT_SPECIALTY:
+        // try {
+        //   if (
+        //     infoMessage.content.id &&
+        //     infoMessage.content.id === 'accpt_speciality'
+        //   ) {
+        //     findMessage.step = STEPS.INSERT_DATE;
+        //     buildedMessages.push(
+        //       await this.updateAndBuildClientMessage(findMessage),
+        //     );
+        //     return buildedMessages;
+        //   }
 
-          if (
-            infoMessage.content.id &&
-            infoMessage.content.id === 'retry_speciality'
-          ) {
-            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
-            return buildedMessages;
-          }
+        //   if (
+        //     infoMessage.content.id &&
+        //     infoMessage.content.id === 'retry_speciality'
+        //   ) {
+        //     buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
+        //     return buildedMessages;
+        //   }
 
-          findMessage.speciality = infoMessage.content.title;
-          await this.updateMessage(findMessage.id, findMessage);
-          const phone = findMessage.phone;
-          const speciality = findMessage.speciality;
-          const specialityConfirmationMessage =
-            this.messageBuilder.specialityConfirmationTemplate(
-              phone,
-              speciality,
-            );
-          buildedMessages.push(specialityConfirmationMessage);
-        } catch {
-          findMessage.attempts++;
-          this.updateMessage(findMessage.id, findMessage);
-          const errorResponse = this.errorResponseHandler(
-            infoMessage.clientPhone,
-          );
-          buildedMessages.push(errorResponse);
-        }
-        break;
+        //   findMessage.speciality = infoMessage.content.title;
+        //   await this.updateMessage(findMessage.id, findMessage);
+        //   const phone = findMessage.phone;
+        //   const speciality = findMessage.speciality;
+        //   const specialityConfirmationMessage =
+        //     this.messageBuilder.specialityConfirmationTemplate(
+        //       phone,
+        //       speciality,
+        //     );
+        //   buildedMessages.push(specialityConfirmationMessage);
+        // } catch {
+        //   findMessage.attempts++;
+        //   this.updateMessage(findMessage.id, findMessage);
+        //   const errorResponse = this.errorResponseHandler(
+        //     infoMessage.clientPhone,
+        //   );
+        //   buildedMessages.push(errorResponse);
+        // }
+        // break;
       case STEPS.INSERT_DATE:
         try {
           if (
             infoMessage.content.id &&
-            infoMessage.content.id === 'accpt_date'
+            infoMessage.content.id === ID.ACCEPT_DATE
           ) {
-            findMessage.step = STEPS.SELECT_DOCTOR;
+            findMessage.step = STEPS.SELECT_PROVIDER;
             await this.updateMessage(findMessage.id, findMessage);
-            const patientMessage =
-              this.messageBuilder.searchingDoctorTemplateBuilder(
+            const ClientMessage =
+              this.messageBuilder.searchingProviderTemplateBuilder(
                 infoMessage.clientPhone,
               );
-            buildedMessages.push(patientMessage);
-            this.notifyDoctors(findMessage);
+            buildedMessages.push(ClientMessage);
+            this.notifyProviders(findMessage);
             return buildedMessages;
           }
 
@@ -349,41 +301,41 @@ export class MessageService {
           buildedMessages.push(errorResponse);
         }
         break;
-      case STEPS.SELECT_DOCTOR:
+      case STEPS.SELECT_PROVIDER:
         try {
           if (
             infoMessage.content.id &&
-            infoMessage.content.id === 'accpt_doctor'
+            infoMessage.content.id === ID.ACEPT_PROVIDER
           ) {
             findMessage.step = STEPS.SELECT_PAYMENT;
             buildedMessages.push(
-              await this.updateAndBuildPatientMessage(findMessage),
+              await this.updateAndBuildClientMessage(findMessage),
             );
             return buildedMessages;
           }
 
           if (
             infoMessage.content.id &&
-            infoMessage.content.id === 'retry_doctor'
+            infoMessage.content.id === ID.CHOOSE_ANOTHER
           ) {
             return;
           }
 
-          const doctor = await this.doctorService.findById(
+          const provider = await this.providerService.findById(
             infoMessage.content.id,
           );
-          findMessage.doctorPhone = doctor.phone;
-          findMessage.doctorId = doctor._id;
-          findMessage.fee = doctor.fee;
+          findMessage.providerPhone = provider.phone;
+          findMessage.providerId = provider._id;
+          findMessage.fee = provider.fee;
           const appointment = await createAppointment(findMessage);
           findMessage.appointmentId = appointment._id;
           await this.updateMessage(findMessage.id, findMessage);
-          const docConfirmationMessage =
-            this.messageBuilder.doctorConfirmationTemplate(
-              doctor.name,
+          const provConfirmationMessage =
+            this.messageBuilder.providerConfirmationTemplate(
+              provider.name,
               findMessage,
             );
-          buildedMessages.push(docConfirmationMessage);
+          buildedMessages.push(provConfirmationMessage);
         } catch {
           findMessage.attempts++;
           this.updateMessage(findMessage.id, findMessage);
@@ -397,7 +349,7 @@ export class MessageService {
         try {
           findMessage.step = STEPS.SUBMIT_VOUCHER;
           buildedMessages.push(
-            await this.updateAndBuildPatientMessage(findMessage),
+            await this.updateAndBuildClientMessage(findMessage),
           );
         } catch {
           findMessage.attempts++;
@@ -411,7 +363,7 @@ export class MessageService {
       case STEPS.SUBMIT_VOUCHER:
         try {
           findMessage.step = STEPS.SEND_CONFIRMATION;
-          const waitingMessage = await this.updateAndBuildPatientMessage(
+          const waitingMessage = await this.updateAndBuildClientMessage(
             findMessage,
           );
           buildedMessages.push(waitingMessage);
@@ -445,61 +397,60 @@ export class MessageService {
   resetMessage(message: Message) {
     message.step = STEPS.INIT;
     message.attempts = 0;
-    message.speciality = '';
-    message.doctorId = '';
-    message.doctorPhone = '';
+    message.providerId = '';
+    message.providerPhone = '';
     message.date = null;
 
     return message;
   }
 
-  async notifyDoctors(message: Message) {
-    const messages = await this.messageBuilder.buildDoctorNotification(message);
+  async notifyProviders(message: Message) {
+    const messages = await this.messageBuilder.buildProviderNotification(message);
     for (const message of messages) {
       await this.notificationService.sendNotification(message);
     }
   }
 
-  async chatGptHandler(messageInfo, dbMessage) {
-    const finalMessages = [];
-    if (messageInfo.type === 'text') {
-      const response = await this.chatgtpService.getResponse(
-        messageInfo.content,
-      );
-      if (response.specialist) {
-        console.log('Especialidad encontrada');
-        const specialistSelected = SPECIALITIES_LIST.find(
-          (speciality) => speciality.title === response.specialist,
-        );
-        if (specialistSelected) {
-          finalMessages.push(
-            this.messageBuilder.buildMessageChatGTP(
-              response.response,
-              dbMessage.phone,
-              specialistSelected.title,
-            ),
-          );
-        } else {
-          console.log('Especialidad no encontrada');
-        }
-      }
-      finalMessages.push(
-        this.messageBuilder.buildMessageChatGTP(
-          response.response,
-          dbMessage.phone,
-        ),
-      );
-    } else {
-      if (messageInfo.content !== 'Otra especialidad') {
-        dbMessage.step = STEPS.SELECT_SPECIALTY;
-        finalMessages.push(await this.updateAndBuildPatientMessage(dbMessage));
-      } else {
-        dbMessage.step = STEPS.INSERT_DATE;
-        finalMessages.push(await this.updateAndBuildPatientMessage(dbMessage));
-      }
-    }
-    return finalMessages;
-  }
+  // async chatGptHandler(messageInfo, dbMessage) {
+  //   const finalMessages = [];
+  //   if (messageInfo.type === 'text') {
+  //     const response = await this.chatgtpService.getResponse(
+  //       messageInfo.content,
+  //     );
+  //     if (response.specialist) {
+  //       console.log('Especialidad encontrada');
+  //       const specialistSelected = SPECIALITIES_LIST.find(
+  //         (speciality) => speciality.title === response.specialist,
+  //       );
+  //       if (specialistSelected) {
+  //         finalMessages.push(
+  //           this.messageBuilder.buildMessageChatGTP(
+  //             response.response,
+  //             dbMessage.phone,
+  //             specialistSelected.title,
+  //           ),
+  //         );
+  //       } else {
+  //         console.log('Especialidad no encontrada');
+  //       }
+  //     }
+  //     finalMessages.push(
+  //       this.messageBuilder.buildMessageChatGTP(
+  //         response.response,
+  //         dbMessage.phone,
+  //       ),
+  //     );
+  //   } else {
+  //     if (messageInfo.content !== 'Otra especialidad') {
+  //       dbMessage.step = STEPS.SELECT_SPECIALTY;
+  //       finalMessages.push(await this.updateAndBuildClientMessage(dbMessage));
+  //     } else {
+  //       dbMessage.step = STEPS.INSERT_DATE;
+  //       finalMessages.push(await this.updateAndBuildClientMessage(dbMessage));
+  //     }
+  //   }
+  //   return finalMessages;
+  // }
 
   async sendVoucherImage(imageUrl: string, message: Message) {
     try {
@@ -527,9 +478,9 @@ export class MessageService {
     }
   }
 
-  async doctorMessageHandler(infoMessage: IParsedMessage, message: Message) {
-    if (message.step === STEPS.SELECT_DOCTOR && !message.doctorId) {
-      return [await this.messageBuilder.buildDoctorCard(infoMessage.clientPhone, message)];
+  async providerMessageHandler(infoMessage: IParsedMessage, message: Message) {
+    if (message.step === STEPS.SELECT_PROVIDER && !message.providerId) {
+      return [await this.messageBuilder.buildProviderCard(infoMessage.clientPhone, message)];
     }
     return false;
   }
@@ -554,12 +505,12 @@ export class MessageService {
 
     messages.push(
       this.messageBuilder.buildRejectionNotification(date, message.phone),
-      this.messageBuilder.buildRejectionNotification(date, message.doctorPhone),
+      this.messageBuilder.buildRejectionNotification(date, message.providerPhone),
     );
     return messages;
   }
 
-  async updateAndBuildPatientMessage(message: Message) {
+  async updateAndBuildClientMessage(message: Message) {
     // Actualiza el mensaje en la base de datos con el nuevo paso
     await this.updateMessage(message.id, message);
     // Construye el mensaje que corresponde segun el nuevo paso actualizado
@@ -584,10 +535,10 @@ export class MessageService {
       Receive a parsed message
     */
       const encodedName = encodeURIComponent(receivedMessage.clientName);
-    const getPatient = await axios.get(
-      `${process.env.API_SERVICE}/patient/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
+    const getClient = await axios.get(
+      `${process.env.API_SERVICE}/client/findorcreate?phone=${receivedMessage.clientPhone}&name=${encodedName}`,
     );
-    const patient = getPatient.data;
+    const client = getClient.data;
     const message = await this.messageModel.findOne({
       $and: [
         {
@@ -604,9 +555,9 @@ export class MessageService {
     if (!message) {
       try {
         const createMessage = new this.messageModel({
-          clientId: patient._id,
+          clientId: client._id,
           phone: receivedMessage.clientPhone,
-          doctor: '',
+          provider: '',
         });
         await createMessage.save();
         return createMessage;

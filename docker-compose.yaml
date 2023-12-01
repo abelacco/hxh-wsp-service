@@ -7,7 +7,7 @@ services:
     ports:
       - 27017:27017
     environment:
-      MONGODB_DATABASE: qali-wsp
+      MONGODB_DATABASE: hxh-wsp-db
     volumes:
       - ./mongo:/data/db
       

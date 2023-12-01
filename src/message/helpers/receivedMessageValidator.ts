@@ -1,6 +1,6 @@
 import { STEPS } from 'src/config/constants';
 import { WSP_REPLIES, SPECIALITIES, REPLIES_IDs } from './constants';
-import { WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import { ID, WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 
 const { TEXT, INTERACTIVE, IMAGE } = WSP_MESSAGE_TYPES;
@@ -16,13 +16,13 @@ export const receivedMessageValidator = (
     case STEPS.PUT_DNI:
       console.log("entreeee")
       if (infoMessage.type === TEXT || (infoMessage.type === INTERACTIVE && (
-        infoMessage.content.id === 'accpt_dni' ||
-        infoMessage.content.id === 'retry_dni'
+        infoMessage.content.id === ID.ACCEPT_DNI||
+        infoMessage.content.id === ID.RETRY_DNI
       ))) {
         return true;
       }
       return false;
-    case STEPS.SELECT_SPECIALTY:
+    // case STEPS.SELECT_SPECIALTY:
       if (
         infoMessage.type === INTERACTIVE &&
         (infoMessage.content.id === 'retry_speciality' ||
@@ -34,19 +34,19 @@ export const receivedMessageValidator = (
       return false;
     case STEPS.INSERT_DATE:
       if (infoMessage.type === TEXT ||
-          (infoMessage.content.id === 'retry_date' ||
-            infoMessage.content.id === 'accpt_date'
+          (infoMessage.content.id === ID.CHOOSE_ANOTHER ||
+            infoMessage.content.id === ID.ACCEPT_DATE
           )
         ) {
         return true;
       }
       return false;
-    case STEPS.SELECT_DOCTOR:
+    case STEPS.SELECT_PROVIDER:
       if (
         infoMessage.type === INTERACTIVE &&
         (infoMessage.content.title === SELECT_DOCTOR ||
-          infoMessage.content.id === 'accpt_doctor' ||
-          infoMessage.content.id === 'retry_doctor')
+          infoMessage.content.id === ID.ACEPT_PROVIDER ||
+          infoMessage.content.id === ID.CHOOSE_ANOTHER)
       ) {
         return true;
       }
@@ -69,7 +69,7 @@ export const receivedMessageValidator = (
   }
 };
 
-export const DoctorMessageValidator = (infoMessage: IParsedMessage) => {
+export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
   if (
     infoMessage.type === INTERACTIVE &&
     infoMessage.content.title === DOCTOR_ACCEPT &&
