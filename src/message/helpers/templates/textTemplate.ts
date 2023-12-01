@@ -51,7 +51,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: ID.SUSCRIBE_PROVIDER,
-                title: REPLIES_BUTTONS.INTRODUCTION_TEMPLATE_A1,
+                title: REPLIES_BUTTONS.INTRODUCTION_TEMPLATE_A2,
               },
             },
           ],
