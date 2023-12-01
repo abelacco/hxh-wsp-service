@@ -17,8 +17,8 @@ export class WspService {
     // paso 1 deestructurar el mensaje
     // paso 2 enviar el mensaje al servicio de mensajeria
     // paso 3 enviar la respuesta al cliente
-    Logger.log('Iniciando proceso de mensaje', 'WSP INIT');
-    Logger.log('RAW MESSAGE',messageWSP.entry[0].changes[0].value, );
+    Logger.log('INIT', 'MESSAGE');
+    Logger.log('RAW MESSAGE','MESSAGE',messageWSP.entry[0].changes[0].value, );
 
     // Deestructurar mensaje
     const parsedMessage = messageDestructurer(messageWSP);
@@ -29,8 +29,8 @@ export class WspService {
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
     // Envia el mensaje parseado al servicio de mensajeria
     const response = await this.msgService.proccessMessage(parsedMessage);
-    Logger.log('Respuesta del bot')
-    console.log('Resp', response);
+    Logger.log('Respuesta del bot',response)
+    // console.log('Resp', response);
     if (!response) {
       return false;
     }
