@@ -22,6 +22,8 @@ export class WspService {
 
     // Deestructurar mensaje
     const parsedMessage = messageDestructurer(messageWSP);
+    Logger.log('MESSAGEDESTRUCTURER',messageWSP.entry[0].changes[0].value, );
+
     //Valida si es una imagen
     // Esta validacion debería estar dentro del servicio de proccesMessage
     // Obtener link de wasap

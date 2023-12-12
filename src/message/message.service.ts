@@ -41,6 +41,9 @@ export class MessageService {
   ) { }
 
   async processMessage(messageFromWSP: IParsedMessage): Promise<any> {
+    Logger.log('INICIO DE PROCESAR MENSAJE', 'MESSAGE');
+    Logger.log(`${this.isProviderMessage(messageFromWSP)}`, 'MESSAGE');
+
     // Determinar si el mensaje es del proveedor o del cliente
     if (this.isProviderMessage(messageFromWSP)) {
       return this.handleProviderMessage(messageFromWSP);
