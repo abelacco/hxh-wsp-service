@@ -8,7 +8,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: `Listo 🙌 \n\nIngresa la fecha y hora que deseas tener tu RESERVA🕜 (DIA MES HORA MINUTOS AM/PM) \n\n Ejemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
+        body: `*ESTO ES UN BOT DE PRUEBA*  \n\nIngresa la fecha y hora que deseas tener tu RESERVA🕜 (DIA MES HORA MINUTOS AM/PM) \n\nEjemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
         `,
       },
     };
@@ -35,7 +35,7 @@ export class Templates {
         body: {
           // text: `¡Bienvenid@ a Hotel x Hora! 🌟 \n\n Encuentra tu nido de amor 👩‍⚕️🚀 \n\n¿Cómo podemos ayudarte hoy?
           // `,
-          text: `¡Bienvenid@ a Hotel x Horas! 🌟 \n\n  Encuentra tu nido de amor en solo unos minutos👩‍⚕️🚀 \n\n*ESTO ES UN BOT DE PRUEBA* \n\n¿Cómo podemos ayudarte hoy?
+          text: `¡Bienvenid@ a Hotel x Horas! 🌟 \n\n  Encuentra tu nido de amor en solo unos minutos👩‍⚕️🚀 \n\n*ESTO ES UN BOT DE PRUEBA* 
           `,
         },
         action: {

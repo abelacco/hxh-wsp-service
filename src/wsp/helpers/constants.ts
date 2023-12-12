@@ -33,6 +33,8 @@ export const ID = {
   RESET: 'button_reset_id',
   ACCEPT_DNI: 'accpt_dni',
   RETRY_DNI: 'retry_dni',
+  I_AM_PROVIDER: 'i_am_provider',
+  // FIND_SERVICE: 'find_service',
 }
 
 export const SPECIAL_WORDS = {

@@ -11,10 +11,16 @@ export const createAppointment = async (message: Message) => {
         message.imageVoucher
     );
     const api = process.env.API_SERVICE
-    const query = await axios.post(`${api}/appointment`, {
-        ...appointment
-    })
-    const response = query.data;
+    try {
+        const query = await axios.post(`${api}/appointment`, {
+            ...appointment
+        })
+        const response = query.data;
+        return response;
 
-    return response;
+    } catch (error) {
+        console.log(error.response.data.message[0]);
+        throw new Error(error.response.data.message);  
+    }
+
 }

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class ProviderService {
 
-  providerType: string = 'hotel';
+  providerType: string = 'provider';
   
   async findByPhone(providerPhone: string) {
     const result = [];

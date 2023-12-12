@@ -16,17 +16,19 @@ export class BotResponseService {
     */
     // Aca ya recive que paso toca contestar
     const step = messageClient.step;
-    const phone = messageClient.phone;
+    const phone = messageClient.clientPhone;
     const provider = messageClient.providerId;
     const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
     switch (step) {
-      case STEPS.INIT:
+      case STEPS.SEND_GREETINGS:
         return this.buildIntroMessage(phone);
       case STEPS.PUT_DNI:
         return this.dniRequestMessage(phone);
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
+        // return this.buildIntroMessage(phone);
+
       // case STEPS.SELECT_PROVIDER:
       //   return Templates.generateSpecialitiesList(phone);
       case STEPS.SELECT_PAYMENT:
@@ -44,7 +46,7 @@ export class BotResponseService {
     const provider = await this.providerService.findByPhone(
       providerPhone,
     );
-    const clientPhone = message.phone;
+    const clientPhone = message.clientPhone;
     const providerId = provider[0]._id;
     const fee = provider[0].fee;
     const stringDate = dateToString(message.date)
@@ -97,9 +99,9 @@ export class BotResponseService {
   }
 
   providerConfirmationTemplate(docName: string, message: Message) {
-    const { fee, date, phone } = message;
+    const { fee, date, clientPhone } = message;
     const stringDate = dateToString(date);
-    return Templates.providerConfirmation(phone, docName, fee, stringDate);
+    return Templates.providerConfirmation(clientPhone, docName, fee, stringDate);
   }
 
   dateConfirmationTemplate(phone: string, date: Date) {

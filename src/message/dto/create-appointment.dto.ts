@@ -1,15 +1,18 @@
 export class CreateAppointmentDto {
-  constructor(patientId: string, doctorId: string, fee: number, date: Date, voucherLink: string) {
-    this.patientId = patientId;
-    this.doctorId = doctorId;
-    this.fee = fee;
-    this.date = date;
-    this.voucher = voucherLink;
-  }
-  doctorId: string;
-  patientId: string;
+
+  providerId: string;
+  clientId: string;
   date: Date;
   fee: number;
   code?: number;
   voucher: string;
+
+  constructor(clientId: string, providerId: string, fee: number, date: Date, voucherLink: string) {
+    this.clientId = clientId;
+    this.providerId = providerId;
+    this.fee = fee;
+    this.date = date;
+    this.voucher = voucherLink;
+  }
+
 }

@@ -28,9 +28,8 @@ export class WspService {
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
     // Envia el mensaje parseado al servicio de mensajeria
-    const response = await this.msgService.proccessMessage(parsedMessage);
+    const response = await this.msgService.processMessage(parsedMessage);
     Logger.log('Respuesta del bot',response)
-    // console.log('Resp', response);
     if (!response) {
       return false;
     }
@@ -58,22 +57,20 @@ export class WspService {
   }
 
   async updateStatus(paymentStatusDto: PaymentStatusDto) {
-    const id = paymentStatusDto.id;
-    const status = paymentStatusDto.status;
-    const message = await this.msgService.findByAppointmentId(id);
-    message.status = status.toString();
-    await this.msgService.updateMessage(message.id, message);
-    const templates = await this.msgService.createStatusNotification(message);
+    // const id = paymentStatusDto.id;
+    // const status = paymentStatusDto.status;
+    // const message = await this.msgService.findByAppointmentId(id);
+    // message.status = status.toString();
+    // await this.msgService.updateMessage(message.id, message);
+    // const templates = await this.msgService.createStatusNotification(message);
 
-    for (const template of templates) {
-      this.sendMessages(template);
-    }
+    // for (const template of templates) {
+    //   this.sendMessages(template);
+    // }
   }
 
   async sendMessages(messageClient: any) {
-    // const buildMessage = this.botResponse.buildMessage(messageClient);
     console.log('enviando mensaje, body: ', messageClient);
-    // botResponse = '{ \"messaging_product\": \"whatsapp\", \"to\": \"51947308823\", \"type\": \"template\", \"template\": { \"name\": \"hello_world\", \"language\": { \"code\": \"en_US\" } } }'
     try {
       const prueba = await axios.post(
         `https://graph.facebook.com/v18.0/${process.env.PHONE_ID}/messages`,messageClient,

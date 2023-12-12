@@ -40,7 +40,7 @@ export class Message extends Document {
         // required: true,
         // index: true
     })
-    phone: string;
+    clientPhone: string;
 
     @Prop({
         // index: true

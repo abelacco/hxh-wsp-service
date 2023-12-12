@@ -7,15 +7,15 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-  @Post()
-  create(@Body() createMessageDto: CreateMessageDto) {
-    return this.messageService.create(createMessageDto);
-  }
+  // @Post()
+  // create(@Body() createMessageDto: CreateMessageDto) {
+  //   return this.messageService.create(createMessageDto);
+  // }
 
-  @Get()
-  findAll() {
-    return this.messageService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.messageService.findAll();
+  // }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {
@@ -27,14 +27,14 @@ export class MessageController {
   //   return this.messageService.update(+id, updateMessageDto);
   // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messageService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.messageService.remove(+id);
+  // }
 
-  @Post('testdate')
-  testDate(@Body() body) {
-    console.log('body', body);
-    return this.messageService.testDate(body.date);
-  }
+  // @Post('testdate')
+  // testDate(@Body() body) {
+  //   console.log('body', body);
+  //   return this.messageService.testDate(body.date);
+  // }
 }
