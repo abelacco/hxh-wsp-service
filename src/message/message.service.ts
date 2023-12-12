@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { STEPS } from '../config/constants';
+import { PAYMENTSTATUS, STEPS } from '../config/constants';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { BotResponseService } from './bot-response/bot-response.service';
 import {
@@ -93,7 +93,17 @@ export class MessageService {
     Logger.log(`CLIENT FROM DB: ${getClient.data}`,'MESSAGE')
     const client = getClient.data;
     //Busca mensaje por número de cliente
-    const message = await this.messageModel.findOne({clientPhone: clientPhone});
+    const message = await this.messageModel.findOne({
+      phone: clientPhone,
+      $and: [
+        {
+          clientId: client._id,
+        },
+        {
+          status: PAYMENTSTATUS.PENDING,
+        },
+      ]
+    });
     Logger.log(`CURRENT MESSAGE FROM DB: ${getClient.data}`,'MESSAGE')
 
     if (!message) {
