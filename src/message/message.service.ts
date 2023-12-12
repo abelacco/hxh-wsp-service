@@ -83,16 +83,19 @@ export class MessageService {
 
 
   private async findOrCreateMessage({ clientName, clientPhone }): Promise<Message> {
-
+    Logger.log('FINDORCEATEMESSAGE','MESSAGE')
     // Vamos a verificar si el cliente existe en la base de datos
     // Hacer modulo para hacer peticiones para los servicios de proveedor y cliente
     const encodedName = encodeURIComponent(clientName);
     const getClient = await axios.get(
       `${process.env.API_SERVICE}/client/findorcreate?phone=${clientPhone}&name=${encodedName}`,
     );
+    Logger.log(`CLIENT FROM DB: ${getClient.data}`,'MESSAGE')
     const client = getClient.data;
     //Busca mensaje por número de cliente
     const message = await this.messageModel.findOne({clientPhone: clientPhone});
+    Logger.log(`CURRENT MESSAGE FROM DB: ${getClient.data}`,'MESSAGE')
+
     if (!message) {
       try {
         const createMessage = new this.messageModel({
