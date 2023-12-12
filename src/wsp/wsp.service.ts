@@ -18,11 +18,11 @@ export class WspService {
     // paso 2 enviar el mensaje al servicio de mensajeria
     // paso 3 enviar la respuesta al cliente
     Logger.log('INIT', 'MESSAGE');
-    Logger.log('RAW MESSAGE','MESSAGE',messageWSP.entry[0].changes[0].value, );
+    // Logger.log('RAW MESSAGE','MESSAGE',messageWSP.entry[0].changes[0].value, );
 
     // Deestructurar mensaje
     const parsedMessage = messageDestructurer(messageWSP);
-    Logger.log('MESSAGEDESTRUCTURER',messageWSP.entry[0].changes[0].value, );
+    Logger.log('MESSAGEDESTRUCTURER');
 
     //Valida si es una imagen
     // Esta validacion debería estar dentro del servicio de proccesMessage

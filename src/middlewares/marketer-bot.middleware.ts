@@ -46,39 +46,39 @@ export class MarketerBotMiddleware implements NestMiddleware {
                      * Esto se repetira en bucle hasta que el registro marque su status
                      * como COMPLETE
                      */
-                    // const marketer: any = await this.marketerService.findByWaId(wa_id);
+                    const marketer: any = await this.marketerService.findByWaId(wa_id);
 
-                    // if (message.messageType === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
-                    //     const button_id = data.message.button_reply.id;
+                    if (message.messageType === INTERACTIVE_REPLIES_TYPES.BUTTON_REPLY) {
+                        const button_id = data.message.button_reply.id;
 
-                    //     if (button_id === 'step-1-cancelar-afiliacion'){
-                    //         req.marketerField = button_id;
-                    //         req.url = marketerController;
-                    //     } else if (button_id === 'step-1-continuar') {
-                    //         req.marketerField = button_id;
-                    //         req.url = marketerController;
-                    //     } else if (button_id === 'step-1-cancelar') {
-                    //         req.marketerField = button_id;
-                    //         req.url = marketerController;
-                    //     }
-                    // } else if (marketer && marketer.status === Status.INCOMPLETE) {
-                    //     console.log('middleware marketer found');
-                    //     const keys = Object.keys(marketer._doc).filter(key => !key.startsWith('$'));
+                        if (button_id === 'step-1-cancelar-afiliacion'){
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        } else if (button_id === 'step-1-continuar') {
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        } else if (button_id === 'step-1-cancelar') {
+                            req.marketerField = button_id;
+                            req.url = marketerController;
+                        }
+                    } else if (marketer && marketer.status === Status.INCOMPLETE) {
+                        console.log('middleware marketer found');
+                        const keys = Object.keys(marketer._doc).filter(key => !key.startsWith('$'));
 
-                    //     req.marketerField = keys.find((key) => marketer._doc[key] === "");
-                    //     req.url = marketerController;
-                    // } else  if (message.messageType === WSP_MESSAGE_TYPES.TEXT) {
-                    //     /**
-                    //      * 3.1.- El segundo caso para redirigir el flujo es cuando el
-                    //      * mensaje es la clave para acceder al marketer-bot
-                    //      */
-                    //     const { body } = message.text;
+                        req.marketerField = keys.find((key) => marketer._doc[key] === "");
+                        req.url = marketerController;
+                    } else  if (message.messageType === WSP_MESSAGE_TYPES.TEXT) {
+                        /**
+                         * 3.1.- El segundo caso para redirigir el flujo es cuando el
+                         * mensaje es la clave para acceder al marketer-bot
+                         */
+                        const { body } = message.text;
 
-                    //     if (body === 'bot') {
-                    //         req.marketerField = 'bot';
-                    //         req.url = marketerController;
-                    //     }
-                    // }
+                        if (body === 'bot') {
+                            req.marketerField = 'bot';
+                            req.url = marketerController;
+                        }
+                    }
                 }
             }
         } catch (error) {
