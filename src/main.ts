@@ -20,5 +20,7 @@ async function bootstrap() {
   app.setGlobalPrefix('/api/v1');
   app.useLogger(new Logger());
   await app.listen(process.env.PORT);
+  console.log('Listening in the port', process.env.PORT);
+
 }
 bootstrap();

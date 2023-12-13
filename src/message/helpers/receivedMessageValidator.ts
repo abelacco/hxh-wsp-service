@@ -87,6 +87,8 @@ export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
   return false;
 };
 
+export const isResetMessage = (infoMessage: IParsedMessage): boolean => infoMessage.content.id === ID.RESET;
+
 
 export const isInteractiveMessage = (infoMessage: IParsedMessage): boolean => infoMessage.type === INTERACTIVE;
 
@@ -95,6 +97,8 @@ export const isTextMessage = (infoMessage: IParsedMessage): boolean => infoMessa
 export const isImageMessage = (infoMessage: IParsedMessage): boolean => infoMessage.type === IMAGE;
 
 export const hasSpecificContentId = (infoMessage: IParsedMessage, expectedId: string): boolean =>  infoMessage.content.id === expectedId;
+
+export const hasSpecificTitle = (infoMessage: IParsedMessage, expectedTitle: string): boolean => infoMessage.content.title.toUpperCase() === expectedTitle;
 
 // export const hasSpecificContentType = (infoMessage: IParsedMessage, expectedType: string): boolean => infoMessage.type === expectedType;
 

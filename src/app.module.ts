@@ -8,6 +8,7 @@ import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
 import { ProviderModule } from './providers/provider.module';
+import { ClientsModule } from './clients/clients.module';
 import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';

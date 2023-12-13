@@ -1,13 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { Message } from '../entities/message.entity';
-import { clientHasDni, hasSpecificContentId, isInteractiveMessage, receivedMessageValidator } from '../helpers/receivedMessageValidator';
+import { clientHasDni, hasSpecificContentId, hasSpecificTitle, isInteractiveMessage, isTextMessage, receivedMessageValidator } from '../helpers/receivedMessageValidator';
 import { STEPS } from 'src/config/constants';
-import { ID, WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
+import { ID, RESET, WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 import axios from 'axios';
 import { IMessageDao } from '../db/messageDao';
 import { MongoDbService } from '../db/mongodb.service';
-import { InjectModel } from '@nestjs/mongoose';
 import { BotResponseService } from '../bot-response/bot-response.service';
 import { parseDateInput, stringToDate } from '../helpers/dateParser';
 import { dateValidator } from '../helpers/dateValidator';
@@ -15,6 +14,7 @@ import { messageErrorHandler } from '../helpers/messageErrorHandler';
 import { ProviderService } from 'src/providers/provider.service';
 import { createAppointment } from '../helpers/createAppointment';
 import { NotificationService } from 'src/notification/notification.service';
+import { ClientsService } from 'src/clients/clients.service';
 
 @Injectable()
 export class ClientHandlerService {
@@ -27,6 +27,8 @@ export class ClientHandlerService {
         private readonly _mongoDbService: MongoDbService,
         private readonly providerService: ProviderService,
         private readonly notificationService: NotificationService,
+        private readonly clientsService: ClientsService,
+
 
     ) {
         this._db = this._mongoDbService;
@@ -41,6 +43,19 @@ export class ClientHandlerService {
 
     async handleClientMessage(infoMessage: IParsedMessage, findMessage: Message): Promise<any[]> {
         const buildedMessages = [];
+
+        if (
+            (isTextMessage(infoMessage) &&
+              infoMessage.content.toUpperCase() === RESET) ||
+            (isInteractiveMessage(infoMessage) &&
+              hasSpecificTitle(infoMessage, RESET) )
+          ) {
+            const resetedMessage = this.resetMessage(findMessage);
+            buildedMessages.push(
+              await this.updateAndBuildClientMessage(resetedMessage),
+            );
+            return buildedMessages;
+          }
 
         if (!this.isValidStep(findMessage.step, infoMessage)) {
             // Manejo de un paso no válido
@@ -111,6 +126,7 @@ export class ClientHandlerService {
                     ) {
                         // Actualiza el paso del mensaje
                         findMessage.step = STEPS.INSERT_DATE;
+                        await this.clientsService.updateClient(findMessage.clientId, { dni: findMessage.dni, name: findMessage.clientName });
                         // // Actualizas el name y el dni en la base de datos de pacientes
                         // await axios.patch(
                         //     `${process.env.API_SERVICE}/client/${findMessage.clientId}`, { dni: findMessage.dni, name: findMessage.clientName },
@@ -358,6 +374,16 @@ export class ClientHandlerService {
     for (const message of messages) {
       await this.notificationService.sendNotification(message);
     }
+  }
+
+  resetMessage(message: Message) {
+    message.step = STEPS.SEND_GREETINGS;
+    message.attempts = 0;
+    message.providerId = '';
+    message.providerPhone = '';
+    message.date = null;
+
+    return message;
   }
 
 }

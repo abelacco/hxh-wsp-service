@@ -22,6 +22,7 @@ export const REPLIES_BUTTONS = {
   SELECT_PROVIDER: 'Reservar cita 🛒',
   ACCEPT: 'Aceptar ✅',
 }
+export const RESET = 'RESET';
 
 export const ID = {
   ACEPT_PROVIDER: 'acpt_prvdr',

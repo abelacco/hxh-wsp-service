@@ -21,6 +21,7 @@ export class BotResponseService {
     const stringDate = dateToString(messageClient.date);
     const fee = messageClient.fee;
     switch (step) {
+      case STEPS.INIT:
       case STEPS.SEND_GREETINGS:
         return this.buildIntroMessage(phone);
       case STEPS.PUT_DNI:

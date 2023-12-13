@@ -67,6 +67,7 @@ export class Message extends Document {
         // index: true
         type: String,
         enum: PAYMENTSTATUS,
+        default: PAYMENTSTATUS.PENDING
     })
     status: string;
 
