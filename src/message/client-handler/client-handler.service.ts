@@ -57,7 +57,7 @@ export class ClientHandlerService {
     private async handleResetMessage(findMessage: Message): Promise<any> {
         const resetedMessage = []
         const messageReseted = this.resetMessage(findMessage);
-        const messageResponse = this.messageBuilder.buildMessage(messageReseted);
+        const messageResponse = await this.updateAndBuildClientMessage(messageReseted);
         resetedMessage.push(messageResponse)
         return resetedMessage
     }
@@ -211,7 +211,8 @@ export class ClientHandlerService {
     private handleErrorSystem(buildedMessages: any[], entryMessage: IParsedMessage, findMessage: Message, error: any) {
         console.error("Error processing message step:", error);
         // Puedes manejar diferentes tipos de errores aquí
-        return [this.messageBuilder.buildDefaultErrorSystemTemplate(findMessage.clientPhone)];
+        const message = this.messageBuilder.buildDefaultErrorSystemTemplate(findMessage.clientPhone);
+        buildedMessages.push(message);
     }
 
 

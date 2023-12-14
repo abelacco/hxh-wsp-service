@@ -17,9 +17,9 @@ export class BotResponseService {
     // Aca ya recive que paso toca contestar
     const step = messageClient.step;
     const phone = messageClient.clientPhone;
-    const provider = messageClient.providerId;
-    const stringDate = dateToString(messageClient.date);
-    const fee = messageClient.fee;
+    // const provider = messageClient.providerId;
+    // const stringDate = dateToString(messageClient.date);
+    // const fee = messageClient.fee;
     switch (step) {
       case STEPS.INIT:
       case STEPS.SEND_GREETINGS:
@@ -28,10 +28,6 @@ export class BotResponseService {
         return this.dniRequestMessage(phone);
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
-        // return this.buildIntroMessage(phone);
-
-      // case STEPS.SELECT_PROVIDER:
-      //   return Templates.generateSpecialitiesList(phone);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:
