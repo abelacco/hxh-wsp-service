@@ -42,7 +42,8 @@ export class ClientHandlerService {
     async handleClientMessage(entryMessage: IParsedMessage, findMessage: Message): Promise<any[]> {
 
         if (isResetMessage(entryMessage)) {
-            this.handleResetMessage(findMessage);
+            const resetAnswer = await this.handleResetMessage(findMessage);
+            return resetAnswer;
         }
 
         if (!this.isValidStep(findMessage.step, entryMessage)) {
@@ -55,7 +56,10 @@ export class ClientHandlerService {
 
     private async handleResetMessage(findMessage: Message): Promise<any> {
         const resetedMessage = []
-        return resetedMessage.push(this.updateAndBuildClientMessage(this.resetMessage(findMessage)))
+        const messageReseted = this.resetMessage(findMessage);
+        const messageResponse = this.messageBuilder.buildMessage(messageReseted);
+        resetedMessage.push(messageResponse)
+        return resetedMessage
     }
 
     private isValidStep(currentStep: string, entryMessage: IParsedMessage): boolean {

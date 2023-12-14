@@ -101,11 +101,18 @@ export const hasSpecificTitle = (infoMessage: IParsedMessage, expectedTitle: str
 export const clientHasDni = (infoMessage: Message): boolean => infoMessage.dni !== null;
 
 export const isResetMessage = (entryMessage: IParsedMessage): boolean => {
-  const contentUpperCase = entryMessage.content.toUpperCase();
-  return contentUpperCase === SPECIAL_WORDS.RESET &&
-         (isTextMessage(entryMessage) || 
-          isInteractiveMessage(entryMessage) && hasSpecificTitle(entryMessage, SPECIAL_WORDS.RESET));
+  if (isTextMessage(entryMessage)) {
+      // Si es un mensaje de texto, verifica si el contenido incluye la palabra 'RESET'
+      const contentUpperCase = entryMessage.content.toUpperCase();
+      return contentUpperCase === SPECIAL_WORDS.RESET;
+  } else if (isInteractiveMessage(entryMessage)) {
+      // Si es un mensaje interactivo, verifica si el ID y el título son los esperados
+      return entryMessage.content.id === ID.RESET && 
+             entryMessage.content.title === REPLIES_BUTTONS.RESET_TEMPLATE;
+  }
+  return false;
 };
+
 
 
 
