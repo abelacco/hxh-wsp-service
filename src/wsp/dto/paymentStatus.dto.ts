@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from "class-validator";
-import { PAYMENTSTATUS } from "src/config/constants";
+import { PAYMENTSTATUS } from "src/message/helpers/constants";
 
 export class PaymentStatusDto {
     @IsString()

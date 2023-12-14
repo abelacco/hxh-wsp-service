@@ -7,13 +7,12 @@ import { EnvConfiguration } from './config/app.config';
 import { JoiValidationSchema } from './config/joi.validation';
 import { WspModule } from './wsp/wsp.module';
 import { MessageModule } from './message/message.module';
-import { ProviderModule } from './providers/provider.module';
-import { ClientsModule } from './clients/clients.module';
 import { NotificationModule } from './notification/notification.module';
 import { ChatgtpModule } from './chatgtp/chatgtp.module';
 import { CohereModule } from './cohere/cohere.module';
 import { MarketerModule } from './marketer/marketer.module';
 import { MarketerBotMiddleware } from './middlewares/marketer-bot.middleware';
+import { AppointmentService } from './general-services/appointment.service';
 
 @Module({
   imports: [
@@ -24,14 +23,13 @@ import { MarketerBotMiddleware } from './middlewares/marketer-bot.middleware';
     MongooseModule.forRoot(process.env.MONGODB),
     WspModule,
     MessageModule,
-    ProviderModule,
     NotificationModule,
     ChatgtpModule,
     CohereModule,
     MarketerModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppointmentService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -14,58 +14,57 @@ const templateParamsGenerator = (params) => {
   });
 };
 
-export const doctorTemplate = (appointment: any) => {
-  const phone = appointment.phone;
-  const doctorId = appointment.doctorId;
-  const templateName = 'doctor_info';
-  const date = dateToString(appointment.date)
-  const params = templateParamsGenerator([
-    paramObj(date),
-    paramObj(appointment.fee),
-  ]);
+//   const phone = appointment.phone;
+//   const doctorId = appointment.doctorId;
+//   const templateName = 'doctor_info';
+//   const date = dateToString(appointment.date)
+//   const params = templateParamsGenerator([
+//     paramObj(date),
+//     paramObj(appointment.fee),
+//   ]);
 
-  const body = {
-    messaging_product: 'whatsapp',
-    to: phone,
-    type: 'template',
-    template: {
-      name: templateName,
-      language: {
-        code: 'es_ES',
-      },
-      components: [
-        {
-          type: 'header',
-          parameters: [
-            {
-              type: 'image',
-              image: {
-                link: 'https://www.wellingtonregional.com/sites/wellingtonregional.com/files/doctors_visit_1200x900.jpg',
-              },
-            },
-          ],
-        },
-        {
-          type: 'body',
-          parameters: params,
-        },
-        {
-          type: 'button',
-          sub_type: 'quick_reply',
-          "index": "0",
-          "parameters": [
-            {
-              type: 'payload',
-              payload: doctorId
-            }
-          ]
-        }
-      ],
-    },
-  };
+//   const body = {
+//     messaging_product: 'whatsapp',
+//     to: phone,
+//     type: 'template',
+//     template: {
+//       name: templateName,
+//       language: {
+//         code: 'es_ES',
+//       },
+//       components: [
+//         {
+//           type: 'header',
+//           parameters: [
+//             {
+//               type: 'image',
+//               image: {
+//                 link: 'https://www.wellingtonregional.com/sites/wellingtonregional.com/files/doctors_visit_1200x900.jpg',
+//               },
+//             },
+//           ],
+//         },
+//         {
+//           type: 'body',
+//           parameters: params,
+//         },
+//         {
+//           type: 'button',
+//           sub_type: 'quick_reply',
+//           "index": "0",
+//           "parameters": [
+//             {
+//               type: 'payload',
+//               payload: doctorId
+//             }
+//           ]
+//         }
+//       ],
+//     },
+//   };
 
-  return body;
-};
+//   return body;
+// };
 
 export const clientConfirmationTemplate = (appointment: any) => {
   //Obtener la informacion del modelo cita del api general

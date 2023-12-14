@@ -1,32 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {  Injectable } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { PAYMENTSTATUS, STEPS } from '../config/constants';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import { PAYMENTSTATUS, STEPS } from 'src/message/helpers/constants';
 import { BotResponseService } from './bot-response/bot-response.service';
-import {
-  ProviderMessageValidator,
-  receivedMessageValidator,
-} from './helpers/receivedMessageValidator';
-import { ProviderService } from 'src/providers/provider.service';
-import { stringToDate, parseDateInput } from './helpers/dateParser';
-import { createAppointment } from './helpers/createAppointment';
-import axios from 'axios';
-import { mongoErrorHandler } from 'src/common/hepers/mongoErrorHandler';
-import { messageErrorHandler } from './helpers/messageErrorHandler';
-import { ChatgtpService } from 'src/chatgtp/chatgtp.service';
-import { SPECIALITIES_LIST } from './helpers/constants';
-import { CohereService } from 'src/cohere/cohere.service';
+import {ProviderMessageValidator,} from './helpers/receivedMessageValidator';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
-import { NotificationService } from 'src/notification/notification.service';
 import { Logger } from '@nestjs/common';
-import { dateValidator } from './helpers/dateValidator';
 
 const logger = new Logger('MessageService');
-import { ID, SPECIAL_WORDS, WSP_MESSAGE_TYPES } from 'src/wsp/helpers/constants';
 import { ClientHandlerService } from './client-handler/client-handler.service';
-import { ClientsService } from 'src/clients/clients.service';
+import { ClientsService } from 'src/general-services/clients.service';
 
 @Injectable()
 export class MessageService {

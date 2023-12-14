@@ -1,4 +1,4 @@
-import { ID, REPLIES_BUTTONS } from "src/wsp/helpers/constants";
+import { ID, REPLIES_BUTTONS } from "src/message/helpers/constants";
 import { dateToString } from "../dateParser";
 
 export class Templates {
@@ -33,8 +33,6 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          // text: `¡Bienvenid@ a Hotel x Hora! 🌟 \n\n Encuentra tu nido de amor 👩‍⚕️🚀 \n\n¿Cómo podemos ayudarte hoy?
-          // `,
           text: `¡Bienvenid@ a Hotel x Horas! 🌟 \n\n  Encuentra tu nido de amor en solo unos minutos👩‍⚕️🚀 \n\n*ESTO ES UN BOT DE PRUEBA* 
           `,
         },
@@ -67,6 +65,17 @@ export class Templates {
       type: 'text',
       text: {
         body: '⛔ No es lo que esperaba, vuelve a intentar',
+      },
+    };
+  }
+
+  static defaultErrorSystemMessageTemplate(phone: string) {
+    return {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'text',
+      text: {
+        body: '⛔ Estamos teniendo problemas con el sistema vuelva a intentar en unos minutos o reinicie el proceso escribiendo "Reset"',
       },
     };
   }
@@ -205,37 +214,6 @@ export class Templates {
     };
   }
 
-  // static specialityConfirmation(phone: string, speciality: string) {
-  //   return {
-  //     messaging_product: 'whatsapp',
-  //     to: phone,
-  //     type: 'interactive',
-  //     interactive: {
-  //       type: 'button',
-  //       body: {
-  //         text: `¿Confirma su selección?: ${speciality} `,
-  //       },
-  //       action: {
-  //         buttons: [
-  //           {
-  //             type: 'reply',
-  //             reply: {
-  //               id: 'accpt_speciality',
-  //               title: REPLIES_BUTTONS.CONFIRMATION_ANSWER,
-  //             },
-  //           },
-  //           {
-  //             type: 'reply',
-  //             reply: {
-  //               id: 'retry_speciality',
-  //               title: REPLIES_BUTTONS.CHOOSE_ANOTHER_ANSWER,
-  //             },
-  //           },
-  //         ],
-  //       },
-  //     },
-  //   };
-  // }
 
   static providerConfirmation(phone: string, providerName: string, fee: number, date: string) {
     return {
@@ -370,7 +348,7 @@ export class Templates {
               type: 'reply',
               reply: {
                 id: ID.PAYMENT_OPTIONS_YAPE,
-                title: REPLIES_BUTTONS.PAYMENT_OPTIONS_YAPE,
+                title: REPLIES_BUTTONS.PAYMENTS_OPTIONS[1],
               },
             },
           ],
@@ -504,6 +482,38 @@ export class Templates {
   //             reply: {
   //               id: '2',
   //               title: 'Otra especialidad',
+  //             },
+  //           },
+  //         ],
+  //       },
+  //     },
+  //   };
+  // }
+
+    // static specialityConfirmation(phone: string, speciality: string) {
+  //   return {
+  //     messaging_product: 'whatsapp',
+  //     to: phone,
+  //     type: 'interactive',
+  //     interactive: {
+  //       type: 'button',
+  //       body: {
+  //         text: `¿Confirma su selección?: ${speciality} `,
+  //       },
+  //       action: {
+  //         buttons: [
+  //           {
+  //             type: 'reply',
+  //             reply: {
+  //               id: 'accpt_speciality',
+  //               title: REPLIES_BUTTONS.CONFIRMATION_ANSWER,
+  //             },
+  //           },
+  //           {
+  //             type: 'reply',
+  //             reply: {
+  //               id: 'retry_speciality',
+  //               title: REPLIES_BUTTONS.CHOOSE_ANOTHER_ANSWER,
   //             },
   //           },
   //         ],

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Templates } from '../helpers/templates/textTemplate';
-import { STEPS } from 'src/config/constants';
+import { STEPS } from 'src/message/helpers/constants';
 import { Message } from '../entities/message.entity';
-import { ProviderService } from 'src/providers/provider.service';
+import { ProviderService } from 'src/general-services/provider.service';
 import { dateToString } from '../helpers/dateParser';
 
 @Injectable()
@@ -91,9 +91,7 @@ export class BotResponseService {
     return Templates.notifyingProviderTemplate(phone);
   }
 
-  // providerConfirmationTemplate(phone: string, speciality: string) {
-  //   return Templates.providerConfirmation(phone, speciality);
-  // }
+
 
   providerLinkTemplate(phone: string) {
     return Templates.providersLinkMessage(phone);
@@ -129,6 +127,17 @@ export class BotResponseService {
     */
     return Templates.defaultMessageTemplate(phone);
   }
+
+  buildDefaultErrorSystemTemplate(phone: string) {
+    /*
+      Build confirmation notification template
+    */
+    return Templates.defaultErrorSystemMessageTemplate(phone);
+  }
+
+  // providerConfirmationTemplate(phone: string, speciality: string) {
+  //   return Templates.providerConfirmation(phone, speciality);
+  // }
 
   // buildMessageChatGTP(message: string, phone: string, specialistSelected?: string) {
   //   /*

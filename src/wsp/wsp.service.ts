@@ -5,7 +5,7 @@ import { WspReceivedMessageDto } from 'src/message/dto/wspReceivedMessage.dto';
 import { PaymentStatusDto } from './dto/paymentStatus.dto';
 import axios from 'axios';
 import { messageDestructurer } from './helpers/messageDestructurer';
-import { WSP_MESSAGE_TYPES } from './helpers/constants';
+import { WSP_MESSAGE_TYPES } from 'src/message/helpers/constants';
 
 @Injectable()
 export class WspService {

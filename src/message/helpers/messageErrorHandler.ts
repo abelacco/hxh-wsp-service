@@ -1,4 +1,4 @@
-import { STEPS } from 'src/config/constants';
+import { STEPS } from 'src/message/helpers/constants';
 import { Templates } from './templates/textTemplate';
 import { Message } from '../entities/message.entity';
 

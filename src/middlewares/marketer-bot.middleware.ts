@@ -1,10 +1,9 @@
 import { HttpCode, NestMiddleware, Injectable, Req, Res, Next } from "@nestjs/common";
 import { Request, Response, NextFunction } from 'express';
 import { Status } from "src/marketer/enums/status.enum";
-import { MarketerHandler } from "src/marketer/handler/marketer.handler";
 import { MarketerService } from "src/marketer/marketer.service";
 import { MetaProvider } from "src/provider/meta.provider";
-import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "src/wsp/helpers/constants";
+import { INTERACTIVE_REPLIES_TYPES, WSP_MESSAGE_TYPES } from "src/message/helpers/constants";
 
 @Injectable()
 export class MarketerBotMiddleware implements NestMiddleware {
