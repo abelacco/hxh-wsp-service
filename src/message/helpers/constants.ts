@@ -59,6 +59,7 @@ export const SPECIAL_WORDS = {
   RESET: 'RESET',
 }
 
+// Estos status tambien los usamos para el modelo de mensajes
 export enum PAYMENTSTATUS {
   PENDING = 0,
   WAITING = 1,

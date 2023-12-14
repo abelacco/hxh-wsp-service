@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { Message } from '../entities/message.entity';
 import { clientHasDni, hasSpecificContentId, hasSpecificTitle, isInteractiveMessage, isResetMessage, isTextMessage, receivedMessageValidator } from '../helpers/receivedMessageValidator';
-import { STEPS } from 'src/message/helpers/constants';
+import { PAYMENTSTATUS, STEPS } from 'src/message/helpers/constants';
 import { ID, SPECIAL_WORDS, WSP_MESSAGE_TYPES } from 'src/message/helpers/constants';
 import { IMessageDao } from '../db/messageDao';
 import { MongoDbService } from '../db/mongodb.service';
@@ -223,6 +223,7 @@ export class ClientHandlerService {
 
             const uploadResponse = await this.commonsService.uploadImage(imageUrl);
             message.imageVoucher = uploadResponse;
+            await this.appointmentService.updateAppointment(message.appointmentId, uploadResponse);
             await this._mongoDbService.updateMessage(message.id, message);
             return uploadResponse;
         } catch (error) {
