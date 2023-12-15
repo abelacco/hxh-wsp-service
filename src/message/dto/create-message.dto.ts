@@ -36,4 +36,8 @@ export class CreateMessageDto {
     @IsString()
     @IsOptional()
     imageVoucher: string;
+
+    @IsString()
+    @IsOptional()
+    code?: string;
 }

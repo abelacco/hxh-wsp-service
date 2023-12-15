@@ -2,10 +2,28 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { PaymentStatusDto } from 'src/wsp/dto/paymentStatus.dto';
+import { EndpointResponse } from 'src/common/models/endpoint-response';
+import { errorHandler } from 'src/common/hepers/errorHandler';
 
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
+
+  @Post('/paymentStatus')
+  updateStatus(@Body() paymentConfirmation: PaymentStatusDto) {
+    const response = new EndpointResponse();
+    try {
+      this.messageService.updateStatus(paymentConfirmation);
+      response.success = 1;
+      response.message = 'Message updated successfully';
+      return response;
+    } catch (error) {
+      response.success = 0;
+      response.message = 'Message could not be updated';
+      errorHandler(error.code, response)
+    }
+  }
 
   // @Post()
   // create(@Body() createMessageDto: CreateMessageDto) {

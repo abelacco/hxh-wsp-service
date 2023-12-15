@@ -49,4 +49,15 @@ export class AppointmentService {
       }
     
     }
+
+    async getAppointment(appointmentId: string) {
+      try {
+        const query = await axios.get(`${this.apiService}/${this.type}/${appointmentId}`);
+        const response = query.data;
+        return response;
+      } catch (error) {
+        console.log(error.response.data.message[0]);
+        throw new Error(error.response.data.message);
+      }
+    }
 }

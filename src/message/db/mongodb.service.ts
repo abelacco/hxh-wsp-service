@@ -5,6 +5,7 @@ import { Message } from '../entities/message.entity';
 import { IMessageDao } from './messageDao';
 // import { PaginationMessageDto } from '../dto/pagination.dto';
 import { mongoExceptionHandler } from 'src/common/mongoExceptionHandler';
+import { UpdateMessageDto } from '../dto';
 
 
 @Injectable()
@@ -14,7 +15,7 @@ export class MongoDbService implements IMessageDao {
   ) {}
 
 
-  async updateMessage(id: string, updateMessageDto: any): Promise<Message> {
+  async updateMessage(id: string, updateMessageDto: UpdateMessageDto): Promise<Message> {
     try{
       const updatedMessage = await this._messageModel.findByIdAndUpdate(
       id,
@@ -28,6 +29,32 @@ export class MongoDbService implements IMessageDao {
       else throw error;
     }
   }
+
+  async updateStatusByAppId(appointmentId: string ,updateMessageDto: UpdateMessageDto ): Promise<Message> {
+    try{
+      const updatedMessage = await this._messageModel.findOneAndUpdate(
+        { appointmentId }, // criterio de búsqueda
+        { $set: { status: updateMessageDto.status , code: updateMessageDto.code} }, // actualización
+        { new: true } // opciones para devolver el documento actualizado
+    );
+    return updatedMessage;
+    }
+    catch(error){
+      if (error instanceof mongo.MongoError) mongoExceptionHandler(error);
+      else throw error;
+    }
+  }
+
+  // async findMessageByterm(term: string): Promise<Message> {
+  //   try{
+  //     const message = await this._messageModel.findOne({term});
+  //     return message;
+  //   }
+  //   catch(error){
+  //     if (error instanceof mongo.MongoError) mongoExceptionHandler(error);
+  //     else throw error;
+  //   }
+  // }
   // async findAllByPagination(paginationMessageDto: PaginationMessageDto): Promise<{data: Message[] ; total:number}> {
   //   try {
   //     // Construir el objeto de consulta

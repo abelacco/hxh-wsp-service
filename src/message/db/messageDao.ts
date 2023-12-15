@@ -18,5 +18,9 @@ export interface IMessageDao {
 
   updateMessage(id: string, updateMessageDto: UpdateMessageDto): Promise<Message>;
 
+  updateStatusByAppId(appointmentId: string , updateMessageDto: UpdateMessageDto): Promise<Message>;
+
+  // findMessageByterm(term: string): Promise<Message>;
+
   // remove(id: string): Promise<Doctor>;
 }

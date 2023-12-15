@@ -89,6 +89,13 @@ export class Message extends Document {
         // index: true
     })
     fee: number;
+
+    @Prop({
+        // required: true,
+        // index: true
+    })
+    code: string;
+
 }
 
  export const MessageSchema = SchemaFactory.createForClass(Message);

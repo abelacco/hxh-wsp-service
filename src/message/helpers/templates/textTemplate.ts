@@ -122,7 +122,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: `Ahora mismo estamos contactando con hoteles  \n Aguarda unos minutos, recibirás oferta de cuartos disponibles para continuar! ✅
+        body: `Ahora mismo estamos contactando con hoteles  \nAguarda unos minutos, recibirás oferta de cuartos disponibles para continuar! ✅ \n\n*RECUERDA SIEMPRE PROTEGERTE USA CONDONES DUREX*
         `,
       },
     };

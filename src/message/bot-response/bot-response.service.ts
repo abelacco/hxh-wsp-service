@@ -28,6 +28,8 @@ export class BotResponseService {
         return this.dniRequestMessage(phone);
       case STEPS.INSERT_DATE:
         return Templates.dateStepTemplateMessage(phone);
+      // case STEPS.SELECT_PROVIDER:
+      //   return Templates.generateProvidersOptions(phone);
       case STEPS.SELECT_PAYMENT:
         return Templates.generatePaymentOptions(phone);
       case STEPS.SUBMIT_VOUCHER:

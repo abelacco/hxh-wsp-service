@@ -32,7 +32,7 @@ export const REPLIES_BUTTONS = {
   TRY_AGAIN_ANSWER: 'Volver a intentar 👀',
   CHOOSE_ANOTHER_ANSWER: 'Elegir otro 🔄',
   CHOOSE_ANOTHER_DATE_ANSWER: 'Otra fecha 📅',
-  SELECT_PROVIDER: 'Reservar cita 🛒',
+  SELECT_PROVIDER: 'Reservar cuarto 🛒',
   ACCEPT: 'Aceptar ✅',
   GREETING: ['Hola', 'Necesito ayuda'],
   ACCEPT_APPOINTMENT: 'Aceptar',
@@ -61,14 +61,14 @@ export const SPECIAL_WORDS = {
 
 // Estos status tambien los usamos para el modelo de mensajes
 export enum PAYMENTSTATUS {
-  PENDING = 0,
-  WAITING = 1,
-  ACCEPTED = 2,
-  REJECTED = 3,
+  PENDING = '0',
+  WAITING = '1',
+  ACCEPTED = '2',
+  REJECTED = '3',
 }
 
 export enum MODALITY {
-  ON_SITE = 0,
-  REMOTE =1,
+  ON_SITE = '0',
+  REMOTE = '1',
 }
 

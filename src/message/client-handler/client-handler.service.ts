@@ -15,6 +15,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { ClientsService } from 'src/general-services/clients.service';
 import { AppointmentService } from 'src/general-services/appointment.service';
 import { CommonsService } from 'src/general-services/commons.service';
+import { find } from 'rxjs';
 
 @Injectable()
 export class ClientHandlerService {
@@ -135,27 +136,38 @@ export class ClientHandlerService {
 
     private async handlePutDniStep(entryMessage: IParsedMessage, findMessage: Message, buildedMessages: any[]): Promise<void> {
         let registerDni = '';
+        let message = null;
         if (isInteractiveMessage(entryMessage) && hasSpecificContentId(entryMessage, ID.ACCEPT_DNI)) {
             findMessage.step = STEPS.INSERT_DATE;
+            // Actualizas en el modelo cliente el dni y el nombre
             await this.clientsService.updateClient(findMessage.clientId, { dni: findMessage.dni, name: findMessage.clientName });
+            // Construyes el mensaje a responder
+            message = await this.updateAndBuildClientMessage(findMessage);
+            buildedMessages.push(message);
         } else if (isInteractiveMessage(entryMessage) && hasSpecificContentId(entryMessage, ID.RETRY_DNI)) {
-            buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
-            return;
+            // Si en caso escoja que no es , entonces se vuelve a preguntar el dni
+            message = await this.updateAndBuildClientMessage(findMessage);
+            buildedMessages.push(message);
         } else {
             registerDni = await this.commonsService.registerDni(entryMessage.content);
             findMessage.dni = entryMessage.content;
             findMessage.clientName = registerDni;
+            await this._mongoDbService.updateMessage(findMessage.id, findMessage);
+            const message = this.messageBuilder.buildDniConfirmationMessage(entryMessage.clientPhone, registerDni);
+            buildedMessages.push(message);
         }
 
-        await this._mongoDbService.updateMessage(findMessage.id, findMessage);
-        const buildConfirmationTemplate = this.messageBuilder.buildDniConfirmationMessage(entryMessage.clientPhone, registerDni);
-        buildedMessages.push(buildConfirmationTemplate);
+
     }
 
     private async handleInsertDateStep(entryMessage: IParsedMessage, findMessage: Message, buildedMessages: any[]): Promise<void> {
         if (isInteractiveMessage(entryMessage) && hasSpecificContentId(entryMessage, ID.ACCEPT_DATE)) {
             findMessage.step = STEPS.SELECT_PROVIDER;
+            await this._mongoDbService.updateMessage(findMessage.id, findMessage);
+            const clientMessage = this.messageBuilder.searchingProviderTemplateBuilder(entryMessage.clientPhone);
+            buildedMessages.push(clientMessage);
             this.notifyProviders(findMessage);
+            return;
         } else if (isInteractiveMessage(entryMessage) && hasSpecificContentId(entryMessage, ID.CHOOSE_ANOTHER)) {
             buildedMessages.push(this.messageBuilder.buildMessage(findMessage));
             return;
@@ -165,16 +177,18 @@ export class ClientHandlerService {
                 throw new BadRequestException('FECHA NO VÁLIDA');
             }
             findMessage.date = stringToDate(dateParsed);
+            await this._mongoDbService.updateMessage(findMessage.id, findMessage);
+            const dateConfirmationMessage = this.messageBuilder.dateConfirmationTemplate(entryMessage.clientPhone, findMessage.date);
+            buildedMessages.push(dateConfirmationMessage);
         }
 
-        await this._mongoDbService.updateMessage(findMessage.id, findMessage);
-        const dateConfirmationMessage = this.messageBuilder.dateConfirmationTemplate(entryMessage.clientPhone, findMessage.date);
-        buildedMessages.push(dateConfirmationMessage);
     }
 
     private async handleSelectProviderStep(entryMessage: IParsedMessage, findMessage: Message, buildedMessages: any[]): Promise<void> {
         if (entryMessage.content.id === ID.ACEPT_PROVIDER) {
             findMessage.step = STEPS.SELECT_PAYMENT;
+            const message = await this.updateAndBuildClientMessage(findMessage);
+            buildedMessages.push(message);
         } else if (entryMessage.content.id === ID.CHOOSE_ANOTHER) {
             return;
         } else {
@@ -184,12 +198,11 @@ export class ClientHandlerService {
             findMessage.fee = provider.fee;
             const appointment = await this.appointmentService.createAppointment(findMessage);
             findMessage.appointmentId = appointment._id;
+            await this._mongoDbService.updateMessage(findMessage.id, findMessage);
             const provConfirmationMessage = this.messageBuilder.providerConfirmationTemplate(provider.name, findMessage);
             buildedMessages.push(provConfirmationMessage);
         }
 
-        const message = await this.updateAndBuildClientMessage(findMessage);
-        buildedMessages.push(message);
     }
 
     private async handleSelectPaymentStep(findMessage: Message, buildedMessages: any[]): Promise<void> {
@@ -253,6 +266,41 @@ export class ClientHandlerService {
 
         return message;
     }
+
+    async updateStatus(paymentStatusDto: any) {
+        const id = paymentStatusDto.id;
+        try {
+            const updatedMessage = await this._mongoDbService.updateStatusByAppId(id, paymentStatusDto);
+            console.log('updatedMessage', updatedMessage)
+            const appointment = await this.appointmentService.getAppointment(updatedMessage.appointmentId);
+            const messages = await this.createStatusNotification(appointment);
+            for (const message of messages) {
+                await this.notificationService.sendNotification(message);
+            }
+            return messages;
+        } catch (error) {
+            console.error('Error al actualizar status:', error);
+            throw error;
+        }
+
+    }
+
+    async createStatusNotification(appointment: any) {
+        const messages = [];
+        const date = appointment.date;
+        if (appointment.status === PAYMENTSTATUS.ACCEPTED) {
+          messages.push(
+            ...this.messageBuilder.buildConfirmationTemplates(appointment),
+          );
+          return messages;
+        }
+    
+        messages.push(
+          this.messageBuilder.buildRejectionNotification(date, appointment.clientPhone),
+        //   this.messageBuilder.buildRejectionNotification(date, message.doctorPhone),
+        );
+        return messages;
+      }
 
 }
 

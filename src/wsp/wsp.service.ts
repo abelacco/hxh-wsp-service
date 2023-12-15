@@ -40,7 +40,7 @@ export class WspService {
       await this.sendMessages(message);
     }
 
-    return 'This action adds a new wsp';
+    return 'OK';
   }
 
   validateWebHook(wspQueries: WspQueriesDto) {
@@ -58,18 +58,18 @@ export class WspService {
     }
   }
 
-  async updateStatus(paymentStatusDto: PaymentStatusDto) {
-    // const id = paymentStatusDto.id;
-    // const status = paymentStatusDto.status;
-    // const message = await this.msgService.findByAppointmentId(id);
-    // message.status = status.toString();
-    // await this.msgService.updateMessage(message.id, message);
-    // const templates = await this.msgService.createStatusNotification(message);
+  // async updateStatus(paymentStatusDto: PaymentStatusDto) {
+  //   const id = paymentStatusDto.id;
+  //   const status = paymentStatusDto.status;
+  //   const message = await this.msgService.findByAppointmentId(id);
+  //   message.status = status.toString();
+  //   await this.msgService.updateMessage(message.id, message);
+  //   const templates = await this.msgService.createStatusNotification(message);
 
-    // for (const template of templates) {
-    //   this.sendMessages(template);
-    // }
-  }
+  //   for (const template of templates) {
+  //     this.sendMessages(template);
+  //   }
+  // }
 
   async sendMessages(messageClient: any) {
     console.log('enviando mensaje, body: ', messageClient);
@@ -83,6 +83,7 @@ export class WspService {
           },
         },
       );
+      console.log('prueba111111', prueba);
       console.log('prueba', prueba.data);
     
     } catch (error) {

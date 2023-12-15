@@ -56,18 +56,18 @@ export class WspController {
     }
   }
 
-  @Post('/paymentStatus')
-  updateStatus(@Body() paymentConfirmation: PaymentStatusDto) {
-    const response = new EndpointResponse();
-    try {
-      this.wspService.updateStatus(paymentConfirmation);
-      response.success = 1;
-      response.message = 'Message updated successfully';
-      return response;
-    } catch (error) {
-      response.success = 0;
-      response.message = 'Message could not be updated';
-      errorHandler(error.code, response)
-    }
-  }
+  // @Post('/paymentStatus')
+  // updateStatus(@Body() paymentConfirmation: PaymentStatusDto) {
+  //   const response = new EndpointResponse();
+  //   try {
+  //     this.wspService.updateStatus(paymentConfirmation);
+  //     response.success = 1;
+  //     response.message = 'Message updated successfully';
+  //     return response;
+  //   } catch (error) {
+  //     response.success = 0;
+  //     response.message = 'Message could not be updated';
+  //     errorHandler(error.code, response)
+  //   }
+  // }
 }

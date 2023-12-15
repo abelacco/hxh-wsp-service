@@ -11,45 +11,52 @@ import { Logger } from '@nestjs/common';
 const logger = new Logger('MessageService');
 import { ClientHandlerService } from './client-handler/client-handler.service';
 import { ClientsService } from 'src/general-services/clients.service';
+import { PaymentStatusDto } from 'src/wsp/dto/paymentStatus.dto';
+import { MongoDbService } from './db/mongodb.service';
+import { IMessageDao } from './db/messageDao';
 
 @Injectable()
 export class MessageService {
+  private readonly _db: IMessageDao;
   constructor(
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
     private readonly messageBuilder: BotResponseService,
     private readonly clientHandlerService: ClientHandlerService,
     private readonly clientsService: ClientsService,
-  ) { }
+    private readonly _mongoDbService: MongoDbService,
+  ) { 
+    this._db = this._mongoDbService;
+  }
 
-  public async processMessage(messageFromWSP: IParsedMessage): Promise<any> {
+  public async processMessage(entryMessage: IParsedMessage): Promise<any> {
     Logger.log('INICIO DE PROCESAR MENSAJE', 'MESSAGE');
-    Logger.log(`${this.isProviderMessage(messageFromWSP)}`, 'MESSAGE');
+    Logger.log(`${this.isProviderMessage(entryMessage)}`, 'MESSAGE');
 
     // Determinar si el mensaje es del proveedor o del cliente
-    if (this.isProviderMessage(messageFromWSP)) {
-      return this.handleProviderMessage(messageFromWSP);
+    if (this.isProviderMessage(entryMessage)) {
+      return this.handleProviderMessage(entryMessage);
     } else {
-      const currentMessage = await this.findOrCreateMessage(messageFromWSP);
-      return this.clientHandlerService.handleClientMessage(messageFromWSP, currentMessage);
+      const currentMessage = await this.findOrCreateMessage(entryMessage);
+      return this.clientHandlerService.handleClientMessage(entryMessage, currentMessage);
       // return this.handleClientMessage(messageFromWSP);
     }
   }
 
-  private isProviderMessage(messageFromWSP: IParsedMessage): boolean {
+  private isProviderMessage(entryMessage: IParsedMessage): boolean {
     // Lógica para determinar si el mensaje es del proveedor
-    return ProviderMessageValidator(messageFromWSP);
+    return ProviderMessageValidator(entryMessage);
   }
 
-  private async handleProviderMessage(messageFromWSP: IParsedMessage) {
+  private async handleProviderMessage(entryMessage: IParsedMessage) {
     // Se extrae el id del cliente que esta en el boton cuando un proveedor acepta la disponibilidad y se busca el ultimo 
     //mensaje o carrito de compras
     const getMessageResponded = await this.findById(
-      messageFromWSP.content.id.split('-')[1],
+      entryMessage.content.id.split('-')[1],
     );
 
     if (getMessageResponded.step === STEPS.SELECT_PROVIDER && !getMessageResponded.providerId) {
-      return [await this.messageBuilder.buildProviderCard(messageFromWSP.clientPhone, getMessageResponded)];
+      return [await this.messageBuilder.buildProviderCard(entryMessage.clientPhone, getMessageResponded)];
     }
     return false;
     // return this.providerMessageHandler(messageFromWSP, getMessageResponded);
@@ -86,6 +93,7 @@ export class MessageService {
           clientId: client._id,
           clientPhone: clientPhone,
           dni: client?.dni || null,
+          clientName: client.name || null,
           // provider: '',
         });
         await createMessage.save();
@@ -96,6 +104,15 @@ export class MessageService {
     }
 
     return message;
+  }
+
+    async updateStatus(paymentStatusDto: PaymentStatusDto) {
+      try {
+        await this.clientHandlerService.updateStatus(paymentStatusDto); 
+      } catch (error) {
+        logger.error(error);
+        throw error;
+      }
   }
 
 }

@@ -6,5 +6,9 @@ export class PaymentStatusDto {
     id: string;
 
     @IsEnum(PAYMENTSTATUS)
-    status: number;
+    @IsString()
+    status: string;
+
+    @IsString()
+    code: string;
 }
