@@ -359,7 +359,7 @@ export class Templates {
 
 
 
-  static generateInfoProvider(phone: string, providerId: string, date: string, fee: number, imageUrl: string) {
+  static generateInfoProvider(phone: string, providerId: string, date: string, fee: number, imageUrl: string , address: string) {
     return {
       messaging_product: 'whatsapp',
       to: phone,
@@ -373,7 +373,7 @@ export class Templates {
           },
         },
         body: {
-          text: `Turno: ${date} \nCosto: S/ ${fee}`,
+          text: `Turno: ${date} \nCosto: S/ ${fee}\Dirección: ${address}-`,
         },
         action: {
           buttons: [

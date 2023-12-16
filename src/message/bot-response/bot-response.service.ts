@@ -50,7 +50,8 @@ export class BotResponseService {
     const fee = provider[0].fee;
     const stringDate = dateToString(message.date)
     const imageUrl = provider[0].imageUrl;
-    return Templates.generateInfoProvider(clientPhone, providerId, stringDate, fee, imageUrl);
+    const address = provider[0].address;
+    return Templates.generateInfoProvider(clientPhone, providerId, stringDate, fee, imageUrl,address);
   }
 
   buildDniConfirmationMessage(phone: string, dniName: string) {
