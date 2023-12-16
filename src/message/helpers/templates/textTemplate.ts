@@ -177,7 +177,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: '☝️ Para terminar, por favor realizar el yape al 947308823 a nombre de Hotel por Horas SRL y enviar el boucher de pago en este chat. \n\n*ESTE ES UN BOT DE PRUEBA* \n\n*SUBIR CUALQUIER FOTO*',
+        body: '☝️ Para terminar, por favor realizar el yape al 957768390 a nombre de Maria Pacherres Juarez y enviar el voucher de pago en este chat. \n\n*ESTE ES UN BOT DE PRUEBA* \n\n*SUBIR CUALQUIER FOTO*',
       },
     };
   }
@@ -295,7 +295,7 @@ export class Templates {
         Dirección: ${address}
         Costo de la reserva: S/${fee}
         Celular hotel: ${providerPhone}
-        Codifo de rserva: ${code} 
+        Codifo de reserva: ${code} 
         \n\n Recuerda que las horas se cuentan a partir de la hora reservada. \n\n ¡Te esperamos! 🙌`,
       },
     };
@@ -373,7 +373,7 @@ export class Templates {
           },
         },
         body: {
-          text: `Turno: ${date} \nCosto: S/ ${fee}\Dirección: ${address}-`,
+          text: `Turno: ${date} \nCosto: S/ ${fee} \nDirección: ${address} \nHoras: 3 horas `,
         },
         action: {
           buttons: [
