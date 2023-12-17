@@ -8,7 +8,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: `*ESTO ES UN BOT DE PRUEBA*  \n\nIngresa la fecha y hora que deseas tener tu RESERVA🕜 (DIA MES HORA MINUTOS AM/PM) \n\nEjemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
+        body: `Ingresa la fecha y hora que deseas tener tu RESERVA🕜 (DIA MES HORA MINUTOS AM/PM) \n\nEjemplo: *21 11 430 pm* \nEjemplo 2: *21 11 400 pm* \n\nRecuerda ingresar el turno por cada 30 minutos ☝️
         `,
       },
     };
@@ -33,7 +33,7 @@ export class Templates {
       interactive: {
         type: 'button',
         body: {
-          text: `¡Bienvenid@ a Hotel x Horas! 🌟 \n\n  Encuentra tu nido de amor en solo unos minutos👩‍⚕️🚀 \n\n*ESTO ES UN BOT DE PRUEBA* 
+          text: `¡Bienvenid@ a Hotel x Horas! 🌟 \n\n  Encuentra tu nido de amor en solo unos minutos👩‍⚕️🚀 
           `,
         },
         action: {
@@ -177,7 +177,7 @@ export class Templates {
       to: phone,
       type: 'text',
       text: {
-        body: '☝️ Para terminar, por favor realizar el yape al 957768390 a nombre de Maria Pacherres Juarez y enviar el voucher de pago en este chat. \n\n*ESTE ES UN BOT DE PRUEBA* \n\n*SUBIR CUALQUIER FOTO*',
+        body: '☝️ Para terminar, por favor realizar el yape al 957768390 a nombre de Maria Pacherres Juarez y enviar el voucher de pago en este chat. ',
       },
     };
   }
@@ -295,7 +295,7 @@ export class Templates {
         Dirección: ${address}
         Costo de la reserva: S/${fee}
         Celular hotel: ${providerPhone}
-        Codifo de reserva: ${code} 
+        Codido de reserva: ${code} 
         \n\n Recuerda que las horas se cuentan a partir de la hora reservada. \n\n ¡Te esperamos! 🙌`,
       },
     };
