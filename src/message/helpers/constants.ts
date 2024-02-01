@@ -59,6 +59,13 @@ export const SPECIAL_WORDS = {
   RESET: 'RESET',
 }
 
+export const TEMPLATES_NAME = {
+  NEW_CLIENT: 'notificacion_pontencial_cliente',
+  // PAYMENT_CONFIRMATION: 'confirmacion_pago',
+  // CHAT_STARTED: 'conversacion_iniciada',
+  // ACTIVATE_DOCTOR: 'activar_doctor'
+};
+
 // Estos status tambien los usamos para el modelo de mensajes
 export enum PAYMENTSTATUS {
   PENDING = '0',

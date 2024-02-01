@@ -1,12 +1,12 @@
 import { dateToString } from '../dateParser';
 
-function paramObj(content, type?) {
+export const paramObj = (content, type?) => {
   let obj = { content: content, type: '' };
   if (type) obj.type = type;
   return obj;
 }
 
-const templateParamsGenerator = (params) => {
+export const templateParamsGenerator = (params) => {
   return params.map((p) => {
     let param = { type: p.type ? p.type : 'text' };
     param[param.type] = p.content;

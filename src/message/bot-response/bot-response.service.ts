@@ -75,11 +75,11 @@ export class BotResponseService {
     const providers = await this.providerService.getAllProviders();
     const notifications = [];
     for (const pro of providers) {
-      const notification = Templates.providerNotification(
-        pro.phone,
+      const notification = Templates.providerNotificationTemplate(
         id,
+        pro.phone,
         clientName,
-        stringDate,
+        date,
       );
       notifications.push(notification);
     }

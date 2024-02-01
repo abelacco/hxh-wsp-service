@@ -1,5 +1,6 @@
-import { ID, REPLIES_BUTTONS } from "src/message/helpers/constants";
+import { ID, REPLIES_BUTTONS, TEMPLATES_NAME } from "src/message/helpers/constants";
 import { dateToString } from "../dateParser";
+import { paramObj, templateParamsGenerator } from "./templatesBuilder";
 
 export class Templates {
   static dateStepTemplateMessage(phone: string) {
@@ -389,6 +390,46 @@ export class Templates {
       },
     };
   }
+  static providerNotificationTemplate(messageId: string,docPhone: string, clientName: string, date: Date) {
+    const templateName = TEMPLATES_NAME.NEW_CLIENT;
+    const stringDate = dateToString(date);
+  
+    const params = templateParamsGenerator([
+      paramObj(clientName),
+      paramObj(stringDate)
+    ]);
+  
+    const body = {
+      messaging_product: 'whatsapp',
+      to: docPhone,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: 'es',
+        },
+        components: [
+          {
+            type: 'body',
+            parameters: params,
+          },
+          {
+            type: 'button',
+            sub_type: 'quick_reply',
+            "index": "0",
+            "parameters": [
+              {
+                type: 'payload',
+                payload: `${ID.PROVIDER_ACCEPT_ID}-${messageId}`
+              }
+            ]
+          }
+        ],
+      },
+    };
+  
+    return body;
+  };
 }
 
   // static generateSpecialitiesList(phone: string) {
