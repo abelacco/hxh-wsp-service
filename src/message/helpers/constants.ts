@@ -38,7 +38,7 @@ export const REPLIES_BUTTONS = {
   ACCEPT_APPOINTMENT: 'Aceptar',
   PAYMENTS_OPTIONS: ['Tarjeta 💳', 'Yape/Plin 📱'],
   SUBMIT_VOUCHER: 'Listo',
-  PROVIDER_ACCEPT: 'Aceptar ✅',
+  PROVIDER_ACCEPT: 'DISPONIBLE',
 }
 
 export const ID = {
