@@ -83,11 +83,12 @@ export class WspService {
           },
         },
       );
-      console.log('prueba111111', prueba);
-      console.log('prueba', prueba.data);
+      console.log('status', prueba.status);
+      console.log('data', prueba.data);
     
     } catch (error) {
       console.log(error.response.data.error.message);
+      throw error;
     }
   }
 
