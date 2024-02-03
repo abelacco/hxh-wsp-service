@@ -73,8 +73,13 @@ export const receivedMessageValidator = (
 };
 
 export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
+  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.title)
+  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] )
+  console.log('PROVIDER MESSAGE VALIDATOR',  isButtonMessage(infoMessage) )
+  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT )
+  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID )
   if (
-    isInteractiveMessage(infoMessage) &&
+    isButtonMessage(infoMessage) &&
     infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT &&
     infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID
   ) {
@@ -87,6 +92,8 @@ export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
 
 
 export const isInteractiveMessage = (infoMessage: IParsedMessage): boolean => infoMessage.type === WSP_MESSAGE_TYPES.INTERACTIVE;
+
+export const isButtonMessage = (infoMessage: IParsedMessage): boolean => infoMessage.type === WSP_MESSAGE_TYPES.BUTTON;
 
 export const isTextMessage = (infoMessage: IParsedMessage): boolean => infoMessage.type ===  WSP_MESSAGE_TYPES.TEXT;
 
