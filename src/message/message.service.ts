@@ -54,7 +54,7 @@ export class MessageService {
     const getMessageResponded = await this.findById(
       entryMessage.content.id.split('-')[1],
     );
-
+      console.log(getMessageResponded);
     if (getMessageResponded.step === STEPS.SELECT_PROVIDER && !getMessageResponded.providerId) {
       return [await this.messageBuilder.buildProviderCard(entryMessage.clientPhone, getMessageResponded)];
     }
