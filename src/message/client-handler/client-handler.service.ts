@@ -124,7 +124,6 @@ export class ClientHandlerService {
     }
 
     private async handleSendGreetingsStep(entryMessage: IParsedMessage, findMessage: Message, buildedMessages: any[]): Promise<void> {
-        await this.notifyStartConversationAdmin(findMessage);
         if (!clientHasDni(findMessage)) {
             findMessage.step = STEPS.PUT_DNI;
         } else if (hasSpecificContentId(entryMessage, ID.FIND_PROVIDER)) {
