@@ -2,6 +2,7 @@ import { SPECIAL_WORDS, STEPS } from 'src/message/helpers/constants';
 import { ID, WSP_MESSAGE_TYPES , REPLIES_BUTTONS } from 'src/message/helpers/constants';
 import { IParsedMessage } from 'src/wsp/entities/parsedMessage';
 import { Message } from '../entities/message.entity';
+import { Logger } from '@nestjs/common';
 
 
 
@@ -73,8 +74,9 @@ export const receivedMessageValidator = (
 };
 
 export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
-  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.title)
-  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] )
+  Logger.log('INIT PROVIDER MESSAGE VALIDATOR', 'MESSAGE');
+  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content)
+  // console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] )
   console.log('PROVIDER MESSAGE VALIDATOR',  isButtonMessage(infoMessage) )
   console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT )
   console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID )
@@ -83,8 +85,10 @@ export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
     infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT &&
     infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID
   ) {
+    Logger.log('IS PROVIDER MESSAGE', 'MESSAGE');
     return true;
   }
+  Logger.log('NOT PROVIDER MESSAGE', 'MESSAGE');
   return false;
 };
 
