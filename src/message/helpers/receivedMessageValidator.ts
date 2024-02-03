@@ -83,7 +83,7 @@ export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
   if (
     isButtonMessage(infoMessage) &&
     infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT &&
-    infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID
+    infoMessage.content.payload?.split('-')[0] === ID.PROVIDER_ACCEPT_ID
   ) {
     Logger.log('IS PROVIDER MESSAGE', 'MESSAGE');
     return true;
