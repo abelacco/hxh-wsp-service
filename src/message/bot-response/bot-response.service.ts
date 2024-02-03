@@ -86,7 +86,7 @@ export class BotResponseService {
     return notifications;
   }
 
-   buildAdminNotification(message: Message)  {
+   buildStartConversationAdminNotification(message: Message)  {
     /*
       Build a Provider response template
     */
@@ -95,6 +95,24 @@ export class BotResponseService {
     const notifications = [];
     for (const ad of ADMIN) {
       const notification = Templates.clientStartConversation(
+        clientPhone,
+        ad,
+      );
+      notifications.push(notification);
+    }
+    return notifications;
+  }
+
+  buildPaymentAdminNotification(message: Message)  {
+    /*
+      Build a Provider response template
+    */
+    const {clientPhone , clientName } = message;
+    const ADMIN = ['51947308823', '51980827944', '51932662634'];
+    const notifications = [];
+    for (const ad of ADMIN) {
+      const notification = Templates.clientPaymentNotificationTemplate(
+        clientName,
         clientPhone,
         ad,
       );

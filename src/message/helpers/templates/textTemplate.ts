@@ -457,6 +457,34 @@ export class Templates {
   
     return body;
   };
+
+  static clientPaymentNotificationTemplate(clientName:string ,clientPhone: string, adminPhone: string) {
+    const templateName = TEMPLATES_NAME.PAYMENT_CONFIRMATION;
+    const params = templateParamsGenerator([
+      paramObj(clientName),
+      paramObj(clientPhone),
+    ]);
+  
+    const body = {
+      messaging_product: 'whatsapp',
+      to: adminPhone,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: 'es',
+        },
+        components: [
+          {
+            type: 'body',
+            parameters: params,
+          },
+        ],
+      },
+    };
+  
+    return body;
+  };
 }
 
   // static generateSpecialitiesList(phone: string) {

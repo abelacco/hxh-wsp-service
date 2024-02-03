@@ -119,11 +119,12 @@ export class ClientHandlerService {
     private async handleInitStep(findMessage: Message, buildedMessages: any[]): Promise<void> {
         findMessage.step = STEPS.SEND_GREETINGS;
         const message = await this.updateAndBuildClientMessage(findMessage);
-        this.notifyAdmin(findMessage);
+        this.notifyStartConversationAdmin(findMessage);
         buildedMessages.push(message);
     }
 
     private async handleSendGreetingsStep(entryMessage: IParsedMessage, findMessage: Message, buildedMessages: any[]): Promise<void> {
+        await this.notifyStartConversationAdmin(findMessage);
         if (!clientHasDni(findMessage)) {
             findMessage.step = STEPS.PUT_DNI;
         } else if (hasSpecificContentId(entryMessage, ID.FIND_PROVIDER)) {
@@ -239,7 +240,7 @@ export class ClientHandlerService {
 
     async sendVoucherImage(imageUrl: string, message: Message) {
         try {
-
+            await this.notifyNewPayment(message);
             const uploadResponse = await this.commonsService.uploadImage(imageUrl);
             message.imageVoucher = uploadResponse;
             await this.appointmentService.updateAppointment(message.appointmentId, uploadResponse);
@@ -258,8 +259,15 @@ export class ClientHandlerService {
         }
     }
 
-    async notifyAdmin(message: Message) {
-        const messages = this.messageBuilder.buildAdminNotification(message);
+    async notifyStartConversationAdmin(message: Message) {
+        const messages = this.messageBuilder.buildStartConversationAdminNotification(message);
+        for (const message of messages) {
+            await this.notificationService.sendNotification(message);
+        }
+    }
+
+    async notifyNewPayment(message: Message) {
+        const messages = this.messageBuilder.buildPaymentAdminNotification(message);
         for (const message of messages) {
             await this.notificationService.sendNotification(message);
         }

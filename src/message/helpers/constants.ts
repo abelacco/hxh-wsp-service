@@ -61,8 +61,8 @@ export const SPECIAL_WORDS = {
 
 export const TEMPLATES_NAME = {
   NEW_CLIENT: 'notificacion_pontencial_cliente',
-  PAYMENT_CONFIRMATION: 'confirmacion_pago',
-  CHAT_STARTED: 'conversacion_iniciada',
+  PAYMENT_CONFIRMATION: 'client_pay',
+  CHAT_STARTED: 'client_start',
   // ACTIVATE_DOCTOR: 'activar_doctor'
 };
 
