@@ -23,6 +23,7 @@ export class WspService {
 
       // Deestructurar mensaje
       const parsedMessage = messageDestructurer(messageWSP);
+      Logger.log(parsedMessage, 'MESSAGE');
       Logger.log('MESSAGEDESTRUCTURER','MESSAGE');
 
       //Valida si es una imagen
