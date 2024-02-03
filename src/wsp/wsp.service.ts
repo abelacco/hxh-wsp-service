@@ -13,36 +13,42 @@ export class WspService {
 
   // Este metodo debe servir como handler de los mensajes que llegan desde WhatsApp
   async proccessMessage(messageWSP: WspReceivedMessageDto) {
-    // Deberia queda 3 pasos
-    // paso 1 deestructurar el mensaje
-    // paso 2 enviar el mensaje al servicio de mensajeria
-    // paso 3 enviar la respuesta al cliente
-    Logger.log('INIT', 'MESSAGE');
-    // Logger.log('RAW MESSAGE','MESSAGE',messageWSP.entry[0].changes[0].value, );
+    try {
+      // Deberia queda 3 pasos
+      // paso 1 deestructurar el mensaje
+      // paso 2 enviar el mensaje al servicio de mensajeria
+      // paso 3 enviar la respuesta al cliente
+      Logger.log('INIT', 'MESSAGE');
+      // Logger.log('RAW MESSAGE','MESSAGE',messageWSP.entry[0].changes[0].value, );
 
-    // Deestructurar mensaje
-    const parsedMessage = messageDestructurer(messageWSP);
-    Logger.log('MESSAGEDESTRUCTURER');
+      // Deestructurar mensaje
+      const parsedMessage = messageDestructurer(messageWSP);
+      Logger.log('MESSAGEDESTRUCTURER','MESSAGE');
 
-    //Valida si es una imagen
-    // Esta validacion debería estar dentro del servicio de proccesMessage
-    // Obtener link de wasap
-    Logger.log('TIPO DE MENSAJE', parsedMessage.type);
-    if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
-      parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
-    // Envia el mensaje parseado al servicio de mensajeria
-    Logger.log('MENSAJE PARSEADO', parsedMessage);
-    const response = await this.msgService.processMessage(parsedMessage);
-    Logger.log('Respuesta del bot',response)
-    if (!response) {
-      return false;
+      //Valida si es una imagen
+      // Esta validacion debería estar dentro del servicio de proccesMessage
+      // Obtener link de wasap
+      Logger.log('TIPO DE MENSAJE','MESSAGE');
+      if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
+        parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
+      // Envia el mensaje parseado al servicio de mensajeria
+      Logger.log('MENSAJE PARSEADO', parsedMessage);
+      const response = await this.msgService.processMessage(parsedMessage);
+      Logger.log('Respuesta del bot',response)
+      if (!response) {
+        return false;
+      }
+      //Enviar respuesta a cliente 
+      for (const message of response) {
+        await this.sendMessages(message);
+      }
+
+      return 'OK';
+    } catch (error) {
+      Logger.error(error);
+      return error;
     }
-    //Enviar respuesta a cliente 
-    for (const message of response) {
-      await this.sendMessages(message);
-    }
 
-    return 'OK';
   }
 
   validateWebHook(wspQueries: WspQueriesDto) {
