@@ -75,11 +75,6 @@ export const receivedMessageValidator = (
 
 export const ProviderMessageValidator = (infoMessage: IParsedMessage) => {
   Logger.log('INIT PROVIDER MESSAGE VALIDATOR', 'MESSAGE');
-  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content)
-  // console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] )
-  console.log('PROVIDER MESSAGE VALIDATOR',  isButtonMessage(infoMessage) )
-  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT )
-  console.log('PROVIDER MESSAGE VALIDATOR',  infoMessage.content.id?.split('-')[0] === ID.PROVIDER_ACCEPT_ID )
   if (
     isButtonMessage(infoMessage) &&
     infoMessage.content.title === REPLIES_BUTTONS.PROVIDER_ACCEPT &&

@@ -51,10 +51,12 @@ export class MessageService {
   private async handleProviderMessage(entryMessage: IParsedMessage) {
     // Se extrae el id del cliente que esta en el boton cuando un proveedor acepta la disponibilidad y se busca el ultimo 
     //mensaje o carrito de compras
+    Logger.log('INIT HANDLEPROVIDERMESSAGE','MESSAGE');
+    Logger.log(entryMessage,'ENTRYMESSAGE');
     const getMessageResponded = await this.findById(
-      entryMessage.content.id.split('-')[1],
+      entryMessage.content.payload.split('-')[1],
     );
-      console.log(getMessageResponded);
+    Logger.log(getMessageResponded,'GETMESSAGE');
     if (getMessageResponded.step === STEPS.SELECT_PROVIDER && !getMessageResponded.providerId) {
       return [await this.messageBuilder.buildProviderCard(entryMessage.clientPhone, getMessageResponded)];
     }
