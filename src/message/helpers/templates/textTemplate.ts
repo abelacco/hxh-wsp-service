@@ -430,6 +430,33 @@ export class Templates {
   
     return body;
   };
+
+  static clientStartConversation(clientPhone: string, adminPhone: string) {
+    const templateName = TEMPLATES_NAME.CHAT_STARTED;
+    const params = templateParamsGenerator([
+      paramObj(clientPhone),
+    ]);
+  
+    const body = {
+      messaging_product: 'whatsapp',
+      to: adminPhone,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: {
+          code: 'es',
+        },
+        components: [
+          {
+            type: 'body',
+            parameters: params,
+          },
+        ],
+      },
+    };
+  
+    return body;
+  };
 }
 
   // static generateSpecialitiesList(phone: string) {

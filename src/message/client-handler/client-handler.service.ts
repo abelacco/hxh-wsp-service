@@ -119,6 +119,7 @@ export class ClientHandlerService {
     private async handleInitStep(findMessage: Message, buildedMessages: any[]): Promise<void> {
         findMessage.step = STEPS.SEND_GREETINGS;
         const message = await this.updateAndBuildClientMessage(findMessage);
+        this.notifyAdmin(findMessage);
         buildedMessages.push(message);
     }
 
@@ -252,6 +253,13 @@ export class ClientHandlerService {
 
     async notifyProviders(message: Message) {
         const messages = await this.messageBuilder.buildProviderNotification(message);
+        for (const message of messages) {
+            await this.notificationService.sendNotification(message);
+        }
+    }
+
+    async notifyAdmin(message: Message) {
+        const messages = this.messageBuilder.buildAdminNotification(message);
         for (const message of messages) {
             await this.notificationService.sendNotification(message);
         }

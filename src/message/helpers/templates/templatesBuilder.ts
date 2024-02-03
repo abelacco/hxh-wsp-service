@@ -146,3 +146,9 @@ export const doctorConfirmationTemplate = (appointment: any) => {
 
   return body;
 };
+
+export const buildNewCustomerNotification = (clientPhone: string) {
+  const { ADMIN_1, ADMIN_2, ADMIN_3 } = process.env;
+  const operators: Array<string> = [ ADMIN_1, ADMIN_2, ADMIN_3 ];
+  return operators.map(x => newCustomerTemplate(x, clientPhone));
+}
