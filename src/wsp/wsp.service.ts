@@ -27,9 +27,11 @@ export class WspService {
     //Valida si es una imagen
     // Esta validacion debería estar dentro del servicio de proccesMessage
     // Obtener link de wasap
+    Logger.log('TIPO DE MENSAJE', parsedMessage.type);
     if (parsedMessage.type === WSP_MESSAGE_TYPES.IMAGE)
       parsedMessage.content = await this.getWhatsappMediaUrl(parsedMessage.content);
     // Envia el mensaje parseado al servicio de mensajeria
+    Logger.log('MENSAJE PARSEADO', parsedMessage);
     const response = await this.msgService.processMessage(parsedMessage);
     Logger.log('Respuesta del bot',response)
     if (!response) {
