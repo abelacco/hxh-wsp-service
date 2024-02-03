@@ -36,6 +36,12 @@ export const messageDestructurer = (messageDto: WspReceivedMessageDto) => {
           };
         }
         break;
+      case WSP_MESSAGE_TYPES.BUTTON:
+          parsedMessage.content = {
+            payload: message.button.payload,
+          };
+          
+          break;
       case WSP_MESSAGE_TYPES.TEXT:
         parsedMessage.content = message.text.body;
         break;

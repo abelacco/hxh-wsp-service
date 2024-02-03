@@ -26,6 +26,9 @@ interface IMessage {
   };
   image?: IImageObject;
   interactive?: IInteractiveObject;
+  button?: {
+    payload: string;
+  };
 }
 
 interface IImageObject {
